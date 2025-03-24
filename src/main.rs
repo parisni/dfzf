@@ -9,6 +9,7 @@ use i3ipc::reply::Node;
 use i3ipc::I3Connection;
 use i3ipc::I3EventListener;
 use i3ipc::Subscription;
+use chrono::Local;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -108,7 +109,14 @@ fn run(args: &Args) -> Result<()> {
 
                 // Save the new last focused ID as mark
                 connection
+                    .run_command(&format!("[con_id={focused_id}] unmark"))
+                    .with_context(|| format!("Could not unset i3 mark {mark}"))?;
+                connection
                     .run_command(&format!("[con_id={last_focused_id}] mark --add {mark}"))
+                    .with_context(|| "Could not set i3 mark {name} to {last_focused_id}")?;
+                let timestamp = Local::now().timestamp_millis();
+                connection
+                    .run_command(&format!("[con_id={last_focused_id}] mark --add _prev-{timestamp}"))
                     .with_context(|| "Could not set i3 mark {name} to {last_focused_id}")?;
             }
 
