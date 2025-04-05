@@ -19,9 +19,20 @@ for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60
 
 ## Windows
 
-## Notifications
+- cycle previous window
+- windows ordered by last access
+- toggle window with enter
+- kill window with ctrl-k
+- preview window with ctrl-j
+- terminal scrollback preview (kitty only)
+
 
 ## Clipboard
+
+- image preview
+- content preview with bat
+
+## Notifications
 
 ## Launcher
 
