@@ -321,7 +321,7 @@ readarray -t COMMAND_STR <<<$(
     --preview "$0 describe {2} {1}" \
     --preview-window="${PREVIEW_WINDOW}" \
     --no-multi --cycle \
-    --prompt="Launch > " \
+    --prompt="Launcher > " \
     --header='' --no-info --margin='1,2' \
     --info="inline-right" \
     --color='16,gutter:-1' \

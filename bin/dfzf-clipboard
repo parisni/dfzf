@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # due to kitty/wl-copy bug we have to kill the kitty window otw it hangs
-cliphist list | fzf --prompt "Copy > " --color='16,gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' \
+cliphist list | fzf --prompt "Clipboard > " --color='16,gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' \
 	--preview 'echo {} | (grep -q "binary data image/png" && echo {} | cliphist decode | dfzf-clipboard-icat) || (echo {} | cliphist decode | dfzf-clipboard-cat)' \
 	--preview-window="up:wrap" \
-        --bind="enter:execute(echo {}|cliphist decode| wl-copy && swaymsg '[app_id=\"^floating-term-copy$\"]' kill)+accept" \
+        --bind="enter:execute(echo {}|cliphist decode| wl-copy && swaymsg '[app_id=\"^dfzf-popup-clipboard$\"]' kill)+accept" \
 	--bind="ctrl-k:execute(echo {}|cliphist delete)+reload(cliphist list)" 
