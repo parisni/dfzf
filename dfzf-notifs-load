@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+makoctl list | jq -r '.data[].[] | "\(.id.data):\(.summary.data) @ \(.body.data)" | gsub("\n"; "\\n")' |sed 's/^\"//;s/\"$//'
