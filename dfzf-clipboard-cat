@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# https://github.com/junegunn/fzf/blob/master/bin/fzf-preview.sh
+dim=${FZF_PREVIEW_COLUMNS}x${FZF_PREVIEW_LINES}
+batcat --style="${BAT_STYLE:-numbers}" --color=always --pager=never --highlight-line="${center:-0}"  -- $@
+
