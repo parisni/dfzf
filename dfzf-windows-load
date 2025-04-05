@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+swaymsg -t get_tree | jq -r '
+    .. | objects | select(.marks[0] != null) |
+    {
+        "id": .id,
+	"name": (.name | gsub("#"; "")),
+        "marks": .marks[0],
+        "app_id": .app_id
+    } |
+  "\(.marks) [\(.app_id[0:4])] \(.name) #\(.id)"
+' |sort -nr|sed 's/_prev-[0-9]*//'|sed 's/— Mozilla Firefox //'
