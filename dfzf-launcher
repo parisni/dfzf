@@ -321,8 +321,9 @@ readarray -t COMMAND_STR <<<$(
     --preview "$0 describe {2} {1}" \
     --preview-window="${PREVIEW_WINDOW}" \
     --no-multi --cycle \
-    --prompt="${GLYPH_PROMPT-# }" \
+    --prompt="Launch > " \
     --header='' --no-info --margin='1,2' \
+    --info="inline-right" \
     --color='16,gutter:-1' \
     <"$FZFPIPE"
 ) || exit 1
