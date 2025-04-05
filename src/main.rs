@@ -111,9 +111,6 @@ fn run(args: &Args) -> Result<()> {
                 connection
                     .run_command(&format!("[con_id={focused_id}] unmark"))
                     .with_context(|| format!("Could not unset i3 mark {mark}"))?;
-                connection
-                    .run_command(&format!("[con_id={last_focused_id}] mark --add {mark}"))
-                    .with_context(|| "Could not set i3 mark {name} to {last_focused_id}")?;
                 let timestamp = Local::now().timestamp_millis();
                 connection
                     .run_command(&format!("[con_id={last_focused_id}] mark --add _prev-{timestamp}"))
