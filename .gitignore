@@ -1,4 +1,4 @@
-/target
+**/target
 
 # AUR package
 /i3-back-*.tar.gz

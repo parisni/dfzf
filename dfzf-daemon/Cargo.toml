@@ -1,13 +1,13 @@
 [package]
-name = "i3-back"
+name = "dfzf-daemon"
 version = "0.3.2"
 edition = "2021"
-description = "An i3/Sway utility to switch focus to your last focused window. Allows for behavior similar to Alt+Tab on other desktop environments."
-repository = "https://github.com/Cretezy/i3-back"
-homepage = "https://github.com/Cretezy/i3-back"
+description = "An i3/Sway utility to keep track of windows visit history."
+repository = "https://github.com/parisni/dfzf-daemon"
+homepage = "https://github.com/parisni/dfzf-daemon"
 license = "MIT"
 keywords = ["i3", "sway"]
-authors = ["Charles Crete <charles@cretezy.com>"]
+authors = ["Charles Crete <charles@cretezy.com>", "Nicolas Paris <contact@parisni.com>"]
 
 [dependencies]
 anyhow = "1.0.69"
