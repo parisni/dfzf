@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-dfzf-load| fzf --no-sort --prompt "Windows > " --color='16,gutter:-1' \
+dfzf-windows-load| fzf --no-sort --prompt "Windows > " --color='16,gutter:-1' \
 	--header-lines=1 \
-	--bind="ctrl-k:execute(echo {} |cut -d'#' -f2| xargs -I @ swaymsg '[con_id=@]' kill)+reload(sleep 0.05;dfzf-load)" \
+	--bind="ctrl-k:execute(echo {} |cut -d'#' -f2| xargs -I @ swaymsg '[con_id=@]' kill)+reload(sleep 0.05;dfzf-windows-load)" \
 	--bind="ctrl-j:execute(echo {} |cut -d'#' -f2| xargs -I @ swaymsg '[con_id=@]' focus && swaymsg '[app_id=\"^floating-term$\"]' focus)" \
 	--bind="enter:execute(echo {}  |cut -d'#' -f2| xargs -I @ swaymsg '[con_id=@]' focus)+accept" \
 	--preview="echo {} |grep -q '\[term\]' && echo {}| sed -z 's/^.*] //' |sed -z 's/ #.*//'|sed 's/ /./g'|xargs -I'#' kitten @ get-text --match 'title:#' --extent screen| grep -v '~'|grep -v '^$'" \
