@@ -1,6 +1,6 @@
 # Installation
 
-[Download/copy](./releases) the binaries into `/usr/local/bin/` or anywhere in your PATH.
+[Download/copy](https://github.com/parisni/dfzf/releases) the binaries into `/usr/local/bin/` or anywhere in your PATH.
 
 Add to your config and reload sway/i3:
 ```
