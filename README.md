@@ -5,6 +5,9 @@
 Add to your config and reload sway/i3:
 ```bash
 exec --no-startup-id dfzf-daemon
+exec wl-paste --watch cliphist -max-items 5000 store
+exec mako
+
 set $dfzf_term "kitty -1 --class=dfzf-popup -e"
 #set $dfzf_term "alacritty --class=dfzf-popup -e"
 #set $dfzf_term "foot --app-id=dfzf-popup"
