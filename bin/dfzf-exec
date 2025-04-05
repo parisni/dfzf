@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+if command -v swaymsg > /dev/null; then
+  msgcommand="swaymsg"
+elif command -v i3-msg > /dev/null; then
+  msgcommand="i3-msg"
+else
+  echo "Neither swaymsg nor i3-msg found. Please install one of them."
+  exit 1
+fi
+
+"$msgcommand" "$@"

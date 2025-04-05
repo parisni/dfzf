@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-swaymsg -t get_tree | jq -r '
+dfzf-exec -t get_tree | jq -r '
     .. | objects | select(.marks[0] != null) |
     {
         "id": .id,

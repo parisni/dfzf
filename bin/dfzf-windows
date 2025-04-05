@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 dfzf-windows-load| fzf --no-sort --prompt "Windows > " --color='16,gutter:-1' \
 	--header-lines=1 \
-	--bind="ctrl-k:execute(echo {} |sed -z 's/.*#//'| xargs -I @ swaymsg '[con_id=@]' kill)+reload(sleep 0.05;dfzf-windows-load)" \
-	--bind="ctrl-j:execute(echo {} |sed -z 's/.*#//'| xargs -I @ swaymsg '[con_id=@]' focus && swaymsg '[app_id=\"^dfzf-popup$\"]' focus)" \
-	--bind="enter:execute(echo {}  |sed -z 's/.*#//'| xargs -I @ swaymsg '[con_id=@]' focus)+accept" \
+	--bind="ctrl-k:execute(echo {} |sed -z 's/.*#//'| xargs -I @ dfzf-exec '[con_id=@]' kill)+reload(sleep 0.05;dfzf-windows-load)" \
+	--bind="ctrl-j:execute(echo {} |sed -z 's/.*#//'| xargs -I @ dfzf-exec '[con_id=@]' focus && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus)" \
+	--bind="enter:execute(echo {}  |sed -z 's/.*#//'| xargs -I @ dfzf-exec '[con_id=@]' focus)+accept" \
 	--preview="echo {} |grep -q '\[term\]' && echo {}| sed -z 's/^.*] //' |sed -z 's/ #.*//'|sed 's/ /./g'|xargs -I'#' kitten @ get-text --match 'title:#' --extent screen| grep -v '~'|grep -v '^$'" \
 	--preview-window="up:60%,follow" \
 	--cycle --info="inline-right" --header='' --margin='1,2'

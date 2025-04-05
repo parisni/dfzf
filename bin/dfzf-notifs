@@ -2,5 +2,5 @@
 dfzf-notifs-load | fzf  --prompt "Notifs > " --color='16,gutter:-1' --cycle --info="inline-right" --header='' --margin='1,2' \
 	--preview "echo {} | sed -z 's/.*@//'" \
 	--preview-window=up:30%:wrap \
-	--bind "enter:execute(echo {}| sed -z 's/:.*//' | xargs makoctl invoke -n && (echo {}|grep -q 'Gmail ' || swaymsg '[title=\"Slack\"]' focus))+accept" \
+	--bind "enter:execute(echo {}| sed -z 's/:.*//' | xargs makoctl invoke -n && (echo {}|grep -q 'Gmail ' || dfzf-exec '[title=\"Slack\"]' focus))+accept" \
 	--bind "ctrl-k:execute(echo {}| sed -z 's/:.*//' |xargs makoctl dismiss -n)+reload(dfzf-notifs-load)"
