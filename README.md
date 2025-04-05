@@ -5,10 +5,11 @@
 Add to your config and reload sway/i3:
 ```
 exec --no-startup-id dfzf-daemon
-bindsym $mod+Tab    exec kitty -1 --class "dfzf-popup"           -e dfzf-windows
-bindsym $mod+Space  exec kitty -1 --class "dfzf-popup"           -e dfzf-launcher
-bindsym $mod+h      exec kitty -1 --class "dfzf-popup"           -e dfzf-notifs
-bindsym $mod+i      exec kitty -1 --class "dfzf-popup-clipboard" -e dfzf-clipboard
+set $term "kitty -1"
+bindsym $mod+Tab    exec "$term" --class "dfzf-popup"           -e dfzf-windows
+bindsym $mod+Space  exec "$term" --class "dfzf-popup"           -e dfzf-launcher
+bindsym $mod+h      exec "$term" --class "dfzf-popup"           -e dfzf-notifs
+bindsym $mod+i      exec "$term" --class "dfzf-popup-clipboard" -e dfzf-clipboard
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 for_window [app_id="^dfzf-popup-clipboard$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 ```
