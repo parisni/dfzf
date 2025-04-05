@@ -5,7 +5,7 @@ dfzf-exec -t get_tree | jq -r '
         "id": .id,
 	"name": .name,
         "marks": .marks[0],
-        "app_id": .app_id
+	"app_id": (.app_id[0:8] | gsub("^"; "[") | gsub("$"; "]     "))
     } |
-  "\(.marks) [\(.app_id[0:8])] \(.name) #\(.id)"
+  "\(.marks) \(.app_id[0:10]) \(.name) #\(.id)"
 ' |sort -nr|sed 's/_prev-[0-9]*//'|sed 's/— Mozilla Firefox //'
