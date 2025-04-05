@@ -31,3 +31,8 @@ for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60
 - [dfzf-daemon shares 95% of its DNA with i3-back](https://github.com/Cretezy/i3-back)
 - [dfzf-launcher shares 99% of its DNA with sway-launcher-desktop](https://github.com/Biont/sway-launcher-desktop/tree/master)
 - [wofi-scripts has inspired dfzf-windows](https://github.com/tobiaspc/wofi-scripts)
+
+# Related work
+
+- [i3-tools: switch to previous window](https://github.com/dinAlt/i3-tools)
+- [swayr: a window-switcher & more for sway](https://sr.ht/~tsdh/swayr/)
