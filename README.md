@@ -3,15 +3,16 @@
 [Download/copy](https://github.com/parisni/dfzf/releases) the binaries into `/usr/local/bin/` or anywhere in your PATH.
 
 Add to your config and reload sway/i3:
-```
+```bash
 exec --no-startup-id dfzf-daemon
-set $term "kitty -1"
-bindsym $mod+Tab    exec "$term" --class "dfzf-popup"           -e dfzf-windows
-bindsym $mod+Space  exec "$term" --class "dfzf-popup"           -e dfzf-launcher
-bindsym $mod+h      exec "$term" --class "dfzf-popup"           -e dfzf-notifs
-bindsym $mod+i      exec "$term" --class "dfzf-popup-clipboard" -e dfzf-clipboard
+set $dfzf_term "kitty -1 --class=dfzf-popup -e"
+#set $dfzf_term "alacritty --class=dfzf-popup -e"
+#set $dfzf_term "foot --app-id=dfzf-popup"
+bindsym $mod+Tab    exec "$dfzf_term" dfzf-windows
+bindsym $mod+Space  exec "$dfzf_term" dfzf-launcher
+bindsym $mod+h      exec "$dfzf_term" dfzf-notifs
+bindsym $mod+i      exec "$dfzf_term" dfzf-clipboard
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
-for_window [app_id="^dfzf-popup-clipboard$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 ```
 
 # Features
