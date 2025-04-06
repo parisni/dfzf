@@ -113,7 +113,7 @@ fn run(args: &Args) -> Result<()> {
                     .with_context(|| format!("Could not unset i3 mark {mark}"))?;
                 let timestamp = Local::now().timestamp_millis();
                 connection
-                    .run_command(&format!("[con_id={last_focused_id}] mark --add _prev-{timestamp}"))
+                    .run_command(&format!("[con_id={focused_id}] mark --add _prev-{timestamp}"))
                     .with_context(|| "Could not set i3 mark {name} to {last_focused_id}")?;
             }
 
