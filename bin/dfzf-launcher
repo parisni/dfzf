@@ -324,7 +324,7 @@ readarray -t COMMAND_STR <<<$(
     --prompt="Launcher > " \
     --header='' --no-info --margin='1,2' \
     --info="inline-right" \
-    --color='16,gutter:-1' \
+    --color='gutter:-1' \
     <"$FZFPIPE"
 ) || exit 1
 # Get the last line of the fzf output. If there were no matches, it contains the query which we'll treat as a custom command

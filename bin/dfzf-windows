@@ -4,7 +4,7 @@ if [ -n "$KITTY_WINDOW_ID" ]; then
     export FZF_DEFAULT_OPTS="--preview=\"echo {}| sed -z 's/^.*] //' |sed -z 's/ #.*//'|sed 's/^[[:space:]]*//;s/[[:space:]]*$//'|sed 's/ /./g'|xargs -I'#' kitten @ get-text --match 'title:#' --extent screen 2>/dev/null| grep -v '~'|grep -v '^$'\" --preview-window=\"up:60%,follow\""
 fi
 
-dfzf-windows-load| fzf --no-sort --prompt "Windows > " --color='16,gutter:-1' \
+dfzf-windows-load| fzf --no-sort --prompt "Windows > " --color='gutter:-1' \
 	--header-lines=1 \
 	--bind="ctrl-k:execute(echo {} |sed -z 's/.*#//'| xargs -I @ dfzf-exec '[con_id=@]' kill)+reload(sleep 0.05;dfzf-windows-load)" \
 	--bind="ctrl-j:execute(echo {} |sed -z 's/.*#//'| xargs -I @ dfzf-exec '[con_id=@]' focus && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus)" \

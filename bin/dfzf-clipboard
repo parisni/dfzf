@@ -5,7 +5,7 @@ if [ -n "$KITTY_WINDOW_ID" ]; then
 else
     export FZF_DEFAULT_OPTS="--preview 'echo {} | (grep -q \"binary data image\" && echo {} | cliphist decode | chafa) || (echo {} | cliphist decode | dfzf-clipboard-cat)'"
 fi
-cliphist list | fzf --prompt "Clipboard > " --color='16,gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' \
+cliphist list | fzf --prompt "Clipboard > " --color='gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' \
 	--preview-window="up" \
         --bind="enter:execute(echo {}|cliphist decode| wl-copy && dfzf-exec '[app_id=\"^dfzf-popup$\"]' kill)+accept" \
 	--bind="ctrl-k:execute(echo {}|cliphist delete)+reload(cliphist list)" 

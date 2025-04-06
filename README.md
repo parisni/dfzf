@@ -8,7 +8,7 @@ exec --no-startup-id dfzf-daemon
 exec wl-paste --watch cliphist -max-items 5000 store
 exec mako
 
-set $dfzf_term "kitty -1 --class=dfzf-popup -e"
+set $dfzf_term "kitty -1 --app-id=dfzf-popup -e"
 #set $dfzf_term "alacritty --class=dfzf-popup -e"
 #set $dfzf_term "foot --app-id=dfzf-popup"
 bindsym $mod+Tab    exec "$dfzf_term" dfzf-windows
@@ -17,6 +17,15 @@ bindsym $mod+h      exec "$dfzf_term" dfzf-notifs
 bindsym $mod+i      exec "$dfzf_term" dfzf-clipboard
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 ```
+
+Kitty config needed:
+```
+confirm_os_window_close 0
+allow_remote_control yes
+shell_integration enabled
+listen_on unix:/tmp/kitty
+```
+
 
 # Features
 
