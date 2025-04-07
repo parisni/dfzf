@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+dfzf-kill-bro
 dfzf-notifs-load | fzf  --prompt "Notifs > " --color='gutter:-1' --cycle --info="inline-right" --header='' --margin='1,2' \
 	--preview "echo {} | sed -z 's/.*@//'" \
 	--preview-window=up:30%:wrap \

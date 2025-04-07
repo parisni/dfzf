@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+dfzf-kill-bro
 # due to kitty/wl-copy bug we have to kill the kitty window otw it hangs
 if [ -n "$KITTY_WINDOW_ID" ]; then
     export FZF_DEFAULT_OPTS="--preview 'echo {} | (grep -q \"binary data image\" && echo {} | cliphist decode | dfzf-clipboard-icat) || (echo {} | cliphist decode | dfzf-clipboard-cat)'"

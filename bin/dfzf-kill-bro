@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+current_id="$(dfzf-exec -t get_tree | jq '.. | objects | select(.focused != null)| select(.focused == true) | .id')"
+dfzf-exec -t get_tree | jq -r ".. | objects | select(.app_id == \"dfzf-popup\") | select(.id != $current_id) | .id" \
+  | xargs -I'#' dfzf-exec '[con_id=#]' kill
