@@ -2,6 +2,8 @@
 
 [Download/copy](https://github.com/parisni/dfzf/releases) the binaries into `/usr/local/bin/` or anywhere in your PATH.
 
+Also be sure `fzf` is accessible from sway/i3, by moving it to `/usr/local/bin/` (instead of default `~/.cargo/bin` place)
+
 Add to your config and reload sway/i3:
 ```bash
 exec --no-startup-id dfzf-daemon
