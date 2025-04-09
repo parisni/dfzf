@@ -9,4 +9,4 @@ dfzf-exec -t get_tree | jq -r '
         "app_id": ((.app_id // .window_properties.class)[0:8] | gsub("^"; "[") | gsub("$"; "]     "))
     } |
   "\(.marks) \(.app_id[0:10]) \(.name) #\(.id)"
-' |sort -nr|sed 's/_prev-[0-9]*//'|sed 's/— Mozilla Firefox //'         
+' |sort -nr|sed 's/_dfzf-[0-9]*//'|sed 's/— Mozilla Firefox //'         
