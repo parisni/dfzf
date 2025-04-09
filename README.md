@@ -1,8 +1,27 @@
 # Installation
 
+
+## Prerequisite
+
+- sway or i3
+- jq version >= 1.7
+- fzf version 
+- rust to compile the daemon
+- kitty version >= 0.41.1 OR alacritty OR foot
+
 [Download/copy](https://github.com/parisni/dfzf/releases) the binaries into `/usr/local/bin/` or anywhere in your PATH.
 
 Also be sure `fzf` is accessible from sway/i3, by moving it to `/usr/local/bin/` (instead of default `~/.cargo/bin` place)
+
+
+Build/install dfzf-daemon:
+```shell
+cd dfzf-daemon
+curl https://sh.rustup.rs -sSf | sh
+rustup update nightly
+cargo +nightly build --release
+sudo cp target/release/dfzf-daemon /usr/local/bin/
+```
 
 Add to your config and reload sway/i3:
 ```bash
@@ -10,6 +29,7 @@ exec --no-startup-id dfzf-daemon
 exec wl-paste --watch cliphist -max-items 5000 store
 exec mako
 
+set $term = "kitty -1 --app-id=terminal"
 set $dfzf_term "kitty -1 --app-id=dfzf-popup -e"
 #set $dfzf_term "alacritty --class=dfzf-popup -e"
 #set $dfzf_term "foot --app-id=dfzf-popup"

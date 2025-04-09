@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 dfzf-exec -t get_tree | jq -r '
-    .. | objects | select(.marks[0] != null) | select(.app_id // .window_properties.class
+.. | objects | select(.marks[0] != null) | select((.app_id // .window_properties.class)
  != "dfzf-popup") |
     {
         "id": .id,
