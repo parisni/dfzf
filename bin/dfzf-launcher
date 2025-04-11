@@ -17,7 +17,7 @@ FZF_COMMAND="${FZF_COMMAND:=fzf}"
 TERMINAL_COMMAND="${TERMINAL_COMMAND:="$TERMINAL -e"}"
 GLYPH_COMMAND="${GLYPH_COMMAND-  }"
 GLYPH_DESKTOP="${GLYPH_DESKTOP-  }"
-CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/sway-launcher-desktop"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/dfzf-launcher"
 PROVIDERS_FILE="${PROVIDERS_FILE:=providers.conf}"
 if [[ "${PROVIDERS_FILE#/}" == "${PROVIDERS_FILE}" ]]; then
   # $PROVIDERS_FILE is a relative path, prepend $CONFIG_DIR
@@ -52,7 +52,6 @@ if [ -f "${PROVIDERS_FILE}" ]; then
   fi
 else
   PROVIDERS['desktop']="${0} list-entries${DEL}${0} describe-desktop \"{1}\"${DEL}${0} run-desktop '{1}' {2}${DEL}test -f '{1}' || exit 43"
-  PROVIDERS['command']="${0} list-commands${DEL}${0} describe-command \"{1}\"${DEL}${TERMINAL_COMMAND} {1}${DEL}command -v '{1}' || exit 43"
   if [[ ! -v HIST_FILE ]]; then
     HIST_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/${0##*/}-history.txt"
   fi
