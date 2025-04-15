@@ -7,7 +7,8 @@ dfzf-exec -t get_tree | jq -r '
         "name": .name,
         "marks": (.marks[0] // "_dfzf-0"),
         "app_id": ((.app_id // .window_properties.class)[0:8] | gsub("^"; "[") | gsub("$"; "]     ")),
+        "urgent": (if .urgent == true then "[urgent]" else "" end),
         "glyph": (if ((.app_id // .window_properties.class) | test("terminal"; "i")) then " " else " " end)
     } |
-"\(.marks) \(.glyph) \(.app_id[0:10]) \(.name) #\(.id)"
+"\(.marks) \(.glyph) \(.app_id[0:10]) \(.name) \(.urgent) #\(.id)"
 ' |sort -nr|sed 's/_dfzf-[0-9]*//'|sed 's/— Mozilla Firefox //'         
