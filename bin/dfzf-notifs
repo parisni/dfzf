@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 dfzf-kill-bro
 dfzf-notifs-load | fzf --no-sort --exact --prompt "Notifs > " --color='gutter:-1' --cycle --info="inline-right" --header='' --margin='1,2' \
-	--preview "echo {} | sed -z 's/.*@//'" \
+  --preview 'makoctl list | jq -r --arg id "$(echo {} | sed -z "s/:.*//")" ".data[][] | select(.id.data == (\$id | tonumber)) | .body.data" ' \
 	--preview-window=up:30%:wrap \
 	--bind "enter:execute(echo {}| sed -z 's/:.*//' | xargs makoctl invoke -n && (echo {}|grep -q 'Gmail ' || dfzf-exec '[title=\"Slack\"]' focus))+accept" \
 	--bind "ctrl-k:execute(echo {}| sed -z 's/:.*//' |xargs makoctl dismiss -n)+reload(dfzf-notifs-load)"
