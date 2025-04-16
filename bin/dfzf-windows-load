@@ -9,10 +9,11 @@ dfzf-exec -t get_tree | jq -r '
         "app_id": ((.app_id // .window_properties.class)[0:8] | gsub("^"; "[") | gsub("$"; "]     ")),
         "urgent": .urgent,
         "glyph": (
-                  if      ((.app_id // .window_properties.class) | test("terminal"; "i"))       then " "  # Terminal
+		  if   ((.name) | test("nvim|neovide"; "i"))   then " "  # Neovim
+                  elif      ((.app_id // .window_properties.class) | test("terminal"; "i"))       then " "  # Terminal
                   elif    ((.app_id // .window_properties.class) | test("firefox"; "i"))        then " "  # Firefox
                   elif    ((.app_id // .window_properties.class) | test("jetbrains"; "i"))      then " "  # JetBrains IDEA
-                  elif    ((.app_id // .window_properties.class) | test("nvim|neovide"; "i"))   then " "  # Neovim
+		  elif    ((.app_id // .window_properties.class) | test("gimp"; "i"))   then " "  # Gimp
                   elif    ((.app_id // .window_properties.class) | test("thunar|nautilus"; "i")) then " "  # File manager
                   else " "  # Default (rocket)
                   end
