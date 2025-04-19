@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+himalaya -o json | jq -r '.[] | "\(.date | split(" ")[0])T\(.date | split(" ")[1] | split(":")[0]) \(.subject) \(.from.addr) #\(.id)"'
