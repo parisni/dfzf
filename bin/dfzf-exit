@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+dfzf-kill-bro
+
+# Define options
+options=(
+  "l: Lock (swaylock)"
+  "e: Restart GDM"
+  "s: Lock and Suspend"
+  "r: Reboot"
+  "S: Shutdown"
+  "h: Hibernate"
+)
+
+# Use fzf to select an option
+choice=$(printf '%s\n' "${options[@]}" | fzf --query "^" +i --no-sort --prompt "Exit > " --color='gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2')
+
+# Extract the key (first part before ":")
+key=$(echo "$choice" | cut -d':' -f1)
+echo $key
+
+ Execute based on the key
+case "$key" in
+  l)
+    swaylock -e -F -f -k -c 000000
+    ;;
+  e)
+    sudo /usr/bin/systemctl restart gdm
+    ;;
+  s)
+    swaylock -e -F -f -k -c 000000 && systemctl suspend
+    ;;
+  r)
+    sudo reboot
+    ;;
+  s-r)
+    shutdown now
+    ;;
+  h)
+    sudo /bin/systemctl hibernate
+    ;;
+  *)
+    echo "No valid selection made."
+    ;;
+esac
