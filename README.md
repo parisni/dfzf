@@ -5,6 +5,7 @@
 
 - sway or i3
 - jq version >= 1.7
+- gawk (for the launcher)
 - fzf version 
 - rust to compile the daemon
 - kitty version >= 0.41.1 OR alacritty OR foot

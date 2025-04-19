@@ -9,7 +9,7 @@ dfzf-exec -t get_tree | jq -r '
         "app_id": ((.app_id // .window_properties.class)[0:8] | gsub("^"; "[") | gsub("$"; "]     ")),
         "urgent": .urgent,
         "glyph": (
-		  if   ((.name) | test("nvim|neovide"; "i"))   then " "  # Neovim
+		  if   ((.name) | test("vim\\b"; "i"))   then " "  # Neovim
                   elif      ((.app_id // .window_properties.class) | test("terminal"; "i"))       then " "  # Terminal
                   elif    ((.app_id // .window_properties.class) | test("firefox"; "i"))        then " "  # Firefox
                   elif    ((.app_id // .window_properties.class) | test("jetbrains"; "i"))      then " "  # JetBrains IDEA
