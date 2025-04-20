@@ -1,44 +1,28 @@
 #!/usr/bin/env bash
 dfzf-kill-bro
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
-# Define options
-options=(
-  "l: Lock (swaylock)"
-  "e: Restart GDM"
-  "s: Lock and Suspend"
-  "r: Reboot"
-  "S: Shutdown"
-  "h: Hibernate"
-)
+# Create the list
+choices=$(printf '%s\n' "${exit_options[@]}")
 
-# Use fzf to select an option
-choice=$(printf '%s\n' "${options[@]}" | fzf --query "^" +i --no-sort --prompt "Exit > " --color='gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2')
+# Prepare keybindings
+binds=()
+for opt in "${exit_options[@]}"; do
+    key=$(echo "$opt" | cut -d':' -f1)
+    cmd_var="exit_cmd_$key"
+    # Bind each key to "execute the command and abort fzf"
+    if [[ -n "${!cmd_var}" ]]; then
+        binds+=("--bind" "$key:execute(echo '${!cmd_var}' | bash)+abort")
+    fi
+done
 
-# Extract the key (first part before ":")
-key=$(echo "$choice" | cut -d':' -f1)
-echo $key
+# Run fzf with dynamic binds
+echo "$choices" | fzf \
+    --prompt "Exit > " \
+    --color='gutter:-1' \
+    --header='' \
+    --info="inline-right" \
+    --cycle \
+    --margin='1,2' \
+    "${binds[@]}"
 
- Execute based on the key
-case "$key" in
-  l)
-    swaylock -e -F -f -k -c 000000
-    ;;
-  e)
-    sudo /usr/bin/systemctl restart gdm
-    ;;
-  s)
-    swaylock -e -F -f -k -c 000000 && systemctl suspend
-    ;;
-  r)
-    sudo reboot
-    ;;
-  s-r)
-    shutdown now
-    ;;
-  h)
-    sudo /bin/systemctl hibernate
-    ;;
-  *)
-    echo "No valid selection made."
-    ;;
-esac
