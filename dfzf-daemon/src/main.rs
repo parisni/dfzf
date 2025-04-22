@@ -1,5 +1,4 @@
 #![feature(let_chains)]
-use std::process;
 use std::thread;
 use std::time::Duration;
 
@@ -14,10 +13,6 @@ use chrono::Local;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Change the name of the mark to set.
-    #[arg(short, long, default_value = "_back")]
-    mark: String,
-
     /// Print extra debugging information.
     #[arg(short, long)]
     debug: bool,
@@ -25,29 +20,6 @@ struct Args {
 
 fn main() -> Result<()> {
     let args = Args::parse();
-    let mark = args.mark.clone();
-
-    ctrlc::set_handler(move || {
-        // Clear up mark when exiting
-        let unmark_result: Result<()> = (|| {
-            let mut connection =
-                I3Connection::connect().with_context(|| "Could not connect to i3 (IPC)")?;
-
-            connection
-                .run_command(&format!("unmark {mark}"))
-                .with_context(|| format!("Could not unset i3 mark {mark}"))?;
-
-            Ok(())
-        })();
-
-        if let Err(err) = unmark_result {
-            eprintln!("Error while exiting: {:?}", err);
-            process::exit(1);
-        }
-
-        process::exit(0);
-    })
-    .with_context(|| "Could not set exit handler")?;
 
     loop {
         if let Err(err) = run(&args) {
@@ -61,7 +33,6 @@ fn main() -> Result<()> {
 }
 
 fn run(args: &Args) -> Result<()> {
-    let mark = args.mark.clone();
     let debug = args.debug;
 
     if debug {
@@ -107,7 +78,7 @@ fn run(args: &Args) -> Result<()> {
                     println!("Saving window ID {0}. Current window ID is {1}",last_focused_node.id, focused_node.id)
                 }
 
-                // Save the new last focused ID as mark
+                // Save the new last focused ID as kark
                 for mark in focused_node
                     .marks
                     .iter()
@@ -122,8 +93,9 @@ fn run(args: &Args) -> Result<()> {
                         .with_context(|| format!("Could not unset i3 mark {}", mark))?;
                 }
                 let timestamp = Local::now().timestamp_millis();
+                let mark = format!("_dfzf-{timestamp}");
                 connection
-                    .run_command(&format!("[con_id={}] mark --add _dfzf-{timestamp}", focused_node.id))
+                    .run_command(&format!("[con_id={}] mark --add {}", focused_node.id, mark))
                     .with_context(|| format!("Could not set i3 mark {} to {}", mark, last_focused_node.id))?;
             }
 
