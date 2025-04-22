@@ -85,7 +85,7 @@ fn run(args: &Args) -> Result<()> {
     let tree = connection
         .get_tree()
         .with_context(|| "Could not get i3's tree")?;
-    let mut last_focused_id = find_focused_id(tree);
+    let mut last_focused_node = find_focused_id(tree);
 
     // Start listening for i3 events
     for event in listener.listen() {
@@ -94,30 +94,40 @@ fn run(args: &Args) -> Result<()> {
         let tree = connection
             .get_tree()
             .with_context(|| "Could not get i3's tree")?;
-        let focused_id = find_focused_id(tree);
+        let focused_node = find_focused_id(tree);
 
-        if let Some(focused_id) = focused_id {
-            if let Some(ref last_focused_id) = last_focused_id && focused_id.id == last_focused_id.id {
+        if let Some(focused_node) = focused_node {
+            if let Some(ref last_focused_node) = last_focused_node && focused_node.id == last_focused_node.id {
                 // Ignore if focused window ID hasn't changed
                 continue;
             }
 
-            if let Some(last_focused_id) = last_focused_id {
+            if let Some(last_focused_node) = last_focused_node {
                 if debug {
-                    println!("Saving window ID {0} to {mark} mark. Current window ID is {1}",last_focused_id.id, focused_id.id)
+                    println!("Saving window ID {0}. Current window ID is {1}",last_focused_node.id, focused_node.id)
                 }
 
                 // Save the new last focused ID as mark
-                connection
-                    .run_command(&format!("[con_id={}] unmark", focused_id.id))
-                    .with_context(|| format!("Could not unset i3 mark {mark}"))?;
+                for mark in focused_node
+                    .marks
+                    .iter()
+                    .filter(|m| m.starts_with("_dfzf"))
+                {
+
+                    if debug {
+                        println!("Dropping mark {0} on window {1} among {2}", mark, focused_node.id, focused_node.marks.join(", "))
+                    }
+                    connection
+                        .run_command(&format!("unmark {}", mark))
+                        .with_context(|| format!("Could not unset i3 mark {}", mark))?;
+                }
                 let timestamp = Local::now().timestamp_millis();
                 connection
-                    .run_command(&format!("[con_id={}] mark --add _dfzf-{timestamp}", focused_id.id))
-                    .with_context(|| format!("Could not set i3 mark {} to {}", mark, last_focused_id.id))?;
+                    .run_command(&format!("[con_id={}] mark --add _dfzf-{timestamp}", focused_node.id))
+                    .with_context(|| format!("Could not set i3 mark {} to {}", mark, last_focused_node.id))?;
             }
 
-            last_focused_id = Some(focused_id);
+            last_focused_node = Some(focused_node);
         }
     }
 
