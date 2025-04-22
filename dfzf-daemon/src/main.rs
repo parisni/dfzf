@@ -97,24 +97,24 @@ fn run(args: &Args) -> Result<()> {
         let focused_id = find_focused_id(tree);
 
         if let Some(focused_id) = focused_id {
-            if let Some(last_focused_id) = last_focused_id && focused_id == last_focused_id {
+            if let Some(ref last_focused_id) = last_focused_id && focused_id.id == last_focused_id.id {
                 // Ignore if focused window ID hasn't changed
                 continue;
             }
 
             if let Some(last_focused_id) = last_focused_id {
                 if debug {
-                    println!("Saving window ID {last_focused_id} to {mark} mark. Current window ID is {focused_id}")
+                    println!("Saving window ID {0} to {mark} mark. Current window ID is {1}",last_focused_id.id, focused_id.id)
                 }
 
                 // Save the new last focused ID as mark
                 connection
-                    .run_command(&format!("[con_id={focused_id}] unmark"))
+                    .run_command(&format!("[con_id={}] unmark", focused_id.id))
                     .with_context(|| format!("Could not unset i3 mark {mark}"))?;
                 let timestamp = Local::now().timestamp_millis();
                 connection
-                    .run_command(&format!("[con_id={focused_id}] mark --add _dfzf-{timestamp}"))
-                    .with_context(|| "Could not set i3 mark {name} to {last_focused_id}")?;
+                    .run_command(&format!("[con_id={}] mark --add _dfzf-{timestamp}", focused_id.id))
+                    .with_context(|| format!("Could not set i3 mark {} to {}", mark, last_focused_id.id))?;
             }
 
             last_focused_id = Some(focused_id);
@@ -126,7 +126,7 @@ fn run(args: &Args) -> Result<()> {
 }
 
 /// Traverses i3 tree to find which node (including floating) is focused.
-fn find_focused_id(node: Node) -> Option<i64> {
+fn find_focused_id(node: Node) -> Option<Node> {
     let mut node = node;
 
     while !node.focused {
@@ -146,5 +146,5 @@ fn find_focused_id(node: Node) -> Option<i64> {
         };
     }
 
-    Some(node.id)
+    Some(node)
 }
