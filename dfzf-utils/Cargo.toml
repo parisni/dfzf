@@ -1,5 +1,5 @@
 [package]
-name = "dfzf-daemon"
+name = "dfzf-utils"
 version = "0.3.2"
 edition = "2021"
 description = "An i3/Sway utility to keep track of windows visit history."
@@ -18,3 +18,9 @@ chrono = "0.4"
 
 [profile.release]
 strip = true
+
+[[bin]]
+name = "dfzf-tag"
+
+[[bin]]
+name = "dfzf-daemon"

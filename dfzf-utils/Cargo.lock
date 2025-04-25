@@ -195,7 +195,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dfzf-daemon"
+name = "dfzf-utils"
 version = "0.3.2"
 dependencies = [
  "anyhow",
