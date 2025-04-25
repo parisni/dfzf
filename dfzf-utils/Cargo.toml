@@ -20,7 +20,7 @@ chrono = "0.4"
 strip = true
 
 [[bin]]
-name = "dfzf-tag"
+name = "dfzf-mark"
 
 [[bin]]
 name = "dfzf-daemon"
