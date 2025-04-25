@@ -82,7 +82,7 @@ fn run(args: &Args) -> Result<()> {
                 for mark in focused_node
                     .marks
                     .iter()
-                    .filter(|m| m.starts_with("_dfzf"))
+                    .filter(|m| m.starts_with("_dfzf-sort"))
                 {
 
                     if debug {
@@ -93,7 +93,7 @@ fn run(args: &Args) -> Result<()> {
                         .with_context(|| format!("Could not unset i3 mark {}", mark))?;
                 }
                 let timestamp = Local::now().timestamp_millis();
-                let mark = format!("_dfzf-{timestamp}");
+                let mark = format!("_dfzf-sort-{timestamp}");
                 connection
                     .run_command(&format!("[con_id={}] mark --add {}", focused_node.id, mark))
                     .with_context(|| format!("Could not set i3 mark {} to {}", mark, last_focused_node.id))?;

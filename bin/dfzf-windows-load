@@ -5,19 +5,20 @@ dfzf-exec -t get_tree | jq -r '
     {
         "id": .id,
         "name": .name,
-        "marks": (.marks[0] // "_dfzf-0"),
+        "sort": ([.marks[] | select(startswith("_dfzf-sort"))] | first // "_dfzf-sort-0"),
         "app_id": ((.app_id // .window_properties.class)[0:8] | gsub("^"; "[") | gsub("$"; "]     ")),
         "urgent": .urgent,
+        "important": ([.marks[] | select(startswith("_dfzf-important"))] |first| length > 0),
         "glyph": (
-		  if   ((.name) | test("vim\\b"; "i"))   then " "  # Neovim
-                  elif      ((.app_id // .window_properties.class) | test("terminal"; "i"))       then " "  # Terminal
-                  elif    ((.app_id // .window_properties.class) | test("firefox"; "i"))        then " "  # Firefox
-                  elif    ((.app_id // .window_properties.class) | test("jetbrains"; "i"))      then " "  # JetBrains IDEA
-		  elif    ((.app_id // .window_properties.class) | test("gimp"; "i"))   then " "  # Gimp
-                  elif    ((.app_id // .window_properties.class) | test("thunar|nautilus"; "i")) then " "  # File manager
-                  else " "  # Default (rocket)
+		                if      ((.name) | test("vim\\b"; "i"))                                        then " "  # Neovim
+                  elif      ((.app_id // .window_properties.class) | test("terminal"; "i"))        then " "  # Terminal
+                  elif      ((.app_id // .window_properties.class) | test("firefox"; "i"))         then " "  # Firefox
+                  elif      ((.app_id // .window_properties.class) | test("jetbrains"; "i"))       then " "  # JetBrains IDEA
+		              elif      ((.app_id // .window_properties.class) | test("gimp"; "i"))            then " "  # Gimp
+                  elif      ((.app_id // .window_properties.class) | test("thunar|nautilus"; "i")) then " "  # File manager
+                  else                                                                                  " "  # Default (rocket)
                   end
                 )
     } |
-       "\(.marks) "  + (if .urgent == true then "\u001b[33m" else "" end) + "\(.glyph) \(.app_id[0:10]) \(.name) #\(.id)"  + (if .urgent == true then "\u001b[0m" else "" end)
-' |sort -nr|sed 's/_dfzf-[0-9]*//'|sed 's/— Mozilla Firefox //'         
+       "\(.sort) "  + (if .urgent == true then "\u001b[33m" else if .important == true then "\u001b[31m" else "" end end) + "\(.glyph) \(.app_id[0:10]) \(.name) #\(.id)"  + (if .urgent == true then "\u001b[0m" else if .important == true then "\u001b[0m" else "" end end)
+' |sort -nr|sed 's/_dfzf-sort-[0-9]*//'|sed 's/— Mozilla Firefox //'         

@@ -3,6 +3,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use i3ipc::I3Connection;
+use chrono::Local;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -36,6 +37,8 @@ fn run(args: &Args) -> Result<()> {
     let con_id = args.con_id.clone();
 
 
+    let timestamp = Local::now().timestamp_millis();
+    let mark_ts = format!("{mark}-{timestamp}");
     // Setup the IPC connect to i3. We'll use this to get the current i3 tree,
     // to find the currently focused window's ID.
     if debug {
@@ -46,7 +49,7 @@ fn run(args: &Args) -> Result<()> {
 
     if action == "mark" {
     connection
-        .run_command(&format!("[con_id={}] mark --add {}", con_id, mark))
+        .run_command(&format!("[con_id={}] mark --add {}", con_id, mark_ts))
         .with_context(|| format!("Could not set i3 mark {} to {}", con_id, mark))?;
     } else {
     connection
