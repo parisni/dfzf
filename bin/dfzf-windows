@@ -9,7 +9,7 @@ dfzf-windows-load| fzf --ansi --no-sort --exact --prompt "Windows > " --color='g
 	--header-lines=1 \
 	--bind="ctrl-k:execute(echo {} |sed -z 's/.*#//'| xargs -I @ dfzf-exec '[con_id=@]' kill)+reload(sleep 0.05;dfzf-windows-load)" \
 	--bind="ctrl-u:execute(echo {} |sed -z 's/.*#//'| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(sleep 0.05;dfzf-windows-load)" \
-	--bind="ctrl-i:execute(echo {} |sed -z 's/.*#//'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-important --action mark)+reload(sleep 0.05;dfzf-windows-load)" \
+	--bind="ctrl-i:execute(echo {} |sed -z 's/.*#//'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-important --append-ts)+reload(sleep 0.05;dfzf-windows-load)" \
 	--bind="ctrl-j:execute(echo {} |sed -z 's/.*#//'| xargs -I @ dfzf-exec '[con_id=@]' focus && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus)" \
 	--bind="enter:execute(echo {}  |sed -z 's/.*#//'| xargs -I @ dfzf-exec '[con_id=@]' focus)+accept" \
 	--cycle --info="inline-right" --header='' --margin='1,2'
