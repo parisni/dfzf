@@ -2,7 +2,7 @@
 dfzf-kill-bro
 dfzf-mail-load | fzf --no-sort --exact --prompt "Mail > " --color='gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' \
 	--preview-window="up:wrap" \
-  --preview='echo {}| sed -z "s/.*#//"| xargs himalaya message read' \
-  --bind='ctrl-k:execute(echo {}| sed -z "s/.*#//"| xargs himalaya message delete)+reload(dfzf-mail-load)' \
-  --bind='ctrl-j:execute(echo {}| sed -z "s/.*#//"| xargs himalaya message export -O)+accept'
+  --preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message read" \
+  --bind="ctrl-k:execute(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message delete)+reload(dfzf-mail-load)" \
+  --bind="ctrl-j:execute(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message export -O)+accept"
 

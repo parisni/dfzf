@@ -72,6 +72,14 @@ fn run(args: &Args) -> Result<()> {
                 // Ignore if focused window ID hasn't changed
                 continue;
             }
+            if focused_node.marks.iter().any(|mark| mark == "_dfzf-preview") {
+                // Ignore the refresh of the sort mark
+                if debug {
+                    println!("Ignoring the refresh of sort mark on {0}", focused_node.id)
+                }
+                last_focused_node = Some(focused_node);
+                continue;
+            }
 
             if let Some(last_focused_node) = last_focused_node {
                 if debug {
