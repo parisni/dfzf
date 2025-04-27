@@ -108,25 +108,14 @@ fn run(args: &Args) -> Result<()> {
 }
 
 /// Traverses i3 tree to find which node (including floating) is focused.
-fn find_focused_id(node: Node) -> Option<Node> {
-    let mut node = node;
-
+fn find_focused_id(mut node: Node) -> Option<Node> {
     while !node.focused {
-        let focused_id = match node.focus.into_iter().next() {
-            Some(focused_id) => focused_id,
-            None => return None,
-        };
-
-        node = match node
+        let focused_id = node.focus.first().cloned()?;
+        node = node
             .nodes
             .into_iter()
             .chain(node.floating_nodes)
-            .find(|n| n.id == focused_id)
-        {
-            Some(focused_id) => focused_id,
-            None => return None,
-        };
+            .find(|n| n.id == focused_id)?;
     }
-
     Some(node)
 }
