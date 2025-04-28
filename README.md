@@ -38,6 +38,10 @@ bindsym $mod+Tab    exec "$dfzf_term" dfzf-windows
 bindsym $mod+Space  exec "$dfzf_term" dfzf-launcher
 bindsym $mod+h      exec "$dfzf_term" dfzf-notifs
 bindsym $mod+i      exec "$dfzf_term" dfzf-clipboard
+bindsym $mod+m      exec "$dfzf_term" dfzf-mail
+bindsym $mod+p      exec "$dfzf_term" dfzf-password
+bindsym $mod+F1      exec "$dfzf_term" dfzf-exit
+
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 ```
 
