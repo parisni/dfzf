@@ -4,11 +4,16 @@
 ## Prerequisite
 
 - sway or i3
+- fzf 
 - jq version >= 1.7
-- gawk (for the launcher)
-- fzf version 
-- rust to compile the daemon
+- gawk for dfzf-launcher
 - kitty version >= 0.41.1 OR alacritty OR foot
+- fd-find for dfzf-password
+- himalaya for dfzf-mail
+- batcat for dfzf-clipboard
+- mako for dfzf-notif
+- wl-clipboard, cliphist for dfzf-clipboard
+- rust to compile the dfzf-daemon and dfzf-mark
 
 [Download/copy](https://github.com/parisni/dfzf/releases) the binaries into `/usr/local/bin/` or anywhere in your PATH.
 
