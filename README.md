@@ -70,16 +70,58 @@ tweak the `~/.oh-my-zsh/lib/termsupport.zsh`:
 ```
 
 
+
 # Features
 
 ## Windows
 
 - cycle previous window
 - windows ordered by last access
-- toggle window with enter
+- focus window with enter
+- preview windows with ctrl-j
+- focus current windows with excape (works after previews)
 - kill window with ctrl-k
-- preview window with ctrl-j
 - terminal scrollback preview (kitty only)
+- toggle urgent with ctrl-u (yellow color)
+- toggle important with ctrl-i (red color)
+
+### Hiding the tabs
+
+This will hide the tabs (since you will only rely on `dfzf-window` to navigate tabs)
+
+sway
+```
+font pango:monospace 0.001
+default_border none
+default_floating_border none
+titlebar_padding 1
+titlebar_border_thickness 0
+```
+
+i3
+```
+font pango:monospace 0
+default_border none
+default_floating_border none
+
+# only if you rely on i3status
+bar {
+	font pango:monospace 10 # needed 
+	status_command i3status
+}
+```
+
+### Browser tabs
+
+#### Firefox
+Install the below extensions:
+- tabs are windows: no tabs anymore in FF, just regular windows
+- hostname in windows title: adds the url in the title, useful to search
+
+#### Chromium
+Install the below extensions:
+- TODO
+- TODO
 
 
 ## Clipboard
