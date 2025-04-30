@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 dfzf-exec -t get_tree --raw | jq -r '
 .. | objects | select(.type == "con")| select(.window_type == null or .window_type == "normal") | select(.name != null) | select((.app_id // .window_properties.class)
  != null) | select((.app_id // .window_properties.class)
@@ -22,4 +23,4 @@ dfzf-exec -t get_tree --raw | jq -r '
                 )
     } |
        "\(.sort) "  + (if .urgent == true then "\u001b[33m" else if .important == true then "\u001b[31m" else "" end end) + "\(.glyph) \(.app_id[0:10]) \(.name) #\(.id)"  + (if .urgent == true then "\u001b[0m" else if .important == true then "\u001b[0m" else "" end end)
-' |sort -nr|sed 's/_dfzf-sort-[0-9]*//'|sed 's/— Mozilla Firefox //'         
+' |sort -nr|sed 's/_dfzf-sort-[0-9]*//'|sed -E "s/${windows_title_rm_pattern:-— Mozilla Firefox }//"
