@@ -20,14 +20,18 @@
 Also be sure `fzf` is accessible from sway/i3, by moving it to `/usr/local/bin/` (instead of default `~/.cargo/bin` place)
 
 
-Build/install dfzf-daemon:
+<details>
+<summary>Build/install dfzf-daemon</summary>
 ```shell
-cd dfzf-daemon
+cd dfzf-utils
 curl https://sh.rustup.rs -sSf | sh
 rustup update nightly
 cargo +nightly build --release
-sudo cp target/release/dfzf-daemon /usr/local/bin/
+sudo cp target/release/dfzf-{daemon,mark} /usr/local/bin/
 ```
+</details>
+
+# Configuration
 
 <details>
 
