@@ -97,8 +97,11 @@ bar {
 </details>
 
 
-Kitty config needed:
-```
+<details>
+  <summary>Kitty configuration</summary>
+
+```bash
+#~/.config/kitty/kitty.conf
 confirm_os_window_close 0
 allow_remote_control yes
 listen_on unix:/tmp/kitty
@@ -108,18 +111,21 @@ Windows terminal preview in kitty:
 
 the terminal preview compares the i3/sway window title with the kitty title. In some case there is duplicates, and we cannot determinate the right terminal. So the current hack is to add 2 random characters to the title so that they get unique. For that, you will have to disable kitty title handling and tweak the shell title. Here for zsh:
 
-```
+```bash
+#~/.config/kitty/kitty.conf
 shell_integration no-title
 ```
 
-tweak the `~/.oh-my-zsh/lib/termsupport.zsh`:
-```
+tweak zsh:
+```bash
+# ~/.oh-my-zsh/lib/termsupport.zsh
   case "$TERM" in
     cygwin|xterm*|putty*|rxvt*|konsole*|ansi|mlterm*|alacritty*|st*|foot*|contour*)
       print -Pn "\e]2;${2:q} /$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 2)\a" # set window name
       print -Pn "\e]1;${1:q} /$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 2)\a" # set tab name
 ```
 
+</details>
 
 
 # Features
