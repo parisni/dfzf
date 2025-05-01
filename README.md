@@ -29,17 +29,21 @@ cargo +nightly build --release
 sudo cp target/release/dfzf-daemon /usr/local/bin/
 ```
 
-Add to your config and reload sway/i3:
+<details>
+
+<summary>Sway configuration</summary>
+
 ```bash
 exec --no-startup-id dfzf-daemon
 exec wl-paste --watch cliphist -max-items 5000 store
 exec mako
 
-set $term kitty -1 --app-id terminal
-#set $term foot --app-id terminal
-#set $dfzf_term foot --app-id=dfzf-popup
-#set $dfzf_term alacritty --class=dfzf-popup -e
-set $dfzf_term kitty -1 --app-id=dfzf-popup -e
+set $term kitty -1
+#set $term foot
+#set $term alacritty
+
+#set $dfzf_term foot --app-id=dfzf-popup -e
+set $dfzf_term $term --class=dfzf-popup -e
 bindsym $mod+Tab    exec $dfzf_term dfzf-windows
 bindsym $mod+space  exec $dfzf_term dfzf-launcher
 bindsym $mod+h      exec $dfzf_term dfzf-notifs
@@ -47,9 +51,51 @@ bindsym $mod+i      exec $dfzf_term dfzf-clipboard
 bindsym $mod+m      exec $dfzf_term dfzf-mail
 bindsym $mod+p      exec $dfzf_term dfzf-password
 bindsym $mod+F1     exec $dfzf_term dfzf-exit
-# for i3, replace app_id with class
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
+
+# optional: hide the tabs
+font pango:monospace 0.001
+default_border none
+default_floating_border none
+titlebar_padding 1
+titlebar_border_thickness 0
 ```
+</details>
+<details>
+
+<summary>I3 configuration</summary>
+
+```bash
+exec --no-startup-id dfzf-daemon
+
+set $term kitty -1
+#set $term foot
+#set $term alacritty
+
+#set $dfzf_term foot --app-id=dfzf-popup -e
+set $dfzf_term $term --class=dfzf-popup -e
+bindsym $mod+Tab    exec $dfzf_term dfzf-windows
+bindsym $mod+space  exec $dfzf_term dfzf-launcher
+bindsym $mod+h      exec $dfzf_term dfzf-notifs
+bindsym $mod+i      exec $dfzf_term dfzf-clipboard
+bindsym $mod+m      exec $dfzf_term dfzf-mail
+bindsym $mod+p      exec $dfzf_term dfzf-password
+bindsym $mod+F1     exec $dfzf_term dfzf-exit
+for_window [class="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
+
+# optional: hide the tabs
+font pango:monospace 0
+default_border none
+default_floating_border none
+
+# only if you rely on i3status
+bar {
+	font pango:monospace 10 # needed 
+	status_command i3status
+}
+```
+</details>
+
 
 Kitty config needed:
 ```
@@ -90,31 +136,6 @@ tweak the `~/.oh-my-zsh/lib/termsupport.zsh`:
 - toggle urgent with ctrl-u (yellow color)
 - toggle important with ctrl-i (red color)
 
-### Hiding the tabs
-
-This will hide the tabs (since you will only rely on `dfzf-window` to navigate tabs)
-
-sway
-```
-font pango:monospace 0.001
-default_border none
-default_floating_border none
-titlebar_padding 1
-titlebar_border_thickness 0
-```
-
-i3
-```
-font pango:monospace 0
-default_border none
-default_floating_border none
-
-# only if you rely on i3status
-bar {
-	font pango:monospace 10 # needed 
-	status_command i3status
-}
-```
 
 ### Browser tabs
 
