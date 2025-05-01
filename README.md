@@ -132,6 +132,49 @@ tweak zsh:
 </details>
 
 
+<details>
+  <summary>user configuration</summary>
+
+  you can override default configurations:
+  ```bash
+# ~/.config/dfzf/dfzf.conf
+
+exit_options=(
+"l: Lock (swaylock)"
+"e: Restart GDM"
+"s: Lock and Suspend"
+"r: Reboot"
+"S: Shutdown"
+"h: Hibernate"
+)
+
+exit_cmd_l='swaylock -e -F -f -k -c 000000'
+exit_cmd_e='sudo /usr/bin/systemctl restart gdm'
+exit_cmd_s='swaylock -e -F -f -k -c 000000 && systemctl suspend'
+exit_cmd_r='sudo reboot'
+exit_cmd_S='shutdown now'
+exit_cmd_h='sudo /bin/systemctl hibernate'
+
+
+#remove pattern from the window's title
+windows_title_rm_pattern=' —[^—]*?— Mozilla Firefox'
+windows_app_id_map_json='{"evolution": "mail", "kitty": "terminal", "jetbrains-idea-ce": "jetbrains"}'
+windows_glyph_rules_json='[
+{ "field": "name", "regex": "vim\\b", "glyph": " " },
+{ "field": "app_id", "regex": "terminal", "glyph": " " },
+{ "field": "app_id", "regex": "firefox", "glyph": " " },
+{ "field": "app_id", "regex": "jetbrains", "glyph": " " },
+{ "field": "app_id", "regex": "gimp", "glyph": " " },
+{ "field": "app_id", "regex": "thunar|nautilus", "glyph": " " },
+{ "field": "app_id", "regex": "thunderbird|evolution|geary|mailspring|k9mail|mail", "glyph": " " },
+{ "glyph": " " }
+]'
+
+```
+
+</details>
+
+
 # Features
 
 ## Windows
@@ -165,6 +208,12 @@ Install the below extensions:
 - image preview
 - content preview with bat
 
+## Mail
+
+## Exit
+
+## Password
+
 ## Notifications
 
 ## Launcher
@@ -172,11 +221,11 @@ Install the below extensions:
 # Inspiration
 
 - `dfzf` is the combination of `d`menu and `fzf` 
-- [dfzf-daemon shares 95% of its DNA with i3-back](https://github.com/Cretezy/i3-back)
-- [dfzf-launcher shares 99% of its DNA with sway-launcher-desktop](https://github.com/Biont/sway-launcher-desktop/tree/master)
+- [dfzf-daemon comes from i3-back](https://github.com/Cretezy/i3-back)
+- [dfzf-launcher comes from sway-launcher-desktop](https://github.com/Biont/sway-launcher-desktop/tree/master)
 - [wofi-scripts has inspired dfzf-windows](https://github.com/tobiaspc/wofi-scripts)
 
 # Related work
 
-- [i3-tools: switch to previous window](https://github.com/dinAlt/i3-tools)
 - [swayr: a window-switcher & more for sway](https://sr.ht/~tsdh/swayr/)
+- [i3-tools: switch to previous window](https://github.com/dinAlt/i3-tools)
