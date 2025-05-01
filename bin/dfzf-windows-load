@@ -48,5 +48,6 @@ dfzf-exec -t get_tree --raw | jq -r \
       "\(.glyph) [\(.app_id)]\t\(.name) #\(.id)" +
       (if .urgent or .important then "\u001b[0m" else "" end)
   ' | sort -nr \
-    | sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//'
+    | sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' \
+    | awk 'NR == 1 {print "\033[38;2;70;130;180m" $0 "\033[0m"; next} {print}'
 
