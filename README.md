@@ -69,9 +69,9 @@ set $term kitty -1
 #set $term alacritty
 
 #set $dfzf_term foot --app-id=dfzf-popup -e
-set $dfzf_term $term --class=dfzf-popup -e
+set $dfzf_term kitty -1 --class=dfzf-popup -e
 bindsym $mod+Tab    exec $dfzf_term dfzf-windows
-bindsym $mod+space  exec $dfzf_term dfzf-launcher
+bindsym $mod+o      exec $dfzf_term dfzf-launcher
 bindsym $mod+h      exec $dfzf_term dfzf-notifs
 bindsym $mod+i      exec $dfzf_term dfzf-clipboard
 bindsym $mod+m      exec $dfzf_term dfzf-mail
@@ -99,9 +99,9 @@ set $term kitty -1
 #set $term alacritty
 
 #set $dfzf_term foot --app-id=dfzf-popup -e
-set $dfzf_term $term --class=dfzf-popup -e
+set $dfzf_term kitty -1 --class=dfzf-popup -e
 bindsym $mod+Tab    exec $dfzf_term dfzf-windows
-bindsym $mod+space  exec $dfzf_term dfzf-launcher
+bindsym $mod+o      exec $dfzf_term dfzf-launcher
 bindsym $mod+h      exec $dfzf_term dfzf-notifs
 bindsym $mod+i      exec $dfzf_term dfzf-clipboard
 bindsym $mod+m      exec $dfzf_term dfzf-mail
