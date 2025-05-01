@@ -6,7 +6,8 @@ if [ -n "$KITTY_WINDOW_ID" ]; then
 fi
 
 dfzf-windows-load| fzf --ansi --no-sort --exact --prompt "Windows > " --color='gutter:-1' \
-	--header-lines=1 \
+  --sync \
+  --bind "start:up" \
 	--bind="ctrl-k:execute(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' kill)+reload(sleep 0.05;dfzf-windows-load)" \
 	--bind="ctrl-u:execute(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(sleep 0.05;dfzf-windows-load)" \
 	--bind="ctrl-i:execute(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-important --append-ts)+reload(sleep 0.05;dfzf-windows-load)" \
