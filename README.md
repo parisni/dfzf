@@ -2,6 +2,8 @@
 
 
 
+
+
 <details>
   <summary>
 Prerequisite
@@ -18,18 +20,13 @@ Prerequisite
 - mako for dfzf-notif
 - wl-clipboard, cliphist for dfzf-clipboard
 - rust to compile the dfzf-daemon and dfzf-mark
--
+
 Also be sure `fzf` is accessible from sway/i3, by moving it to `/usr/local/bin/` (instead of default `~/.cargo/bin` place)
   or  setup sway/i3 path correctly
   ```
 #~/.config/sway/config
 set $PATH /usr/local/bin:/opt/bin:$PATH
-
   ```
-
-
-
-
 </details>
 
 <details>
@@ -238,6 +235,9 @@ Install the below extensions:
 - ctrl-j: preview windows
 - escape: return to current windows (works after previews)
 
+  ```bash
+    sudo apt install jq
+  ```
 </details>
 
 
@@ -252,8 +252,11 @@ Install the below extensions:
 
 - content preview with bat
 - image preview with kitten
-</details>
 
+  ```bash
+    sudo apt install jq cliphist wl-clipboard batcat
+  ```
+</details>
 
 <details>
   <summary>
@@ -263,8 +266,51 @@ Mail
   - list latest mails
   - preview text mails
   - ctrl-j: preview html mails in the browser
+  
+  ```bash
+    sudo apt install jq himalaya
+  ```
 </details>
 
+<details>
+  <summary>
+Password-store
+  </summary>
+
+  - Return: copy content
+  - ctrl-j: preview content
+ 
+  ```bash
+    sudo apt install pass wl-clipboard
+  ```
+</details>
+
+<details>
+  <summary>
+ Notifications: Sway only
+  </summary>
+
+  - list notification ordered
+  - Return: notification action
+  - ctrl-k: kill notification
+  
+  ```bash
+    sudo apt install jq mako-notifier
+  ```
+</details>
+
+<details>
+  <summary>
+ Launcher
+  </summary>
+
+  - list desktop applications
+  - fire application
+  
+  ```bash
+    sudo apt install jq gawk
+  ```
+</details>
 
 <details>
   <summary>
@@ -275,36 +321,6 @@ Mail
   - reboot
   - shutdown
   - logout
-</details>
-
-
-<details>
-  <summary>
-Password-store
-  </summary>
-
-  - Return: copy content
-  - ctrl-j: preview content
-</details>
-
-
-<details>
-  <summary>
- Notifications: Sway only
-  </summary>
-
-  - list notification ordered
-  - Return: notification action
-  - ctrl-k: kill notification
-</details>
-
-<details>
-  <summary>
- Launcher
-  </summary>
-
-  - list desktop applications
-  - fire application
 </details>
 
 # Related work
