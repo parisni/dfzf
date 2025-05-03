@@ -1,0 +1,108 @@
+name: Cross Build and Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install Rust target
+        run: |
+          rustup update
+          rustup install nightly
+          rustup target add ${{ matrix.arch == 'amd64' && 'x86_64-unknown-linux-gnu' || 'aarch64-unknown-linux-gnu' }}
+
+      - name: Add rust-src component
+        if: matrix.arch == 'arm64'
+        run: rustup component add rust-src --toolchain nightly
+
+      - name: Set up cargo config for ARM64
+        if: matrix.arch == 'arm64'
+        run: |
+          mkdir -p .cargo
+          cat <<EOF > .cargo/config.toml
+          [target.aarch64-unknown-linux-gnu]
+          linker = "aarch64-linux-gnu-gcc"
+          EOF
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          if [[ "${{ matrix.arch }}" == "amd64" ]]; then
+            sudo apt-get install -y gcc-multilib fakeroot dpkg-dev
+          else
+            sudo apt-get install -y gcc-aarch64-linux-gnu fakeroot dpkg-dev
+          fi
+
+      - name: Build binary
+        run: |
+          cd dfzf-utils
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+             TARGET="aarch64-unknown-linux-gnu"
+             RUSTFLAGS='-C target-feature=+crt-static' \
+             cargo +nightly build --release --target=$TARGET -Z build-std
+          else
+             TARGET="x86_64-unknown-linux-gnu"
+             RUSTFLAGS='-C target-feature=+crt-static' \
+             cargo +nightly build --release --target=$TARGET
+          fi
+
+      - name: Prepare package directory
+        run: |
+          mkdir -p package/${{ matrix.arch }}/usr/local/bin
+          find  dfzf-utils  -type f  -executable -name "dfzf-*" |xargs -I@ cp @ package/${{ matrix.arch }}/usr/local/bin/
+          cp bin/* package/${{ matrix.arch }}/usr/local/bin/
+
+      - name: Create .tar.gz
+        run: |
+          mkdir -p dist
+          tar -czf dist/dfzf-${{ matrix.arch }}.tar.gz -C package/${{ matrix.arch }} usr
+
+      - name: Create .deb package
+        run: |
+          mkdir -p pkgroot/DEBIAN
+          mkdir -p pkgroot/usr/local/bin
+
+          cp -r package/${{ matrix.arch }}/usr/local/bin/* pkgroot/usr/local/bin/
+          cat > pkgroot/DEBIAN/control <<EOF
+          Package: dfzf
+          Version: 1.0.0
+          Architecture: ${{ matrix.arch }}
+          Maintainer: parisni <contact@parisni.com>
+          Description: dfzf binaries
+          EOF
+          dpkg-deb --build pkgroot dist/dfzf-${{ matrix.arch }}.deb
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dfzf-${{ matrix.arch }}
+          path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**/* # include all downloaded files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
