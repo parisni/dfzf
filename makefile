@@ -1,26 +1,28 @@
-# Define variables
-BIN_DIR = bin
-TARGET_DIR = dfzf-daemon/target/release
-ARCHIVE_NAME = dfzf_binaries.tar.gz
-DEST_DIR = dfzf
+.DEFAULT_GOAL := help
+.PHONY: help release
 
-# List all executable files in the bin and target directories
-EXEC_BINS = $(shell find  $(BIN_DIR) $(TARGET_DIR) -maxdepth 1 -type f  -executable)
+help:   ## List commands
+	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
-# Build target: Create a tar.gz archive with only executable files
-.PHONY: build
-build: $(ARCHIVE_NAME)
+release-patch: ## Release patch
+	$(MAKE) do-release-patch
 
-$(ARCHIVE_NAME): $(EXEC_BINS)
-	@echo "Creating tar.gz archive with executable binaries..."
-	@mkdir -p $(DEST_DIR)
-	@cp $(EXEC_BINS) $(DEST_DIR)/
-	@tar -czf $(ARCHIVE_NAME) -C $(DEST_DIR) .
-	@rm -rf $(DEST_DIR)
-	@echo "Archive $(ARCHIVE_NAME) created."
+release-minor: ## Release minor
+	$(MAKE) do-release-minor
 
-# Clean up generated files
-.PHONY: clean
-clean:
-	rm -f $(ARCHIVE_NAME)
+release-major: ## Release major
+	$(MAKE) do-release-major
+
+changelog: ## Generates the changelog
+	git-chglog --output CHANGELOG.md
+	git add CHANGELOG.md
+	git commit --amend --no-edit
+
+do-release-%:
+	@echo "Creating $* release..."
+	git checkout main
+	git fetch --force --tags
+	bump2version --allow-dirty $*
+	$(MAKE) changelog
+	git push origin main --tags
 

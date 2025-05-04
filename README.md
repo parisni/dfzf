@@ -24,7 +24,7 @@ No more mental gymnastics. Just type, fuzzy-match, and recent windows come first
 | `dfzf-clipboard` | Searchable clipboard with image/text preview | ❌ | ✅   |
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   |
 | `dfzf-mail`      | View and preview emails from the terminal    | ✅ |  ✅   |
-| `dfzf-password`  | Copy and preview entries from pass           | ❌ | ✅   |
+| `dfzf-password`  | Copy and preview entries from pass           | ✅ | ✅   |
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
 
 ---
