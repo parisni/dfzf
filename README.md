@@ -1,3 +1,30 @@
+# dfzf: A Revolutionary Window Navigator for Sway and i3
+
+**dfzf** introduces a new paradigm for navigating windows in Sway and i3, rendering traditional tab and workspace-based navigation obsolete.
+
+## 🚀 Why dfzf?
+
+Instead of organizing windows spatially like tabs or workspaces, `dfzf-windows` relies on **temporal** and **name-based** logic. This approach offers:
+
+- **O(1) window access complexity** – no more hunting through tabs or switching between overloaded workspaces.
+- A consistent, searchable interface, even with dozens of open windows.
+- A significant reduction in cognitive load when navigating your desktop.
+
+## 🧰 More Than Just Window Management
+
+`dfzf` is not limited to windows. It provides a suite of tools built around the same philosophy of minimal overhead and maximum speed:
+
+- `dfzf-launcher` – a fast launcher for your desktop applications
+- `dfzf-clipboard` – searchable clipboard history, including screenshot preview
+- `dfzf-notify` – access past notifications instantly
+- `dfzf-mail` – quick email previews and actions
+- ...and more tools designed to streamline your workflow
+
+---
+
+Whether you're a tiling window manager enthusiast or just looking for a faster, cleaner way to navigate your desktop, **dfzf** offers a smarter alternative.
+
+
 # Installation
 
 
@@ -331,3 +358,9 @@ Password-store
 - [wofi-scripts has inspired dfzf-windows](https://github.com/tobiaspc/wofi-scripts)
 - [swayr: a window-switcher & more for sway](https://sr.ht/~tsdh/swayr/)
 - [i3-tools: switch to previous window](https://github.com/dinAlt/i3-tools)
+
+
+# License
+
+This project is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
+
