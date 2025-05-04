@@ -1,72 +1,77 @@
-# dfzf: A Revolutionary Window Navigator for Sway and i3
+# dfzf — Instant Window Navigation for Sway and i3
 
-**dfzf** introduces a new paradigm for navigating windows in Sway and i3, rendering traditional tab and workspace-based navigation obsolete.
+**dfzf** redefines how you interact with windows in Sway and i3. Traditional tabs and workspaces rely on spatial memory. `dfzf-windows` brings a smarter model: name-based and time-based navigation — making window access constant time (O(1)), even with dozens of open apps.
 
+No more mental gymnastics. Just type, fuzzy-match, and switch.
+
+---
 ## 🚀 Why dfzf?
 
-Instead of organizing windows spatially like tabs or workspaces, `dfzf-windows` relies on **temporal** and **name-based** logic. This approach offers:
-
-- **O(1) window access complexity** – no more hunting through tabs or switching between overloaded workspaces.
-- A consistent, searchable interface, even with dozens of open windows.
-- A significant reduction in cognitive load when navigating your desktop.
-
-## 🧰 More Than Just Window Management
-
-`dfzf` is not limited to windows. It provides a suite of tools built around the same philosophy of minimal overhead and maximum speed:
-
-- `dfzf-launcher` – a fast launcher for your desktop applications
-- `dfzf-clipboard` – searchable clipboard history, including screenshot preview
-- `dfzf-notify` – access past notifications instantly
-- `dfzf-mail` – quick email previews and actions
-- ...and more tools designed to streamline your workflow
+- ⏱️ **O(1) complexity** — instantly access any window, regardless of how many are open.
+- 🔍 **Fuzzy search + recency sorting** — type part of a window’s title and see the most *recently used* matches first.
+- 🧠 **Low cognitive load** — no need to remember where things are, only *what* and *when* you used them.
 
 ---
 
-Whether you're a tiling window manager enthusiast or just looking for a faster, cleaner way to navigate your desktop, **dfzf** offers a smarter alternative.
+## 🧰 What's Included?
 
+`dfzf` is more than a window switcher — it's a full toolkit for your desktop, built with speed, consistency, and minimalism in mind:
 
-# Installation
+| Tool             | Description                                  | i3 | Sway |
+|------------------|----------------------------------------------|:--:|:----:|
+| `dfzf-windows`   | Navigate windows by title or time            | ✅ | ✅   |
+| `dfzf-launcher`  | Launch desktop apps instantly                | ✅ | ✅   |
+| `dfzf-clipboard` | Searchable clipboard with image/text preview | ❌ | ✅   |
+| `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   |
+| `dfzf-mail`      | View and preview emails from the terminal    | ✅ |  ✅   |
+| `dfzf-password`  | Copy and preview entries from pass           | ❌ | ✅   |
+| `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
 
+---
 
+## 📦 Installation
 
-
+### Requirements
 
 <details>
-  <summary>
-Prerequisite
-  </summary>
+<summary>Click to expand</summary>
 
-- sway or i3
-- fzf 
-- jq version >= 1.7
-- gawk for dfzf-launcher
-- kitty version >= 0.41.1 OR alacritty OR foot
-- fd-find for dfzf-password
-- himalaya for dfzf-mail
-- batcat for dfzf-clipboard
-- mako for dfzf-notif
-- wl-clipboard, cliphist for dfzf-clipboard
-- rust to compile the dfzf-daemon and dfzf-mark
+- `sway` or `i3`
+- [`fzf`](https://github.com/junegunn/fzf)
+- `jq` ≥ 1.7
+- `gawk` (for `dfzf-launcher`)
+- Terminal: `kitty` ≥ 0.41.1 **or** `alacritty` **or** `foot`
+- `fd-find` (for `dfzf-password`)
+- `himalaya` (for `dfzf-mail`)
+- `batcat` (for preview in `dfzf-clipboard`)
+- `mako` (for `dfzf-notify`)
+- `wl-clipboard` & `cliphist` (for clipboard history)
+- `rust` (to compile `dfzf-daemon` and `dfzf-mark`)
 
-Also be sure `fzf` is accessible from sway/i3, by moving it to `/usr/local/bin/` (instead of default `~/.cargo/bin` place)
-  or  setup sway/i3 path correctly
-  ```
-#~/.config/sway/config
+Ensure `fzf` is accessible from your window manager:
+```bash
+# ~/.config/sway/config (example)
 set $PATH /usr/local/bin:/opt/bin:$PATH
-  ```
+````
+
 </details>
 
-<details>
-  <summary>
-    Download the releases
-  </summary>
+### Option 1: Download Binaries
 
-- [Download/copy](https://github.com/parisni/dfzf/releases) the binaries into `/usr/local/bin/` or anywhere in your PATH.
-- TODO: deb package 
+<details>
+<summary>From Releases</summary>
+
+* Download the latest binaries from the [Releases page](https://github.com/parisni/dfzf/releases)
+* Copy them to `/usr/local/bin` or any directory in your `$PATH`.
+
+> 📦 `.deb` package: coming soon.
+
 </details>
 
+### Option 2: Build from Source
+
 <details>
-<summary>Build/install dfzf-daemon</summary>
+<summary>Build dfzf-daemon & dfzf-mark</summary>
 
 ```bash
 cd dfzf-utils
@@ -75,13 +80,17 @@ rustup update nightly
 cargo +nightly build --release
 sudo cp target/release/dfzf-{daemon,mark} /usr/local/bin/
 ```
+
 </details>
 
-# Configuration
+---
+
+## ⚙️ Configuration
+
+### Sway
 
 <details>
-
-<summary>Sway configuration</summary>
+<summary>Click to expand</summary>
 
 ```bash
 exec --no-startup-id dfzf-daemon
@@ -89,278 +98,192 @@ exec wl-paste --watch cliphist -max-items 5000 store
 exec mako
 
 set $term kitty -1
-#set $term foot
-#set $term alacritty
-
-#set $dfzf_term foot --app-id=dfzf-popup -e
 set $dfzf_term kitty -1 --class=dfzf-popup -e
-bindsym $mod+Tab    exec $dfzf_term dfzf-windows
-bindsym $mod+o      exec $dfzf_term dfzf-launcher
-bindsym $mod+h      exec $dfzf_term dfzf-notifs
-bindsym $mod+i      exec $dfzf_term dfzf-clipboard
-bindsym $mod+m      exec $dfzf_term dfzf-mail
-bindsym $mod+p      exec $dfzf_term dfzf-password
-bindsym $mod+F1     exec $dfzf_term dfzf-exit
+
+bindsym $mod+Tab exec $dfzf_term dfzf-windows
+bindsym $mod+o   exec $dfzf_term dfzf-launcher
+bindsym $mod+h   exec $dfzf_term dfzf-notifs
+bindsym $mod+i   exec $dfzf_term dfzf-clipboard
+bindsym $mod+m   exec $dfzf_term dfzf-mail
+bindsym $mod+p   exec $dfzf_term dfzf-password
+bindsym $mod+F1  exec $dfzf_term dfzf-exit
+
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 
-# optional: hide the tabs
+# Optional: hide tabs entirely
 font pango:monospace 0.001
 default_border none
 default_floating_border none
 titlebar_padding 1
 titlebar_border_thickness 0
 ```
-</details>
-<details>
 
-<summary>I3 configuration</summary>
+</details>
+
+### i3
+
+<details>
+<summary>Click to expand</summary>
+
+Same as Sway, with minor differences in window matching and optional bar config.
 
 ```bash
 exec --no-startup-id dfzf-daemon
 
 set $term kitty -1
-#set $term foot
-#set $term alacritty
-
-#set $dfzf_term foot --app-id=dfzf-popup -e
 set $dfzf_term kitty -1 --class=dfzf-popup -e
-bindsym $mod+Tab    exec $dfzf_term dfzf-windows
-bindsym $mod+o      exec $dfzf_term dfzf-launcher
-bindsym $mod+h      exec $dfzf_term dfzf-notifs
-bindsym $mod+i      exec $dfzf_term dfzf-clipboard
-bindsym $mod+m      exec $dfzf_term dfzf-mail
-bindsym $mod+p      exec $dfzf_term dfzf-password
-bindsym $mod+F1     exec $dfzf_term dfzf-exit
+
+bindsym $mod+Tab exec $dfzf_term dfzf-windows
+bindsym $mod+o   exec $dfzf_term dfzf-launcher
+...
+
 for_window [class="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 
-# optional: hide the tabs
+# Optional: hide tabs
 font pango:monospace 0
 default_border none
 default_floating_border none
 
-# only if you rely on i3status
+# Optional: if you use i3status
 bar {
-	font pango:monospace 10 # needed 
-	status_command i3status
+  font pango:monospace 10
+  status_command i3status
 }
 ```
+
 </details>
 
+---
+
+## 🧩 Optional Enhancements
+
+### User Configuration
+
 <details>
-  <summary>user configuration [optional]</summary>
+<summary>Customize dfzf (e.g. exit menu, glyphs, window title matching)</summary>
 
-  you can override default configurations:
-  ```bash
-# ~/.config/dfzf/dfzf.conf
+Edit: `~/.config/dfzf/dfzf.conf`
 
-exit_options=(
-"l: Lock (swaylock)"
-"e: Restart GDM"
-"s: Lock and Suspend"
-"r: Reboot"
-"S: Shutdown"
-"h: Hibernate"
-)
-
-exit_cmd_l='swaylock -e -F -f -k -c 000000'
-exit_cmd_e='sudo /usr/bin/systemctl restart gdm'
-exit_cmd_s='swaylock -e -F -f -k -c 000000 && systemctl suspend'
-exit_cmd_r='sudo reboot'
-exit_cmd_S='shutdown now'
-exit_cmd_h='sudo /bin/systemctl hibernate'
-
-
-#remove pattern from the window's title
+```bash
+exit_cmd_s='swaylock && systemctl suspend'
 windows_title_rm_pattern=' —[^—]*?— Mozilla Firefox'
-windows_app_id_map_json='{"evolution": "mail", "kitty": "terminal", "jetbrains-idea-ce": "jetbrains"}'
-windows_glyph_rules_json='[
-{ "field": "name", "regex": "vim\\b", "glyph": " " },
-{ "field": "app_id", "regex": "terminal", "glyph": " " },
-{ "field": "app_id", "regex": "firefox", "glyph": " " },
-{ "field": "app_id", "regex": "jetbrains", "glyph": " " },
-{ "field": "app_id", "regex": "gimp", "glyph": " " },
-{ "field": "app_id", "regex": "thunar|nautilus", "glyph": " " },
-{ "field": "app_id", "regex": "thunderbird|evolution|geary|mailspring|k9mail|mail", "glyph": " " },
-{ "glyph": " " }
-]'
-
+windows_glyph_rules_json='[ ... ]'
 ```
 
 </details>
 
+### Kitty Support
+
 <details>
-  <summary>Kitty configuration [optional]</summary>
+<summary>Enable previews and make terminal window IDs unique</summary>
+
+* `~/.config/kitty/kitty.conf`:
 
 ```bash
-#~/.config/kitty/kitty.conf
-confirm_os_window_close 0
 allow_remote_control yes
+shell_integration no-title
 listen_on unix:/tmp/kitty
 ```
 
-Windows terminal preview in kitty:
-
-the terminal preview compares the i3/sway window title with the kitty title. In some case there is duplicates, and we cannot determinate the right terminal. So the current hack is to add 2 random characters to the title so that they get unique. For that, you will have to disable kitty title handling and tweak the shell title. Here for zsh:
+* `~/.oh-my-zsh/lib/termsupport.zsh`:
 
 ```bash
-#~/.config/kitty/kitty.conf
-shell_integration no-title
-```
-
-tweak zsh:
-```bash
-# ~/.oh-my-zsh/lib/termsupport.zsh
-  case "$TERM" in
-    cygwin|xterm*|putty*|rxvt*|konsole*|ansi|mlterm*|alacritty*|st*|foot*|contour*)
-      print -Pn "\e]2;${2:q} /$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 2)\a" # set window name
-      print -Pn "\e]1;${1:q} /$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 2)\a" # set tab name
+print -Pn "\e]2;${2:q} /$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 2)\a"
 ```
 
 </details>
 
+---
 
+## ✨ Features
 
+### Windows
 
 <details>
-  <summary>
- Firefox [optional]
-  </summary>
+<summary>dfzf-windows</summary>
 
-Install the below extensions:
-- tabs are windows: no tabs anymore in FF, just regular windows
-- hostname in windows title: adds the url in the title, useful to search
+- Fuzzy search across all open windows
+- **Sorted by last access time** — recent windows appear first
+- `Enter`: focus window
+- `Ctrl-J`: terminal preview (kitty only)
+- `Ctrl-K`: kill window
+- `Ctrl-U`: toggle urgent
+- `Ctrl-I`: toggle important
+- `Esc`: return to the current window
+</details>
+
+### Clipboard (Sway only)
+
+<details>
+<summary>dfzf-clipboard</summary>
+
+* Preview text with `batcat`
+* Preview images with `kitten`
 
 </details>
 
-<details>
-  <summary>
- Chromium [optional]
-  </summary>
+### Mail
 
-Install the below extensions:
-- TODO
-- TODO
+<details>
+<summary>dfzf-mail</summary>
+
+* Preview text or HTML emails
+* Open HTML in browser
 
 </details>
 
-
-# Features
-
-<details>
-  <summary>
-    Windows
-  </summary>
-
-- windows ordered by last access
-- cycle previous window
-- Return: focus window
-- focus window with enter
-- ctrl-k: kill window
-- terminal scrollback preview (kitty only)
-- ctrl-u: toggle urgent  (yellow color)
-- ctrl-i: toggle important (red color)
-- ctrl-j: preview windows
-- escape: return to current windows (works after previews)
-
-  ```bash
-    sudo apt install jq
-  ```
-</details>
-
-
-
-
-
+### Password Store
 
 <details>
-  <summary>
- Clipboard: Sway only
-  </summary>
+<summary>dfzf-password</summary>
 
-- content preview with bat
-- image preview with kitten
+* `Enter`: copy content
+* `Ctrl-J`: preview secret
 
-  ```bash
-    sudo apt install jq cliphist wl-clipboard batcat
-  ```
 </details>
+
+### Notifications (Sway only)
 
 <details>
-  <summary>
-Mail
-  </summary>
+<summary>dfzf-notify</summary>
 
-  - list latest mails
-  - preview text mails
-  - ctrl-j: preview html mails in the browser
-  
-  ```bash
-    sudo apt install jq himalaya
-  ```
+* Navigate recent notifications
+* `Ctrl-K`: dismiss
+* `Enter`: trigger action
+
 </details>
+
+### Application Launcher
 
 <details>
-  <summary>
-Password-store
-  </summary>
+<summary>dfzf-launcher</summary>
 
-  - Return: copy content
-  - ctrl-j: preview content
- 
-  ```bash
-    sudo apt install pass wl-clipboard
-  ```
+* Fuzzy search installed desktop apps
+
 </details>
+
+### Exit Menu
 
 <details>
-  <summary>
- Notifications: Sway only
-  </summary>
+<summary>dfzf-exit</summary>
 
-  - list notification ordered
-  - Return: notification action
-  - ctrl-k: kill notification
-  
-  ```bash
-    sudo apt install jq mako-notifier
-  ```
+* Hibernate, reboot, shutdown, logout
+
 </details>
 
-<details>
-  <summary>
- Launcher
-  </summary>
+---
 
-  - list desktop applications
-  - fire application
-  
-  ```bash
-    sudo apt install jq gawk
-  ```
-</details>
+## 🔗 Related Projects
 
-<details>
-  <summary>
-    Exit
-  </summary>
+* [i3-back (dfzf-daemon)](https://github.com/Cretezy/i3-back)
+* [sway-launcher-desktop (dfzf-launcher)](https://github.com/Biont/sway-launcher-desktop)
+* [wofi-scripts (inspired dfzf-windows)](https://github.com/tobiaspc/wofi-scripts)
+* [swayr](https://sr.ht/~tsdh/swayr/)
+* [i3-tools](https://github.com/dinAlt/i3-tools)
 
-  - hibernate
-  - reboot
-  - shutdown
-  - logout
-</details>
+---
 
-# Related work
-
-- `dfzf` is the combination of `d`menu and `fzf` 
-- [dfzf-daemon comes from i3-back](https://github.com/Cretezy/i3-back)
-- [dfzf-launcher comes from sway-launcher-desktop](https://github.com/Biont/sway-launcher-desktop/tree/master)
-- [wofi-scripts has inspired dfzf-windows](https://github.com/tobiaspc/wofi-scripts)
-- [swayr: a window-switcher & more for sway](https://sr.ht/~tsdh/swayr/)
-- [i3-tools: switch to previous window](https://github.com/dinAlt/i3-tools)
-
-
-# License
+## 📝 License
 
 This project is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
 
