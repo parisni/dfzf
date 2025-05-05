@@ -78,7 +78,7 @@ cd dfzf-utils
 curl https://sh.rustup.rs -sSf | sh
 rustup update nightly
 cargo +nightly build --release
-sudo cp target/release/dfzf-{daemon,mark} /usr/local/bin/
+find  dfzf-utils  -type f  -executable -name "dfzf-*" |xargs -I@ sudo cp @ /usr/local/bin/
 ```
 </details>
 
