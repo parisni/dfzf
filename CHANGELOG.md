@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Chore
+- bump2version
+
 
 <a name="v1.0.1"></a>
 ## [v1.0.1] - 2025-05-05
@@ -9,6 +12,9 @@
 - more is less
 - polish readme
 - introduction
+
+### Fix
+- **password:** copy pass to configured clipboard
 
 ### License
 - gplv3
@@ -51,20 +57,25 @@
 - move forward
 
 ### Feat
+- add gimp / vim glyph
 - allow windows configs
+- provide exit menu
+- add email preview
 - adapt for i3
 - support debian fd-find
 - password-store support
 - preview window title in case kitten fails and wrap
+- track full windows visit history in marks
 - support multiple important marks
+- copy last sway-launcher-desktop release
 - implem dfzf-mark
 - only rm dfzf marks
 - make daemon code use node object
 - introduce config file + use bind for exit
 - email export html preview
-- provide exit menu
-- add email preview
-- add gimp / vim glyph
+- make launcher style uniform w/ others
+- add clipboard
+- add dfzf-windows
 - improve notifs separating preview/items
 - add more glyph for applications
 - ansi color for urgent windows
@@ -77,31 +88,33 @@
 - support both sway and i3
 - init readme
 - add dfzf-notifs
-- add dfzf-windows
-- add clipboard
-- make launcher style uniform w/ others
-- copy last sway-launcher-desktop release
-- track full windows visit history in marks
+- **windows:** make the current entry selectable
+- **windows:** current focus blue
+- **windows:** make glyph configurable
+- **windows:** c-i add important mark
+- **windows:** make preview keep the sort order
 
 ### Fix
-- jump on first item after any query change
+- support xwayland when windows list w/ null app_id
+- better extract window id
+- i3 missing app_id
 - exit to not stop the term otw swaylock daemon stuck
 - vim glyph
 - handle case when the window in created no focused
 - rename marks
+- jump on first item after any query change
+- binary names, typos
+- broken link
 - better support for i3
-- i3 missing app_id
-- window title lpad
-- support xwayland when windows list w/ null app_id
 - term kitty preview exact match window title
 - improve windows terminal preview
 - add border to preview
 - cycle logic between windows
 - clipboard cat
 - lpad w/ space to align titles
-- better extract window id
-- broken link
-- binary names, typos
+- window title lpad
+- **window:** i3 to focus on popup while preview
+- **windows:** use blue of sway
 
 
 [Unreleased]: https://github.com/parisni/dfzf/compare/v1.0.1...HEAD
