@@ -1,43 +1,55 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
-### Chore
+### Maintenance
+- improve changelog fmt
 - bump2version
 
 
 <a name="v1.0.1"></a>
 ## [v1.0.1] - 2025-05-05
-### Doc
+### Bug Fixes
+- **password:** copy pass to configured clipboard
+
+### Documentation
 - build rust
 - more is less
 - polish readme
 - introduction
 
-### Fix
-- **password:** copy pass to configured clipboard
-
-### License
+### Licensing
 - gplv3
 - drop mit
 
 
 <a name="v1.0.0"></a>
 ## v1.0.0 - 2025-05-03
-### Chore
-- improve windows code
-- improve daemon code
-- rename rust tool and allow multiple binaries
-- clean code
-- add makefile to build release archive
-- move to bin
-- rename to dfzf-launcher
-- rename from i3-back to dfzf-daemon
-- rm useless _back mark
+### Bug Fixes
+- support xwayland when windows list w/ null app_id
+- better extract window id
+- i3 missing app_id
+- exit to not stop the term otw swaylock daemon stuck
+- vim glyph
+- handle case when the window in created no focused
+- rename marks
+- jump on first item after any query change
+- binary names, typos
+- broken link
+- better support for i3
+- term kitty preview exact match window title
+- improve windows terminal preview
+- add border to preview
+- cycle logic between windows
+- clipboard cat
+- lpad w/ space to align titles
+- window title lpad
+- **window:** i3 to focus on popup while preview
+- **windows:** use blue of sway
 
-### Ci
+### CI/CD
 - introduce gha
 
-### Doc
+### Documentation
 - debian install
 - fix term
 - collapse all
@@ -56,7 +68,7 @@
 - allow to use any terminal
 - move forward
 
-### Feat
+### Features
 - add gimp / vim glyph
 - allow windows configs
 - provide exit menu
@@ -94,27 +106,16 @@
 - **windows:** c-i add important mark
 - **windows:** make preview keep the sort order
 
-### Fix
-- support xwayland when windows list w/ null app_id
-- better extract window id
-- i3 missing app_id
-- exit to not stop the term otw swaylock daemon stuck
-- vim glyph
-- handle case when the window in created no focused
-- rename marks
-- jump on first item after any query change
-- binary names, typos
-- broken link
-- better support for i3
-- term kitty preview exact match window title
-- improve windows terminal preview
-- add border to preview
-- cycle logic between windows
-- clipboard cat
-- lpad w/ space to align titles
-- window title lpad
-- **window:** i3 to focus on popup while preview
-- **windows:** use blue of sway
+### Maintenance
+- improve windows code
+- improve daemon code
+- rename rust tool and allow multiple binaries
+- clean code
+- add makefile to build release archive
+- move to bin
+- rename to dfzf-launcher
+- rename from i3-back to dfzf-daemon
+- rm useless _back mark
 
 
 [Unreleased]: https://github.com/parisni/dfzf/compare/v1.0.1...HEAD
