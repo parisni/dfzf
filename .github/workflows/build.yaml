@@ -66,7 +66,7 @@ jobs:
       - name: Create .tar.gz
         run: |
           mkdir -p dist
-          tar -czf dist/dfzf-${{ matrix.arch }}.tar.gz -C package/${{ matrix.arch }} usr
+          tar -czf dist/dfzf-${{ matrix.arch }}-${GITHUB_REF_NAME#v}.tar.gz -C package/${{ matrix.arch }} usr
 
       - name: Create .deb package
         run: |
@@ -76,12 +76,12 @@ jobs:
           cp -r package/${{ matrix.arch }}/usr/local/bin/* pkgroot/usr/local/bin/
           cat > pkgroot/DEBIAN/control <<EOF
           Package: dfzf
-          Version: 1.0.0
+          Version: 1.0.1
           Architecture: ${{ matrix.arch }}
           Maintainer: parisni <contact@parisni.com>
           Description: dfzf binaries
           EOF
-          dpkg-deb --build pkgroot dist/dfzf-${{ matrix.arch }}.deb
+          dpkg-deb --build pkgroot dist/dfzf-${{ matrix.arch }}-${GITHUB_REF_NAME#v}.deb
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
