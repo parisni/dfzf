@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Documentation
+- **windows:** share chromium extensions
+
 ### Maintenance
 - improve changelog fmt
 - bump2version

@@ -243,8 +243,8 @@ Install the below extensions:
   </summary>
 
 Install the below extensions:
-- TODO
-- TODO
+- [new-tab-new-window](https://chromewebstore.google.com/detail/new-tab-new-window/dndlcbaomdoggooaficldplkcmkfpgff)
+- either [URL in title](https://chromewebstore.google.com/detail/url-in-title/ignpacbgnbnkaiooknalneoeladjnfgb?hl=en) or [Title morph](https://chromewebstore.google.com/detail/title-morph/ajlggpkmjdilpiamlofcmjckeabiecea)
 
 </details>
 
