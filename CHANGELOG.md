@@ -2,6 +2,7 @@
 ## [Unreleased]
 
 ### Documentation
+- **windows:** add gif
 - **windows:** share chromium extensions
 
 ### Maintenance

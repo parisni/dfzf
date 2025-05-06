@@ -1,13 +1,29 @@
 # dfzf — Instant Window Navigation for Sway and i3
 
-**dfzf** redefines how you interact with windows in Sway and i3. Traditional tabs and workspaces rely on spatial memory. `dfzf-windows` brings a smarter model: name-based and time-based navigation — making window access constant time (O(1)), even with dozens of open apps.
 
-No more mental gymnastics. Just type, fuzzy-match, and recent windows come first.
+**dfzf** redefines how you interact with windows in sway and i3. Traditional tabs and workspaces rely on spatial memory, which becomes harder to manage as more windows open. dfzf-windows introduces name-based and time-based navigation — keeping the mental effort to access any window effectively constant (O(1)), even with dozens of open apps.
+
+No more mental gymnastics. Just type, fuzzy-match, and recent windows come first. Eventually, you'll no longer need tabs at all, relying solely on **dfzf-windows** for seamless navigation.
+
+![Demo](https://github.com/user-attachments/assets/ab181f25-622b-4aaf-931a-ee5d07371853)
+<details>
+  <summary>Click to expand description of the GIF</summary>
+
+This GIF shows dfzf-windows in action:
+ - List the current windows, recent ones come first
+ - Inspect the windows previews, including terminal
+ - Mark the windows either as "urgent" or "important"
+ - Kills windows one by one until none are left  
+ - Bonus: Notice a bit of "inception" in the `dfzf-windows` preview...
+
+  
+</details>
+
 
 ---
 ## Why dfzf?
 
-- ⏱️ **O(1) complexity** — instantly access any window, regardless of how many are open.
+- ⏱️ **O(1) mental complexity** — instantly access any window, regardless of how many are open.
 - 🔍 **Fuzzy search + recency sorting** — type part of a window’s title and see the most *recently used* matches first.
 - 🧠 **Low cognitive load** — no need to remember where things are, only *what* and *when* you used them.
 
