@@ -298,6 +298,8 @@ Install the below extensions:
  Clipboard: Sway only
   </summary>
 
+  ![Image](https://github.com/user-attachments/assets/e339b0d0-d010-43a9-9ce6-9b94f11c02a2)
+
 - content preview with bat
 - image preview with kitten
 
