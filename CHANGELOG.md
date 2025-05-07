@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 ### Documentation
+- add firefox extensions and instructions
+- **clipboard:** screenshot
+- **exit:** screenshot
+- **launcher:** screenshot
+- **notifs:** screenshot
+- **password:** screenshot
 - **windows:** add gif
 - **windows:** share chromium extensions
 

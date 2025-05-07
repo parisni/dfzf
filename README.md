@@ -248,8 +248,15 @@ tweak zsh:
   </summary>
 
 Install the below extensions:
-- tabs are windows: no tabs anymore in FF, just regular windows
-- hostname in windows title: adds the url in the title, useful to search
+- [tabs are windows](https://addons.mozilla.org/en-US/firefox/addon/tabs-are-windows/reviews/?utm_source=firefox-browser&utm_medium=firefox-browser&utm_content=addons-manager-reviews-link)
+- [hostname in windows title](https://addons.mozilla.org/en-US/firefox/addon/hostname-in-window-title/reviews/?utm_source=firefox-browser&utm_medium=firefox-browser&utm_content=addons-manager-reviews-link)
+I use this template `{title} - {href} —`, together with this variable in dfzf config to bring perfect ff titles.
+
+```bash
+  # remove pattern from the window's title
+windows_title_rm_pattern=' —[^—]*?— Mozilla Firefox'
+```
+
 
 </details>
 
@@ -295,7 +302,7 @@ Install the below extensions:
 
 <details>
   <summary>
- Clipboard: Sway only
+ Clipboard
   </summary>
 
   ![Image](https://github.com/user-attachments/assets/e339b0d0-d010-43a9-9ce6-9b94f11c02a2)
@@ -339,7 +346,7 @@ Password-store
 
 <details>
   <summary>
- Notifications: Sway only
+ Notifications
   </summary>
 
   ![Image](https://github.com/user-attachments/assets/645934df-c121-4f46-96d9-6b616f4b66cf)
