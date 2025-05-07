@@ -354,6 +354,8 @@ Password-store
  Launcher
   </summary>
 
+  ![Image](https://github.com/user-attachments/assets/257e278d-e537-4c17-a1c9-7f5b876cb30b)
+
   - list desktop applications
   - fire application
   
