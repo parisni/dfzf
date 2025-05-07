@@ -342,6 +342,8 @@ Password-store
  Notifications: Sway only
   </summary>
 
+  ![Image](https://github.com/user-attachments/assets/645934df-c121-4f46-96d9-6b616f4b66cf)
+
   - list notification ordered
   - Return: notification action
   - ctrl-k: kill notification
