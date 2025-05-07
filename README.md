@@ -373,6 +373,8 @@ Password-store
     Exit
   </summary>
 
+  ![Image](https://github.com/user-attachments/assets/2e60004a-f3a4-4336-a42e-576292f77e47)
+
   - hibernate
   - reboot
   - shutdown
