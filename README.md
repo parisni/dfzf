@@ -327,6 +327,8 @@ Mail
 Password-store
   </summary>
 
+  ![Image](https://github.com/user-attachments/assets/2ebeec63-3ee8-4a47-9b8c-988c8cb5ffeb)
+
   - Return: copy content
   - ctrl-j: preview content
  
