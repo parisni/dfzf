@@ -1,58 +1,29 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
-### Documentation
-- add firefox extensions and instructions
-- **clipboard:** screenshot
-- **exit:** screenshot
-- **launcher:** screenshot
-- **notifs:** screenshot
-- **password:** screenshot
-- **windows:** add gif
-- **windows:** share chromium extensions
 
-### Maintenance
-- improve changelog fmt
-- bump2version
-
-
-<a name="v1.0.1"></a>
-## [v1.0.1] - 2025-05-05
+<a name="v0.1.0"></a>
+## v0.1.0 - 2025-05-08
 ### Bug Fixes
-- **password:** copy pass to configured clipboard
-
-### Documentation
-- build rust
-- more is less
-- polish readme
-- introduction
-
-### Licensing
-- gplv3
-- drop mit
-
-
-<a name="v1.0.0"></a>
-## v1.0.0 - 2025-05-03
-### Bug Fixes
-- support xwayland when windows list w/ null app_id
-- better extract window id
-- i3 missing app_id
+- window title lpad
 - exit to not stop the term otw swaylock daemon stuck
+- binary names, typos
+- term kitty preview exact match window title
+- support xwayland when windows list w/ null app_id
 - vim glyph
 - handle case when the window in created no focused
 - rename marks
-- jump on first item after any query change
-- binary names, typos
-- broken link
 - better support for i3
-- term kitty preview exact match window title
+- i3 missing app_id
+- broken link
+- jump on first item after any query change
+- better extract window id
 - improve windows terminal preview
 - add border to preview
 - cycle logic between windows
 - clipboard cat
 - lpad w/ space to align titles
-- window title lpad
+- **password:** copy pass to configured clipboard
 - **window:** i3 to focus on popup while preview
 - **windows:** use blue of sway
 
@@ -60,23 +31,37 @@
 - introduce gha
 
 ### Documentation
+- add depts
+- add windows tips/features
 - debian install
 - fix term
-- collapse all
+- allow to use any terminal
+- multi terminal support
+- add related work
+- add features
+- add notif and clipboard daemon
+- kitty terminal content preview hack
+- build rust
+- more is less
+- polish readme
+- introduction
+- add firefox extensions and instructions
+- move forward
+- exit, mail and password bindings
 - user config
 - install/config/features
 - kitty config
 - collapse configuration for i3/sway
-- add depts
-- add windows tips/features
-- exit, mail and password bindings
-- kitty terminal content preview hack
-- add notif and clipboard daemon
-- add features
-- add related work
-- multi terminal support
-- allow to use any terminal
-- move forward
+- reword and reorg
+- collapse all
+- **clipboard:** screenshot
+- **exit:** screenshot
+- **launcher:** screenshot
+- **notifs:** screenshot
+- **password:** screenshot
+- **windows:** screenshot
+- **windows:** share chromium extensions
+- **windows:** add gif
 
 ### Features
 - add gimp / vim glyph
@@ -116,7 +101,13 @@
 - **windows:** c-i add important mark
 - **windows:** make preview keep the sort order
 
+### Licensing
+- gplv3
+- drop mit
+
 ### Maintenance
+- improve changelog fmt
+- bump2version
 - improve windows code
 - improve daemon code
 - rename rust tool and allow multiple binaries
@@ -128,5 +119,4 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.0.1...HEAD
-[v1.0.1]: https://github.com/parisni/dfzf/compare/v1.0.0...v1.0.1
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.1.0...HEAD
