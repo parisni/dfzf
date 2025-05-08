@@ -1,9 +1,8 @@
-# dfzf — Instant Window Navigation for Sway and i3
+# dfzf — Effortless Window Navigation for Sway and i3
 
+**dfzf** redefines how you interact with windows in sway and i3, letting you switch windows with `fzf`, sorted by recency — no more cycling or losing your mind. Unlike traditional workspaces or tabbing, it frees you from relying on mental cartography, using name- and time-based navigation to keep access effortless, even with dozens of windows.
 
-**dfzf** redefines how you interact with windows in sway and i3. Traditional tabs and workspaces rely on spatial memory, which becomes harder to manage as more windows open. dfzf-windows introduces name-based and time-based navigation — keeping the mental effort to access any window effectively constant (O(1)), even with dozens of open apps.
-
-No more mental gymnastics. Just type, fuzzy-match, and recent windows come first. Eventually, you'll no longer need tabs at all, relying solely on **dfzf-windows** for seamless navigation.
+No more mental gymnastics. Just type to fuzzy-match and access recent windows first — eventually, you’ll rely solely on **dfzf-windows** for seamless navigation.
 
 ![Demo](https://github.com/user-attachments/assets/ab181f25-622b-4aaf-931a-ee5d07371853)
 <details>
@@ -23,12 +22,19 @@ This GIF shows dfzf-windows in action:
 ---
 ## Why dfzf?
 
-- ⏱️ **O(1) mental complexity** — instantly access any window, regardless of how many are open.
-- 🔍 **Fuzzy search + recency sorting** — type part of a window’s title and see the most *recently used* matches first.
-- 🧠 **Low cognitive load** — no need to remember where things are, only *what* and *when* you used them.
+* ⏱️ **Instant access** — switch to any window instantly, regardless of how many are open.
+* 🔍 **Recent-first navigation** — fuzzy-search windows by name, with recent ones prioritized.
+* 🧠 **Low cognitive load** — remember *what* and *when*, not *where*.
 
 ---
+## How It Works
 
+**dfzf** relies on `dfzf-daemon` to track window focus changes via IPC, storing the order of recently used windows in their marks. It uses `dfzf-mark` to add or remove marks, such as "important" marks (shown in red). And don't worry if you're already using marks — **dfzf** won't interfere with your existing setup.
+
+Just make sure the daemon is running when you try **dfzf** for the first time!
+
+
+---
 ## What's Included?
 
 `dfzf` is more than a window switcher — it's a full toolkit for your desktop, built with speed, consistency, and minimalism in mind:
@@ -47,10 +53,6 @@ This GIF shows dfzf-windows in action:
 
 
 ## Installation
-
-
-
-
 
 <details>
   <summary>
@@ -105,9 +107,9 @@ find  dfzf-utils  -type f  -executable -name "dfzf-*" |xargs -I@ sudo cp @ /usr/
 <summary>Sway configuration</summary>
 
 ```bash
-exec --no-startup-id dfzf-daemon
-exec wl-paste --watch cliphist -max-items 5000 store
-exec mako
+exec --no-startup-id dfzf-daemon # reboot to make the daemon running
+exec wl-paste --watch cliphist -max-items 1000 store # for dfzf-clipboard  
+exec mako # for the dfzf-notifs
 
 set $term kitty -1
 #set $term foot
@@ -137,7 +139,7 @@ titlebar_border_thickness 0
 <summary>I3 configuration</summary>
 
 ```bash
-exec --no-startup-id dfzf-daemon
+exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 
 set $term kitty -1
 #set $term foot
@@ -147,8 +149,6 @@ set $term kitty -1
 set $dfzf_term kitty -1 --class=dfzf-popup -e
 bindsym $mod+Tab    exec $dfzf_term dfzf-windows
 bindsym $mod+o      exec $dfzf_term dfzf-launcher
-bindsym $mod+h      exec $dfzf_term dfzf-notifs
-bindsym $mod+i      exec $dfzf_term dfzf-clipboard
 bindsym $mod+m      exec $dfzf_term dfzf-mail
 bindsym $mod+p      exec $dfzf_term dfzf-password
 bindsym $mod+F1     exec $dfzf_term dfzf-exit
@@ -159,7 +159,7 @@ font pango:monospace 0
 default_border none
 default_floating_border none
 
-# only if you rely on i3status
+# reset font for the bar
 bar {
 	font pango:monospace 10 # needed 
 	status_command i3status
@@ -174,6 +174,23 @@ bar {
   ```bash
 # ~/.config/dfzf/dfzf.conf
 
+#remove pattern from the window's title
+windows_title_rm_pattern=' —[^—]*?— Mozilla Firefox'
+# rename the application classes
+windows_app_id_map_json='{"evolution": "mail", "kitty": "terminal", "jetbrains-idea-ce": "jetbrains"}'
+# assign glyphs to application classes
+windows_glyph_rules_json='[
+{ "field": "name", "regex": "vim\\b", "glyph": " " },
+{ "field": "app_id", "regex": "terminal", "glyph": " " },
+{ "field": "app_id", "regex": "firefox", "glyph": " " },
+{ "field": "app_id", "regex": "jetbrains", "glyph": " " },
+{ "field": "app_id", "regex": "gimp", "glyph": " " },
+{ "field": "app_id", "regex": "thunar|nautilus", "glyph": " " },
+{ "field": "app_id", "regex": "thunderbird|evolution|geary|mailspring|k9mail|mail", "glyph": " " },
+{ "glyph": " " }
+]'
+
+# override the exit list and respective commands
 exit_options=(
 "l: Lock (swaylock)"
 "e: Restart GDM"
@@ -190,20 +207,6 @@ exit_cmd_r='sudo reboot'
 exit_cmd_S='shutdown now'
 exit_cmd_h='sudo /bin/systemctl hibernate'
 
-
-#remove pattern from the window's title
-windows_title_rm_pattern=' —[^—]*?— Mozilla Firefox'
-windows_app_id_map_json='{"evolution": "mail", "kitty": "terminal", "jetbrains-idea-ce": "jetbrains"}'
-windows_glyph_rules_json='[
-{ "field": "name", "regex": "vim\\b", "glyph": " " },
-{ "field": "app_id", "regex": "terminal", "glyph": " " },
-{ "field": "app_id", "regex": "firefox", "glyph": " " },
-{ "field": "app_id", "regex": "jetbrains", "glyph": " " },
-{ "field": "app_id", "regex": "gimp", "glyph": " " },
-{ "field": "app_id", "regex": "thunar|nautilus", "glyph": " " },
-{ "field": "app_id", "regex": "thunderbird|evolution|geary|mailspring|k9mail|mail", "glyph": " " },
-{ "glyph": " " }
-]'
 
 ```
 
@@ -279,8 +282,6 @@ Install the below extensions:
     Windows
   </summary>
 
-  ![Image](https://github.com/user-attachments/assets/ab76602c-9e04-4a08-bb9d-dcee16413fce)
-
 - windows ordered by last access
 - cycle previous window
 - Return: focus window
@@ -295,6 +296,8 @@ Install the below extensions:
   ```bash
     sudo apt install jq
   ```
+
+  ![Image](https://github.com/user-attachments/assets/ab76602c-9e04-4a08-bb9d-dcee16413fce)
 </details>
 
 
@@ -307,14 +310,14 @@ Install the below extensions:
  Clipboard
   </summary>
 
-  ![Image](https://github.com/user-attachments/assets/e339b0d0-d010-43a9-9ce6-9b94f11c02a2)
-
 - content preview with bat
 - image preview with kitten
 
   ```bash
     sudo apt install jq cliphist wl-clipboard batcat
   ```
+
+  ![Image](https://github.com/user-attachments/assets/e339b0d0-d010-43a9-9ce6-9b94f11c02a2)
 </details>
 
 <details>
@@ -336,7 +339,6 @@ Mail
 Password-store
   </summary>
 
-  ![Image](https://github.com/user-attachments/assets/2ebeec63-3ee8-4a47-9b8c-988c8cb5ffeb)
 
   - Return: copy content
   - ctrl-j: preview content
@@ -344,6 +346,7 @@ Password-store
   ```bash
     sudo apt install pass wl-clipboard
   ```
+  ![Image](https://github.com/user-attachments/assets/2ebeec63-3ee8-4a47-9b8c-988c8cb5ffeb)
 </details>
 
 <details>
@@ -351,7 +354,6 @@ Password-store
  Notifications
   </summary>
 
-  ![Image](https://github.com/user-attachments/assets/645934df-c121-4f46-96d9-6b616f4b66cf)
 
   - list notification ordered
   - Return: notification action
@@ -360,6 +362,7 @@ Password-store
   ```bash
     sudo apt install jq mako-notifier
   ```
+  ![Image](https://github.com/user-attachments/assets/645934df-c121-4f46-96d9-6b616f4b66cf)
 </details>
 
 <details>
@@ -367,7 +370,6 @@ Password-store
  Launcher
   </summary>
 
-  ![Image](https://github.com/user-attachments/assets/257e278d-e537-4c17-a1c9-7f5b876cb30b)
 
   - list desktop applications
   - fire application
@@ -375,6 +377,7 @@ Password-store
   ```bash
     sudo apt install jq gawk
   ```
+  ![Image](https://github.com/user-attachments/assets/257e278d-e537-4c17-a1c9-7f5b876cb30b)
 </details>
 
 <details>
@@ -382,12 +385,13 @@ Password-store
     Exit
   </summary>
 
-  ![Image](https://github.com/user-attachments/assets/2e60004a-f3a4-4336-a42e-576292f77e47)
 
   - hibernate
   - reboot
   - shutdown
   - logout
+
+  ![Image](https://github.com/user-attachments/assets/2e60004a-f3a4-4336-a42e-576292f77e47)
 </details>
 
 ## Related work
