@@ -279,6 +279,8 @@ Install the below extensions:
     Windows
   </summary>
 
+  ![Image](https://github.com/user-attachments/assets/ab76602c-9e04-4a08-bb9d-dcee16413fce)
+
 - windows ordered by last access
 - cycle previous window
 - Return: focus window
