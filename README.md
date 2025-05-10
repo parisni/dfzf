@@ -358,6 +358,7 @@ Password-store
   - list notification ordered
   - Return: notification action
   - ctrl-k: kill notification
+  - ctrl-h: toggle notif history
   
   ```bash
     sudo apt install jq mako-notifier

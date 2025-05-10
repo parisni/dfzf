@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+- **notifs:** toggle history
+
 
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2025-05-08
