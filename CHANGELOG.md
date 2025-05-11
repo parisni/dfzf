@@ -3,6 +3,7 @@
 
 ### Features
 - **notifs:** toggle history
+- **windows:** reload windows
 
 
 <a name="v0.1.0"></a>

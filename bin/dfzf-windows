@@ -8,6 +8,7 @@ fi
 dfzf-windows-load| fzf --ansi --no-sort --exact --prompt "Windows > " --color='gutter:-1' --cycle --info="inline-right" --header='' --margin='1,2' \
   --sync --bind "start:up" \
   --bind "change:first" \
+	--bind="ctrl-r:reload(dfzf-windows-load)" \
 	--bind="ctrl-k:execute(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' kill)+reload(sleep 0.05;dfzf-windows-load)" \
 	--bind="ctrl-u:execute(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(sleep 0.05;dfzf-windows-load)" \
 	--bind="ctrl-i:execute(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-important --append-ts)+reload(sleep 0.05;dfzf-windows-load)" \
