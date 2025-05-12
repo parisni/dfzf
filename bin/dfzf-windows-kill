@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Check input
+CID="$1"
+if [[ -z "$CID" || ! "$CID" =~ ^[0-9]+$ ]]; then
+  echo "Usage: $0 <con_id>" >&2
+  exit 1
+fi
+
+# Kill the container
+dfzf-exec "[con_id=$CID]" kill >/dev/null
+
+# Initial short delay
+sleep 0.05
+
+# Wait until container disappears
+while dfzf-exec -t get_tree | jq -e ".. | objects | select(.id? == $CID)" >/dev/null; do
+  sleep 0.1
+done
+

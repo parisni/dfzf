@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Bug Fixes
+- **windows:** drop arbitrary sleep time in favor of sync calls
+
 ### Features
 - **notifs:** toggle history
 - **windows:** reload windows
