@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+- **all:** keep one dfzf-popup open more efficiently
+
 
 <a name="v0.2.0"></a>
 ## [v0.2.0] - 2025-05-12
