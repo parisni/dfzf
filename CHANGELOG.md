@@ -1,7 +1,11 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
-### Features
+
+<a name="v0.2.1"></a>
+## [v0.2.1] - 2025-05-13
+### Bug Fixes
+- **all:** unset FZF_DEFAULT_OPTS not to break dfzf
 - **all:** keep one dfzf-popup open more efficiently
 
 
@@ -132,5 +136,6 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.2.1...HEAD
+[v0.2.1]: https://github.com/parisni/dfzf/compare/v0.2.0...v0.2.1
 [v0.2.0]: https://github.com/parisni/dfzf/compare/v0.1.0...v0.2.0
