@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 dfzf-kill-bro
+unset FZF_DEFAULT_OPTS
 dfzf-mail-load | fzf --no-sort --exact --prompt "Mail > " --color='gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' \
 	--preview-window="up:wrap" \
   --preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message read" \

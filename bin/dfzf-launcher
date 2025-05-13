@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 dfzf-kill-bro
+unset FZF_DEFAULT_OPTS
 # terminal application launcher for sway, using fzf
 # Forked from https://github.com/Biont/sway-launcher-desktop
 shopt -s nullglob globstar

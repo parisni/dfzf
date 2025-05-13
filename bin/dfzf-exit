@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 dfzf-kill-bro
+unset FZF_DEFAULT_OPTS
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 # Create the list
