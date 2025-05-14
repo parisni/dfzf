@@ -2,6 +2,13 @@
 ## [Unreleased]
 
 
+<a name="v0.2.2"></a>
+## [v0.2.2] - 2025-05-14
+### Bug Fixes
+- **all:** make fzf bind call execution silent
+- **windows:** make first invocation call tree once
+
+
 <a name="v0.2.1"></a>
 ## [v0.2.1] - 2025-05-13
 ### Bug Fixes
@@ -136,6 +143,7 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.2.2...HEAD
+[v0.2.2]: https://github.com/parisni/dfzf/compare/v0.2.1...v0.2.2
 [v0.2.1]: https://github.com/parisni/dfzf/compare/v0.2.0...v0.2.1
 [v0.2.0]: https://github.com/parisni/dfzf/compare/v0.1.0...v0.2.0
