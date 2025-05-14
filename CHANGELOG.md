@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.2.3"></a>
+## [v0.2.3] - 2025-05-14
+### Bug Fixes
+- **windows:** regression on windows-load
+
+
 <a name="v0.2.2"></a>
 ## [v0.2.2] - 2025-05-14
 ### Bug Fixes
@@ -143,7 +149,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.2.3...HEAD
+[v0.2.3]: https://github.com/parisni/dfzf/compare/v0.2.2...v0.2.3
 [v0.2.2]: https://github.com/parisni/dfzf/compare/v0.2.1...v0.2.2
 [v0.2.1]: https://github.com/parisni/dfzf/compare/v0.2.0...v0.2.1
 [v0.2.0]: https://github.com/parisni/dfzf/compare/v0.1.0...v0.2.0
