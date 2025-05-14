@@ -125,6 +125,8 @@ bindsym $mod+m      exec $dfzf_term dfzf-mail
 bindsym $mod+p      exec $dfzf_term dfzf-password
 bindsym $mod+F1     exec $dfzf_term dfzf-exit
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
+# disable floating in general OTW they would stay behind other
+for_window [app_id="^(?!dfzf-popup$).*"] floating disable
 
 # optional: hide the tabs
 font pango:monospace 0.001
@@ -153,6 +155,8 @@ bindsym $mod+m      exec $dfzf_term dfzf-mail
 bindsym $mod+p      exec $dfzf_term dfzf-password
 bindsym $mod+F1     exec $dfzf_term dfzf-exit
 for_window [class="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
+# disable floating in general OTW they would stay behind other
+for_window [app_id="^(?!dfzf-popup$).*"] floating disable
 
 # optional: hide the tabs
 font pango:monospace 0
