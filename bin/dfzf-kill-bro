@@ -12,3 +12,5 @@ echo "$tree_json" | jq -r \
     | select(.id != $current_id) 
     | .id" \
   | xargs -r -I'#' dfzf-exec '[con_id=#]' kill
+
+echo "$tree_json"

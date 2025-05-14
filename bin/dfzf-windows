@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-dfzf-kill-bro
+current_tree=$(dfzf-kill-bro)
 unset FZF_DEFAULT_OPTS
 
 if [ -n "$KITTY_WINDOW_ID" ]; then
   export FZF_DEFAULT_OPTS="--preview=\"echo {}| sed -z 's/^.*]\t//' |sed -z 's/ #.*//'|sed 's/^[[:space:]]*//;s/[[:space:]]*$//'|sed 's/ /./g'|xargs -I'#' kitten @ get-text --match 'title:^#$' --extent all  2>/dev/null || (echo {} |fold -s -w 90) |tail -n 100| grep -v '~'|grep -v '^$'\" --preview-window=\"up:60%,follow\""
 fi
 
-dfzf-windows-load| fzf --ansi --no-sort --exact --prompt "Windows > " --color='gutter:-1' --cycle --info="inline-right" --header='' --margin='1,2' \
+dfzf-windows-load "$current_tree"| fzf --ansi --no-sort --exact --prompt "Windows > " --color='gutter:-1' --cycle --info="inline-right" --header='' --margin='1,2' \
   --sync --bind "start:up" \
   --bind "change:first" \
 	--bind="ctrl-r:reload(dfzf-windows-load)" \

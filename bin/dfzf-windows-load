@@ -8,8 +8,17 @@ windows_app_id_map_json="${windows_app_id_map_json:-{\}}"
 windows_glyph_rules_json="${windows_glyph_rules_json:-[]}"
 windows_title_rm_pattern="${windows_title_rm_pattern:-— Mozilla Firefox }"
 
-# Main
-dfzf-exec -t get_tree --raw | jq -r \
+# Accept optional input via stdin or first argument
+if [ -n "$1" ]; then
+  input_json="$1"
+elif [ ! -t 0 ]; then
+  input_json="$(cat)"
+else
+  input_json="$(dfzf-exec -t get_tree --raw)"
+fi
+
+# Main processing logic using jq
+echo "$input_json" | jq -r \
   --argjson map "$windows_app_id_map_json" \
   --argjson glyph_rules "$windows_glyph_rules_json" '
     .. | objects
