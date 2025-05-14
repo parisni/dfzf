@@ -13,7 +13,7 @@ for opt in "${exit_options[@]}"; do
     cmd_var="exit_cmd_$key"
     # Bind each key to "execute the command and abort fzf"
     if [[ -n "${!cmd_var}" ]]; then
-        binds+=("--bind" "$key:execute(echo '${!cmd_var}' | bash)")
+        binds+=("--bind" "$key:execute-silent(echo '${!cmd_var}' | bash)")
     fi
 done
 

@@ -10,9 +10,9 @@ dfzf-windows-load "$current_tree"| fzf --ansi --no-sort --exact --prompt "Window
   --sync --bind "start:up" \
   --bind "change:first" \
 	--bind="ctrl-r:reload(dfzf-windows-load)" \
-	--bind="ctrl-k:execute(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-windows-kill @)+reload(dfzf-windows-load)" \
-	--bind="ctrl-u:execute(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(dfzf-windows-load)" \
-	--bind="ctrl-i:execute(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-important --append-ts)+reload(dfzf-windows-load)" \
-	--bind="ctrl-j:execute(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus || dfzf-exec '[class=\"^dfzf-popup$\"]' focus \")" \
-	--bind="enter:execute(echo {}  |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus)+accept" \
-  --bind="esc:execute(dfzf-windows-load | head -n1 | sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus)+abort"
+	--bind="ctrl-k:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-windows-kill @)+reload(dfzf-windows-load)" \
+	--bind="ctrl-u:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(dfzf-windows-load)" \
+	--bind="ctrl-i:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-important --append-ts)+reload(dfzf-windows-load)" \
+	--bind="ctrl-j:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus || dfzf-exec '[class=\"^dfzf-popup$\"]' focus \")" \
+	--bind="enter:execute-silent(echo {}  |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus)+accept" \
+  --bind="esc:execute-silent(dfzf-windows-load | head -n1 | sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus)+abort"

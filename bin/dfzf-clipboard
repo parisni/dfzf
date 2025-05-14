@@ -9,5 +9,5 @@ else
 fi
 cliphist list | fzf --no-sort --exact --prompt "Clipboard > " --color='gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' \
 	--preview-window="up" \
-        --bind="enter:execute(echo {}|cliphist decode| wl-copy && dfzf-exec '[app_id=\"^dfzf-popup$\"]' kill)+accept" \
-	--bind="ctrl-k:execute(echo {}|cliphist delete)+reload(cliphist list)" 
+        --bind="enter:execute-silent(echo {}|cliphist decode| wl-copy && dfzf-exec '[app_id=\"^dfzf-popup$\"]' kill)+accept" \
+	--bind="ctrl-k:execute-silent(echo {}|cliphist delete)+reload(cliphist list)" 
