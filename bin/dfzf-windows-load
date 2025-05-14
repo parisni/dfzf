@@ -11,8 +11,6 @@ windows_title_rm_pattern="${windows_title_rm_pattern:-— Mozilla Firefox }"
 # Accept optional input via stdin or first argument
 if [ -n "$1" ]; then
   input_json="$1"
-elif [ ! -t 0 ]; then
-  input_json="$(cat)"
 else
   input_json="$(dfzf-exec -t get_tree --raw)"
 fi
