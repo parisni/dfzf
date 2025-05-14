@@ -35,7 +35,10 @@ echo "$input_json" | jq -r \
           | ($map[$app_id] // $app_id)
         ),
         urgent: .urgent,
-        important: ([.marks[]? | select(startswith("_dfzf-important"))] | first | length > 0),
+        red: ([.marks[]? | select(startswith("_dfzf-red-"))] | first | length > 0),
+        blue: ([.marks[]? | select(startswith("_dfzf-blue-"))] | first | length > 0),
+        green: ([.marks[]? | select(startswith("_dfzf-green-"))] | first | length > 0),
+        orange: ([.marks[]? | select(startswith("_dfzf-orange-"))] | first | length > 0),
         glyph: (
           ($glyph_rules
             | map(
@@ -51,10 +54,26 @@ echo "$input_json" | jq -r \
         )
       }
     | "\(.sort)" +
-      (if .urgent then "\u001b[33m" elif .important then "\u001b[31m" else "" end) +
-      "\(.glyph) [\(.app_id)]\t\(.name) #\(.id)" +
+      (if .urgent then "\u001b[33m" 
+       elif .red then "\u001b[31m" 
+       else "" end) +
+      "\(.glyph) [\(.app_id)]\t\(.name) \(
+  if .red then " [red]"
+  elif .blue then " [blue]"
+  elif .green then " [green]"
+  elif .orange then " [orange]"
+  else ""
+  end
+) #\(.id)" +
       (if .urgent or .important then "\u001b[0m" else "" end)
   ' | sort -nr \
     | sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' \
-    | awk 'NR == 1 {print "\033[38;2;76;120;153m" $0 "\033[0m"; next} {print}'
+    | awk 'NR == 1 {print "\033[38;2;76;120;153m" $0 "\033[0m"; next} {print}' \
+    | awk '
+  /\[red\]/    {print "\033[31m" $0 "\033[0m"; next}
+  /\[blue\]/   {print "\033[34m" $0 "\033[0m"; next}
+  /\[green\]/  {print "\033[32m" $0 "\033[0m"; next}
+  /\[orange\]/ {print "\033[38;5;208m" $0 "\033[0m"; next}
+  {print}
+'
 
