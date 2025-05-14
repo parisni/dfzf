@@ -20,7 +20,7 @@ echo "$input_json" | jq -r \
   --argjson map "$windows_app_id_map_json" \
   --argjson glyph_rules "$windows_glyph_rules_json" '
     .. | objects
-    | select(.type == "con")
+    | select(.type == "con" or .type == "floating_con")
     | select(.window_type == null or .window_type == "normal")
     | select(.name != null)
     | select((.app_id // .window_properties.class) != null)
