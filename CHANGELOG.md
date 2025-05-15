@@ -2,6 +2,13 @@
 ## [Unreleased]
 
 
+<a name="v0.3.1"></a>
+## [v0.3.1] - 2025-05-15
+### Bug Fixes
+- **windows:** kitty terminal preview regression due to color
+- **windows:** mark urgent regression
+
+
 <a name="v0.3.0"></a>
 ## [v0.3.0] - 2025-05-15
 ### Bug Fixes
@@ -164,7 +171,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.3.1...HEAD
+[v0.3.1]: https://github.com/parisni/dfzf/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/parisni/dfzf/compare/v0.2.3...v0.3.0
 [v0.2.3]: https://github.com/parisni/dfzf/compare/v0.2.2...v0.2.3
 [v0.2.2]: https://github.com/parisni/dfzf/compare/v0.2.1...v0.2.2
