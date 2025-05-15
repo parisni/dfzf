@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-dfzf-kill-bro
+dfzf-kill-bro > /dev/null
 unset FZF_DEFAULT_OPTS
 # due to kitty/wl-copy bug we have to kill the kitty window otw it hangs
 if [ -n "$KITTY_WINDOW_ID" ]; then

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-dfzf-kill-bro
+dfzf-kill-bro > /dev/null
 unset FZF_DEFAULT_OPTS
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 

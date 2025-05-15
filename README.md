@@ -290,7 +290,7 @@ Install the below extensions:
 - cycle previous window
 - Return: focus window
 - focus window with enter
-- ctrl-r: reload windows
+- ctrl-a: reload windows
 - ctrl-k: kill window
 - terminal scrollback preview (kitty only)
 - ctrl-u: toggle urgent  (yellow color)

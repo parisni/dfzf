@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-dfzf-kill-bro
+dfzf-kill-bro > /dev/null
 unset FZF_DEFAULT_OPTS
 HIST_FLAG="/tmp/dfzf-notif_history_mode"
 rm $HIST_FLAG
