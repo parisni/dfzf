@@ -18,7 +18,7 @@ dfzf-windows-load "$current_tree"| fzf --ansi --no-sort --exact --prompt "Window
 	--bind="B:reload(dfzf-windows-load  | grep '\[blue\]' || dfzf-windows-load)" \
 	--bind="G:reload(dfzf-windows-load  | grep '\[green\]' || dfzf-windows-load)" \
   --bind="O:reload(dfzf-windows-load  | grep '\[orange\]' || dfzf-windows-load)" \
-	--bind="k:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-windows-kill @)+reload(dfzf-windows-load)" \
+	--bind="ctrl-k:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-windows-kill @)+reload(dfzf-windows-load)" \
 	--bind="u:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(dfzf-windows-load)" \
 	--bind="ctrl-j:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus || dfzf-exec '[class=\"^dfzf-popup$\"]' focus \")" \
 	--bind="enter:execute-silent(echo {}  |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus)+accept" \
