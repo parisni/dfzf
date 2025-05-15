@@ -290,7 +290,15 @@ Install the below extensions:
 - cycle previous window
 - Return: focus window
 - focus window with enter
-- ctrl-a: reload windows
+- A: reload windows
+- B: color blue
+- G: color green
+- O: color blue
+- R: color red
+- ctrl-b: select color blue
+- ctrl-g: select color green
+- ctrl-o: select color blue
+- ctrl-r: select color red
 - ctrl-k: kill window
 - terminal scrollback preview (kitty only)
 - ctrl-u: toggle urgent  (yellow color)
