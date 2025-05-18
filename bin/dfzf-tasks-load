@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
+
+tasks_cmd="${tasks_cmd:-todo}"
+
+$tasks_cmd --porcelain | jq -r '
+  .[] | 
+  # Priority glyph mapping
+  (if .priority == 9 then "★"
+   elif .priority == 5 then "▥"
+   elif .priority == 1 then "▤"
+   else "·" end) as $prio |
+
+  # Due date formatting (use "-" if no due date)
+  (if .due == null then "-" else (.due | strflocaltime("%Y-%m-%dT%H")) end) as $due |
+
+  (.summary | gsub("[\r\n]+"; " ")) as $summary |
+
+  .id as $id |
+
+  # Output line
+  "\($prio) \($due)\t\($summary) #\($id)"
+' | column -s $'\t' -t

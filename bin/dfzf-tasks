@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
+dfzf-kill-bro > /dev/null
+unset FZF_DEFAULT_OPTS
+
+
+
+tasks_cmd="${tasks_cmd:-todo}"
+tasks_vdirsyncer_cmd="${tasks_vdirsyncer_cmd:-vdirsyncer}"
+
+if [[ $# -eq 1 ]]; then
+  if [[ ! -s /tmp/dfzf-tasks ]]; then
+    # new: 
+  $tasks_cmd new
+else
+  $tasks_cmd edit "$1"
+  fi
+fi
+rm -f /tmp/dfzf-tasks
+
+result=$(dfzf-tasks-load | fzf --sync --no-sort --exact --prompt "Tasks > " --color='gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' \
+	--preview-window="up:wrap" \
+  --preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I@ $tasks_cmd show @" \
+  --bind="ctrl-t:execute(: > /tmp/dfzf-tasks && echo 'dummy #1')" --expect 'ctrl-t' \
+  --bind="ctrl-e:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/' > /tmp/dfzf-tasks)+accept" \
+  --bind="ctrl-k:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/' | xargs -I@ $tasks_cmd delete --yes @)+reload(dfzf-tasks-load)" \
+  --bind="ctrl-r:execute($tasks_vdirsyncer_cmd sync)+reload(dfzf-tasks-load)" \
+  --bind="ctrl-d:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/' | xargs -I@ $tasks_cmd done @)+reload(dfzf-tasks-load)")
+
+if [[ -n "$result" ]]; then
+  dfzf-tasks "$(echo "$result" | sed -E 's/.*#([0-9]+).*/\1/')"
+fi
+
