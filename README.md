@@ -45,6 +45,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-launcher`  | Launch desktop apps instantly                | ✅ | ✅   |
 | `dfzf-clipboard` | Searchable clipboard with image/text preview | ❌ | ✅   |
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   |
+| `dfzf-tasks`      | Manage caldav tasks from fzf              | ✅ |  ✅   |
 | `dfzf-mail`      | View and preview emails from the terminal    | ✅ |  ✅   |
 | `dfzf-password`  | Copy and preview entries from pass           | ✅ | ✅   |
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
@@ -122,6 +123,7 @@ bindsym $mod+o      exec $dfzf_term dfzf-launcher
 bindsym $mod+h      exec $dfzf_term dfzf-notifs
 bindsym $mod+i      exec $dfzf_term dfzf-clipboard
 bindsym $mod+m      exec $dfzf_term dfzf-mail
+bindsym $mod+t      exec $dfzf_term dfzf-tasks
 bindsym $mod+p      exec $dfzf_term dfzf-password
 bindsym $mod+F1     exec $dfzf_term dfzf-exit
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
@@ -153,6 +155,7 @@ bindsym $mod+Tab    exec $dfzf_term dfzf-windows
 bindsym $mod+o      exec $dfzf_term dfzf-launcher
 bindsym $mod+m      exec $dfzf_term dfzf-mail
 bindsym $mod+p      exec $dfzf_term dfzf-password
+bindsym $mod+t      exec $dfzf_term dfzf-tasks
 bindsym $mod+F1     exec $dfzf_term dfzf-exit
 for_window [class="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 # disable floating in general OTW they would stay behind other
@@ -377,6 +380,24 @@ Password-store
     sudo apt install jq mako-notifier
   ```
   ![Image](https://github.com/user-attachments/assets/645934df-c121-4f46-96d9-6b616f4b66cf)
+</details>
+
+<details>
+  <summary>
+ Tasks
+  </summary>
+
+  Manage caldav tasks:
+
+  - ctrl-t: new task
+  - ctrl-e: edit task
+  - ctrl-k: delete task
+  - ctrl-d: set status done for task
+  - ctrl-r: sync tasks with remote caldav
+  
+  ```bash
+    pip install todoman vdirsyncer
+  ```
 </details>
 
 <details>
