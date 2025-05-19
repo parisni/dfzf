@@ -2,6 +2,18 @@
 ## [Unreleased]
 
 
+<a name="v0.4.0"></a>
+## [v0.4.0] - 2025-05-19
+### Documentation
+- **all:** improve
+- **tasks:** init tasks commands
+
+### Features
+- **tasks:** add color to priority
+- **tasks:** dfzf-tasks to manage tasks with todoman
+- **windows:** colorize only glyph and class
+
+
 <a name="v0.3.1"></a>
 ## [v0.3.1] - 2025-05-15
 ### Bug Fixes
@@ -171,7 +183,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.4.0...HEAD
+[v0.4.0]: https://github.com/parisni/dfzf/compare/v0.3.1...v0.4.0
 [v0.3.1]: https://github.com/parisni/dfzf/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/parisni/dfzf/compare/v0.2.3...v0.3.0
 [v0.2.3]: https://github.com/parisni/dfzf/compare/v0.2.2...v0.2.3
