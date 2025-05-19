@@ -1,23 +1,29 @@
 #!/usr/bin/env bash
+
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 tasks_cmd="${tasks_cmd:-todo}"
 
-$tasks_cmd --porcelain | jq -r '
-  .[] | 
-  # Priority glyph mapping
-  (if .priority == 9 then "★"
-   elif .priority == 5 then "▥"
-   elif .priority == 1 then "▤"
-   else "·" end) as $prio |
+# Color codes
+RESET=$'\033[0m'
+RED=$'\033[31m'
+YELLOW=$'\033[33m'
+GREEN=$'\033[32m'
+GRAY=$'\033[90m'
 
-  # Due date formatting (use "-" if no due date)
+$tasks_cmd --porcelain | jq -r --arg red "$RED" --arg yellow "$YELLOW" --arg green "$GREEN" --arg gray "$GRAY" --arg reset "$RESET" '
+  .[] |
+  # Priority glyph with ANSI color
+  (if .priority == 1 then "\($red)▥\($reset)"
+   elif .priority == 5 then "\($green)▤\($reset)"
+   elif .priority == 9 then "\($yellow)▤\($reset)"
+   else "\($gray)▤\($reset)" end) as $prio |
+
   (if .due == null then "-" else (.due | strflocaltime("%Y-%m-%dT%H")) end) as $due |
-
   (.summary | gsub("[\r\n]+"; " ")) as $summary |
-
   .id as $id |
 
-  # Output line
+  # Output format
   "\($prio) \($due)\t\($summary) #\($id)"
-' | column -s $'\t' -t
+' | column -s $'\t' -t 
+
