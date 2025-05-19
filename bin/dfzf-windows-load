@@ -53,11 +53,20 @@ echo "$input_json" | jq -r \
           ) // " "
         )
       }
+     | (
+        # Color the glyph only
+        (if .urgent then "\u001b[33m" 
+         elif .red then "\u001b[31m"
+         elif .blue then "\u001b[34m"
+         elif .green then "\u001b[32m"
+         elif .orange then "\u001b[38;5;208m"
+         else "" end) + .glyph 
+      ) as $colored_glyph
     | "\(.sort)" +
       (if .urgent then "\u001b[33m" 
        elif .red then "\u001b[31m" 
        else "" end) +
-      "\(.glyph) [\(.app_id)]\t\(.name) \(
+      "\($colored_glyph) [\(.app_id)]\u001b[0m\t\(.name) \(
   if .red then " [red]"
   elif .blue then " [blue]"
   elif .green then " [green]"
@@ -68,12 +77,13 @@ echo "$input_json" | jq -r \
       (if .urgent or .important then "\u001b[0m" else "" end)
   ' | sort -nr \
     | sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' \
-    | awk 'NR == 1 {print "\033[38;2;76;120;153m" $0 "\033[0m"; next} {print}' \
-    | awk '
-  /\[red\]/    {print "\033[31m" $0 "\033[0m"; next}
-  /\[blue\]/   {print "\033[34m" $0 "\033[0m"; next}
-  /\[green\]/  {print "\033[32m" $0 "\033[0m"; next}
-  /\[orange\]/ {print "\033[38;5;208m" $0 "\033[0m"; next}
-  {print}
-'
+    | awk 'NR == 1 {
+    # Remove existing ANSI escape codes from the first line
+    gsub(/\033\[[0-9;]*m/, "");
+    # Then apply the new color to the entire first line
+    print "\033[38;2;76;120;153m" $0 "\033[0m";
+    next
+} 
+{print}'
+
 
