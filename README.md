@@ -43,11 +43,11 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 |------------------|----------------------------------------------|:--:|:----:|
 | `dfzf-windows`   | Navigate windows by title or time            | ✅ | ✅   |
 | `dfzf-launcher`  | Launch desktop apps instantly                | ✅ | ✅   |
-| `dfzf-clipboard` | Searchable clipboard with image/text preview | ❌ | ✅   |
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   |
-| `dfzf-tasks`      | Manage caldav tasks from fzf              | ✅ |  ✅   |
-| `dfzf-mail`      | View and preview emails from the terminal    | ✅ |  ✅   |
+| `dfzf-tasks`      | Manage caldav tasks                | ✅ |  ✅   |
+| `dfzf-clipboard` | Searchable clipboard with image/text preview | ❌ | ✅   |
 | `dfzf-password`  | Copy and preview entries from pass           | ✅ | ✅   |
+| `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   |
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
 
 ---
@@ -60,17 +60,16 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 Prerequisite
   </summary>
 
+In general, dfzf needs:
+ 
 - sway or i3
 - fzf 
-- jq version >= 1.7
-- gawk for dfzf-launcher
 - kitty version >= 0.41.1 OR alacritty OR foot
-- fd-find for dfzf-password
-- himalaya for dfzf-mail
-- batcat for dfzf-clipboard
-- mako for dfzf-notif
-- wl-clipboard, cliphist for dfzf-clipboard
-- rust to compile the dfzf-daemon and dfzf-mark
+- jq version >= 1.7
+
+Moreover, each tool can have specific dependencies described in the `Features` section.
+
+
 
 Also be sure `fzf` is accessible from sway/i3, by moving it to `/usr/local/bin/` (instead of default `~/.cargo/bin` place)
   or  setup sway/i3 path correctly
@@ -293,21 +292,21 @@ Install the below extensions:
 - cycle previous window
 - Return: focus window
 - focus window with enter
-- A: reload windows
-- B: color blue
-- G: color green
-- O: color blue
-- R: color red
-- ctrl-b: select color blue
-- ctrl-g: select color green
-- ctrl-o: select color blue
-- ctrl-r: select color red
-- ctrl-k: kill window
-- terminal scrollback preview (kitty only)
-- ctrl-u: toggle urgent  (yellow color)
-- ctrl-i: toggle important (red color)
-- ctrl-j: preview windows
-- escape: return to current windows (works after previews)
+- `A`: reload windows
+- `B`: color blue
+- `G`: color green
+- `O`: color blue
+- `R`: color red
+- `ctrl-b`: select color blue
+- `ctrl-g`: select color green
+- `ctrl-o`: select color blue
+- `ctrl-r`: select color red
+- `ctrl-k`: kill window
+- `terminal scrollback preview (kitty only)
+- `ctrl-u`: toggle urgent  (yellow color)
+- `ctrl-i`: toggle important (red color)
+- `ctrl-j`: preview windows
+- `escape`: return to current windows (works after previews)
 
   ```bash
     sudo apt install jq
@@ -343,7 +342,7 @@ Mail
 
   - list latest mails
   - preview text mails
-  - ctrl-j: preview html mails in the browser
+  - `ctrl-j`: preview html mails in the browser
   
   ```bash
     sudo apt install jq himalaya
@@ -356,8 +355,8 @@ Password-store
   </summary>
 
 
-  - Return: copy content
-  - ctrl-j: preview content
+  - `Return`: copy content
+  - `ctrl-j`: preview content
  
   ```bash
     sudo apt install pass wl-clipboard
@@ -372,9 +371,9 @@ Password-store
 
 
   - list notification ordered
-  - Return: notification action
-  - ctrl-k: kill notification
-  - ctrl-h: toggle notif history
+  - `Return`: notification action
+  - `ctrl-k`: kill notification
+  - `ctrl-h`: toggle notif history
   
   ```bash
     sudo apt install jq mako-notifier
@@ -389,11 +388,11 @@ Password-store
 
   Manage caldav tasks:
 
-  - ctrl-t: new task
-  - ctrl-e: edit task
-  - ctrl-k: delete task
-  - ctrl-d: set status done for task
-  - ctrl-r: sync tasks with remote caldav
+  - `ctrl-t`: new task
+  - `ctrl-e`: edit task
+  - `ctrl-k`: delete task
+  - `ctrl-d`: set status done for task
+  - `ctrl-r`: sync tasks with remote caldav
   
   ```bash
     pip install todoman vdirsyncer
