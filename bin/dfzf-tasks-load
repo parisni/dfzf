@@ -11,7 +11,12 @@ YELLOW=$'\033[33m'
 GREEN=$'\033[32m'
 GRAY=$'\033[90m'
 
-$tasks_cmd --porcelain | jq -r --arg red "$RED" --arg yellow "$YELLOW" --arg green "$GREEN" --arg gray "$GRAY" --arg reset "$RESET" '
+if [[ -e /tmp/dfzf-tasks-list ]]; then
+  list="$(cat /tmp/dfzf-tasks-list)"
+  $tasks_cmd --porcelain list "$list"
+else
+  $tasks_cmd --porcelain list
+fi | jq -r --arg red "$RED" --arg yellow "$YELLOW" --arg green "$GREEN" --arg gray "$GRAY" --arg reset "$RESET" '
   .[] |
   # Priority glyph with ANSI color
   (if .priority == 1 then "\($red)▥\($reset)"
