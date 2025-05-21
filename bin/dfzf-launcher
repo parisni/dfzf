@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 dfzf-kill-bro > /dev/null
-unset FZF_DEFAULT_OPTS
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 # terminal application launcher for sway, using fzf
 # Forked from https://github.com/Biont/sway-launcher-desktop
 shopt -s nullglob globstar
@@ -316,15 +316,12 @@ for PROVIDER_NAME in "${!PROVIDERS[@]}"; do
 done
 
 readarray -t COMMAND_STR <<<$(
-  ${FZF_COMMAND} --ansi +s -x -d '\034' --nth ..3 --with-nth 3 \
+  ${FZF_COMMAND} --prompt="Launcher > " \
+    --delimiter '\034' --nth ..3 --with-nth 3 \
     --print-query \
     --preview "$0 describe {2} {1}" \
     --preview-window="${PREVIEW_WINDOW}" \
-    --no-multi --cycle \
-    --prompt="Launcher > " \
-    --header='' --no-info --margin='1,2' \
-    --info="inline-right" \
-    --color='gutter:-1' \
+    --no-multi \
     <"$FZFPIPE"
 ) || exit 1
 # Get the last line of the fzf output. If there were no matches, it contains the query which we'll treat as a custom command

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-dfzf-kill-bro > /dev/null
-unset FZF_DEFAULT_OPTS
+dfzf-kill-bro >/dev/null
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 HIST_FLAG="/tmp/dfzf-notif_history_mode"
 rm $HIST_FLAG
-dfzf-notifs-load  | jq -r '.data[].[] | "\(.id.data):\(.summary.data)"' | fzf --no-sort --exact --prompt "Notifs > " --color='gutter:-1' --cycle --info="inline-right" --header='' --margin='1,2' \
-  --preview 'dfzf-notifs-load | jq -r --arg id "$(echo {} | sed -z "s/:.*//")" ".data[][] | select(.id.data == (\$id | tonumber)) | .body.data" ' \
-	--preview-window=up:30%:wrap \
-	--bind "enter:execute-silent(echo {}| sed -z 's/:.*//' | xargs makoctl invoke -n && (echo {}|grep -q 'Gmail ' || dfzf-exec '[title=\"Slack\"]' focus))+accept" \
-	--bind "ctrl-k:execute-silent(echo {}| sed -z 's/:.*//' |xargs makoctl dismiss -n)+reload(dfzf-notifs-load | jq -r '.data[].[] | \"\(.id.data):\(.summary.data)\"' )" \
-  --bind "ctrl-h:execute-silent(sh -c '[ -f \"$HIST_FLAG\" ] && rm -f \"$HIST_FLAG\" || touch \"$HIST_FLAG\"')+transform-prompt(sh -c '[ -f \"$HIST_FLAG\" ] && echo \"Notifs History > \" || echo \"Notifs > \"')+reload(dfzf-notifs-load  | jq -r '.data[].[] | \"\(.id.data):\(.summary.data)\"')"
-
+dfzf-notifs-load | jq -r '.data[].[] | "\(.id.data):\(.summary.data)"' |
+  fzf --prompt "Notifs > " \
+    --preview 'dfzf-notifs-load | jq -r --arg id "$(echo {} | sed -z "s/:.*//")" ".data[][] | select(.id.data == (\$id | tonumber)) | .body.data" ' \
+    --preview-window=up:30%:wrap \
+    --bind "enter:execute-silent(echo {}| sed -z 's/:.*//' | xargs makoctl invoke -n && (echo {}|grep -q 'Gmail ' || dfzf-exec '[title=\"Slack\"]' focus))+accept" \
+    --bind "ctrl-k:execute-silent(echo {}| sed -z 's/:.*//' |xargs makoctl dismiss -n)+reload(dfzf-notifs-load | jq -r '.data[].[] | \"\(.id.data):\(.summary.data)\"' )" \
+    --bind "ctrl-h:execute-silent(sh -c '[ -f \"$HIST_FLAG\" ] && rm -f \"$HIST_FLAG\" || touch \"$HIST_FLAG\"')+transform-prompt(sh -c '[ -f \"$HIST_FLAG\" ] && echo \"Notifs History > \" || echo \"Notifs > \"')+reload(dfzf-notifs-load  | jq -r '.data[].[] | \"\(.id.data):\(.summary.data)\"')"

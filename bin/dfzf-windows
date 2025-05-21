@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 current_tree=$(dfzf-kill-bro)
-unset FZF_DEFAULT_OPTS
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 if [ -n "$KITTY_WINDOW_ID" ]; then
-  export FZF_DEFAULT_OPTS="--preview=\"echo {}| sed -z 's/^.*]\t//' | sed -z -E 's/\\\[[^][]*\\\]//g' |sed -z 's/ #.*//'|sed 's/^[[:space:]]*//;s/[[:space:]]*$//'|sed 's/ /./g'|xargs -I'#' kitten @ get-text --match 'title:^#$' --extent all  2>/dev/null || (echo {} |fold -s -w 90) |tail -n 100| grep -v '~'|grep -v '^$'\" --preview-window=\"up:60%,follow\""
+  export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview=\"echo {}| sed -z 's/^.*]\t//' | sed -z -E 's/\\\[[^][]*\\\]//g' |sed -z 's/ #.*//'|sed 's/^[[:space:]]*//;s/[[:space:]]*$//'|sed 's/ /./g'|xargs -I'#' kitten @ get-text --match 'title:^#$' --extent all  2>/dev/null || (echo {} |fold -s -w 90) |tail -n 100| grep -v '~'|grep -v '^$'\" --preview-window=\"up:60%,follow\""
 fi
 
-dfzf-windows-load "$current_tree"| fzf --ansi --no-sort --exact --prompt "Windows > " --color='gutter:-1' --cycle --info="inline-right" --header='' --margin='1,2' \
-  --sync --bind "start:up" \
-  --bind "change:first" \
+dfzf-windows-load "$current_tree"| fzf --sync --prompt "Windows > " \
+  --bind "start:up" --bind "change:first" \
 	--bind="ctrl-r:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-red --append-ts)+reload(dfzf-windows-load)" \
 	--bind="ctrl-b:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-blue --append-ts)+reload(dfzf-windows-load)" \
 	--bind="ctrl-g:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-green --append-ts)+reload(dfzf-windows-load)" \

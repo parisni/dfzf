@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 dfzf-kill-bro > /dev/null
-unset FZF_DEFAULT_OPTS
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 tasks_cmd="${tasks_cmd:-todo}"
 tasks_vdirsyncer_cmd="${tasks_vdirsyncer_cmd:-vdirsyncer}"
 
 if [[ -s "/tmp/dfzf-tasks-lists" ]]; then
-  cat /tmp/dfzf-tasks-lists | jq -r ".[]" | fzf --ansi --sync --no-sort --exact --prompt "Collection > " --color='gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' > /tmp/dfzf-tasks-list
+  cat /tmp/dfzf-tasks-lists | jq -r ".[]" | fzf --sync  --prompt "Collection > "  > /tmp/dfzf-tasks-list
   rm -f /tmp/dfzf-tasks-lists
 elif [[ $# -eq 1 ]]; then
     $tasks_cmd edit "$1"
@@ -16,7 +16,7 @@ elif [[ -e "/tmp/dfzf-tasks" ]]; then
     $tasks_cmd new
 fi
 
-result=$(dfzf-tasks-load | fzf --ansi --sync --no-sort --exact --prompt "Tasks > " --color='gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' \
+result=$(dfzf-tasks-load | fzf --sync --prompt "Tasks > " \
 	--preview-window="up:wrap" \
   --preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I@ $tasks_cmd show @" \
   --bind="ctrl-t:execute-silent(touch /tmp/dfzf-tasks)+abort" \
