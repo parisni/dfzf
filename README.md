@@ -393,6 +393,7 @@ Password-store
   - `ctrl-k`: delete task
   - `ctrl-d`: set status done for task
   - `ctrl-r`: sync tasks with remote caldav
+  - `ctrl-l`: choose the collection
   
   ```bash
     pip install todoman vdirsyncer

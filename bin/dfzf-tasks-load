@@ -11,7 +11,7 @@ YELLOW=$'\033[33m'
 GREEN=$'\033[32m'
 GRAY=$'\033[90m'
 
-if [[ -e /tmp/dfzf-tasks-list ]]; then
+if [[ -s "/tmp/dfzf-tasks-list" ]]; then
   list="$(cat /tmp/dfzf-tasks-list)"
   $tasks_cmd --porcelain list "$list"
 else

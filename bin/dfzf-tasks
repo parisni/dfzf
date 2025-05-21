@@ -6,7 +6,7 @@ unset FZF_DEFAULT_OPTS
 tasks_cmd="${tasks_cmd:-todo}"
 tasks_vdirsyncer_cmd="${tasks_vdirsyncer_cmd:-vdirsyncer}"
 
-if [[ -e "/tmp/dfzf-tasks-lists" ]]; then
+if [[ -s "/tmp/dfzf-tasks-lists" ]]; then
   cat /tmp/dfzf-tasks-lists | jq -r ".[]" | fzf --ansi --sync --no-sort --exact --prompt "Collection > " --color='gutter:-1' --header='' --info="inline-right" --cycle --margin='1,2' > /tmp/dfzf-tasks-list
   rm -f /tmp/dfzf-tasks-lists
 elif [[ $# -eq 1 ]]; then
