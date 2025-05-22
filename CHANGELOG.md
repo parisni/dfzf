@@ -2,6 +2,20 @@
 ## [Unreleased]
 
 
+<a name="v0.5.0"></a>
+## [v0.5.0] - 2025-05-22
+### Bug Fixes
+- **tasks:** avoid empty collection
+
+### Features
+- **clipboard:** add support for both batcat and bat ([#1](https://github.com/parisni/dfzf/issues/1))
+- **tasks:** let choose the task collection
+- **tools:** add clock, top and calendar popup
+
+### Maintenance
+- **all:** force uniform FZF_DEFAULT_OPTS
+
+
 <a name="v0.4.0"></a>
 ## [v0.4.0] - 2025-05-19
 ### Documentation
@@ -183,7 +197,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.5.0...HEAD
+[v0.5.0]: https://github.com/parisni/dfzf/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/parisni/dfzf/compare/v0.3.1...v0.4.0
 [v0.3.1]: https://github.com/parisni/dfzf/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/parisni/dfzf/compare/v0.2.3...v0.3.0
