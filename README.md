@@ -44,11 +44,12 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-windows`   | Navigate windows by title or time            | ✅ | ✅   |
 | `dfzf-launcher`  | Launch desktop apps instantly                | ✅ | ✅   |
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   |
-| `dfzf-tasks`      | Manage caldav tasks                | ✅ |  ✅   |
+| `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   |
 | `dfzf-clipboard` | Searchable clipboard with image/text preview | ❌ | ✅   |
 | `dfzf-password`  | Copy and preview entries from pass           | ✅ | ✅   |
 | `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   |
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
+| `dfzf-tools`      | Clock, calendar, top popup      | ✅ |  ✅   |
 
 ---
 
@@ -117,14 +118,18 @@ set $term kitty -1
 
 #set $dfzf_term foot --app-id=dfzf-popup -e
 set $dfzf_term kitty -1 --class=dfzf-popup -e
-bindsym $mod+Tab    exec $dfzf_term dfzf-windows
-bindsym $mod+o      exec $dfzf_term dfzf-launcher
-bindsym $mod+h      exec $dfzf_term dfzf-notifs
-bindsym $mod+i      exec $dfzf_term dfzf-clipboard
-bindsym $mod+m      exec $dfzf_term dfzf-mail
-bindsym $mod+t      exec $dfzf_term dfzf-tasks
-bindsym $mod+p      exec $dfzf_term dfzf-password
-bindsym $mod+F1     exec $dfzf_term dfzf-exit
+bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
+bindsym $mod+o      exec --no-startup-id $dfzf_term dfzf-launcher
+bindsym $mod+h      exec --no-startup-id $dfzf_term dfzf-notifs
+bindsym $mod+i      exec --no-startup-id $dfzf_term dfzf-clipboard
+bindsym $mod+m      exec --no-startup-id $dfzf_term dfzf-mail
+bindsym $mod+t      exec --no-startup-id $dfzf_term dfzf-tasks
+bindsym $mod+p      exec --no-startup-id $dfzf_term dfzf-password
+bindsym $mod+F1     exec --no-startup-id $dfzf_term dfzf-exit
+bindsym $mod+d      exec --no-startup-id $dfzf_term dfzf-tools clock
+bindsym $mod+g      exec --no-startup-id $dfzf_term dfzf-tools top
+bindsym $mod+k      exec --no-startup-id $dfzf_term dfzf-tools calendar
+
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 # disable floating in general OTW they would stay behind other
 for_window [app_id="^(?!dfzf-popup$).*"] floating disable
@@ -150,12 +155,15 @@ set $term kitty -1
 
 #set $dfzf_term foot --app-id=dfzf-popup -e
 set $dfzf_term kitty -1 --class=dfzf-popup -e
-bindsym $mod+Tab    exec $dfzf_term dfzf-windows
-bindsym $mod+o      exec $dfzf_term dfzf-launcher
-bindsym $mod+m      exec $dfzf_term dfzf-mail
-bindsym $mod+p      exec $dfzf_term dfzf-password
-bindsym $mod+t      exec $dfzf_term dfzf-tasks
-bindsym $mod+F1     exec $dfzf_term dfzf-exit
+bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
+bindsym $mod+o      exec --no-startup-id $dfzf_term dfzf-launcher
+bindsym $mod+m      exec --no-startup-id $dfzf_term dfzf-mail
+bindsym $mod+p      exec --no-startup-id $dfzf_term dfzf-password
+bindsym $mod+t      exec --no-startup-id $dfzf_term dfzf-tasks
+bindsym $mod+F1     exec --no-startup-id $dfzf_term dfzf-exit
+bindsym $mod+d      exec --no-startup-id $dfzf_term dfzf-tools clock
+bindsym $mod+g      exec --no-startup-id $dfzf_term dfzf-tools top
+bindsym $mod+k      exec --no-startup-id $dfzf_term dfzf-tools calendar
 for_window [class="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 # disable floating in general OTW they would stay behind other
 for_window [app_id="^(?!dfzf-popup$).*"] floating disable
@@ -213,6 +221,9 @@ exit_cmd_r='sudo reboot'
 exit_cmd_S='shutdown now'
 exit_cmd_h='sudo /bin/systemctl hibernate'
 
+tools_clock_cmd="tty-clock -c -C 4 -s"
+tools_calendar_cmd="~/.venv/3.11.6/bin/khal interactive"
+tools_top_cmd="gotop"
 
 ```
 
@@ -427,6 +438,22 @@ Password-store
   - logout
 
   ![Image](https://github.com/user-attachments/assets/2e60004a-f3a4-4336-a42e-576292f77e47)
+</details>
+
+<details>
+  <summary>
+    Tools
+  </summary>
+
+  Set of tools not related with fzf, but useful even to drop the sway bar.
+
+  - resource usage: top, htop, gotop ...
+  - calendar: khal, calcurse ...
+  - clock: tty-clock ...
+
+![Image](https://github.com/user-attachments/assets/dfb1ef58-38e0-44c1-b85b-5a8d0d99f0d4)
+![Image](https://github.com/user-attachments/assets/ad0813b3-0090-4541-9077-f228508c9923)
+![Image](https://github.com/user-attachments/assets/ba17b777-5136-4172-b065-39a1fc8b7ed5)
 </details>
 
 ## Related work

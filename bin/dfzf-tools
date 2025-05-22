@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+dfzf-kill-bro > /dev/null
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
+
+tools_top_cmd="${tools_top_cmd:-gotop}"
+tools_calendar_cmd="${tools_calendar_cmd:-khal interactive}"
+tools_clock_cmd="${tools_clock_cmd:-tty-clock -c -C 4 -s}"
+
+# Check the first argument and run the corresponding command
+case "$1" in
+  clock)
+    eval "$tools_clock_cmd"
+    ;;
+  top)
+    eval "$tools_top_cmd"
+    ;;
+  calendar)
+    eval "$tools_calendar_cmd"
+    ;;
+  *)
+    echo "Usage: $0 {clock|top|calendar}"
+    exit 1
+    ;;
+esac
