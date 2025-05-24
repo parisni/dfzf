@@ -1,8 +1,19 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.6.0"></a>
+## [v0.6.0] - 2025-05-24
+### Documentation
+- **all:** add new features and complete table
+
 ### Features
+- **hub:** central launcher for all dfzf tools
 - **scrollbacks:** fzf all terminal content + focus window/scroll to it
+- **tools:** wifi and bluetooth tui
+
+### Maintenance
+- **exit:** add default values
 
 
 <a name="v0.5.0"></a>
@@ -200,7 +211,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.6.0...HEAD
+[v0.6.0]: https://github.com/parisni/dfzf/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/parisni/dfzf/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/parisni/dfzf/compare/v0.3.1...v0.4.0
 [v0.3.1]: https://github.com/parisni/dfzf/compare/v0.3.0...v0.3.1

@@ -76,7 +76,7 @@ jobs:
           cp -r package/${{ matrix.arch }}/usr/local/bin/* pkgroot/usr/local/bin/
           cat > pkgroot/DEBIAN/control <<EOF
           Package: dfzf
-          Version: 0.5.0
+          Version: 0.6.0
           Architecture: ${{ matrix.arch }}
           Maintainer: parisni <contact@parisni.com>
           Description: dfzf binaries
