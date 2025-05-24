@@ -3,6 +3,23 @@
 dfzf-kill-bro > /dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
+exit_options=(
+  "l: Lock (swaylock)"
+  "e: Restart GDM"
+  "s: Lock and Suspend"
+  "r: Reboot"
+  "S: Shutdown"
+  "h: Hibernate"
+)
+
+# Command mappings
+exit_cmd_l='swaylock -e -F -f -k -c 000000'
+exit_cmd_e='sudo /usr/bin/systemctl restart gdm'
+exit_cmd_s='swaylock -e -F -f -k -c 000000 && systemctl suspend'
+exit_cmd_r='sudo reboot'
+exit_cmd_S='shutdown now'
+exit_cmd_h='sudo /bin/systemctl hibernate'
+
 # Create the list
 choices=$(printf '%s\n' "${exit_options[@]}")
 
@@ -13,7 +30,7 @@ for opt in "${exit_options[@]}"; do
     cmd_var="exit_cmd_$key"
     # Bind each key to "execute the command and abort fzf"
     if [[ -n "${!cmd_var}" ]]; then
-        binds+=("--bind" "$key:execute-silent(echo '${!cmd_var}' | bash)")
+        binds+=("--bind" "$key:execute-silent(${!cmd_var})")
     fi
 done
 
