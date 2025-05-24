@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
+dfzf-kill-bro > /dev/null
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+
+hub_options=(
+  "b: Bluetooth"
+  "c: Clipboard"
+  "d: Date"
+  "e: exit"
+  "g: Gotop"
+  "k: Calendar"
+  "l: launcher"
+  "m: Mail"
+  "n: Notif"
+  "p: Password"
+  "s: Scrollback"
+  "t: Task"
+  "w: Wifi"
+)
+
+# Command mappings
+hub_cmd_b='dfzf-tools bluetooth'
+hub_cmd_c='dfzf-clipboard'
+hub_cmd_d='dfzf-tools clock'
+hub_cmd_e='dfzf-exit'
+hub_cmd_g='dfzf-tools top'
+hub_cmd_k='dfzf-tools calendar'
+hub_cmd_l='dfzf-launcher'
+hub_cmd_m='dfzf-mail'
+hub_cmd_n='dfzf-notifs'
+hub_cmd_p='dfzf-password'
+hub_cmd_s='dfzf-scrollbacks'
+hub_cmd_t='dfzf-tasks'
+hub_cmd_w='dfzf-tools wifi'
+
+# Create the list
+choices=$(printf '%s\n' "${hub_options[@]}")
+
+# Prepare keybindings
+binds=()
+for opt in "${hub_options[@]}"; do
+    key=$(echo "$opt" | cut -d':' -f1)
+    cmd_var="hub_cmd_$key"
+    # Bind each key to "execute the command and abort fzf"
+    if [[ -n "${!cmd_var}" ]]; then
+        binds+=("--bind" "$key:execute(${!cmd_var})+abort")
+    fi
+done
+
+# Run fzf with dynamic binds
+echo "$choices" | 
+  fzf --tac --prompt "Hub > " \
+    "${binds[@]}"
+
