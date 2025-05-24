@@ -42,6 +42,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | Tool             | Description                                  | i3 | Sway |
 |------------------|----------------------------------------------|:--:|:----:|
 | `dfzf-windows`   | Navigate windows by title or time            | ✅ | ✅   |
+| `dfzf-scrollbacks`   | Fuzzy-search within all your terminals at once            | ✅ | ✅   |
 | `dfzf-launcher`  | Launch desktop apps instantly                | ✅ | ✅   |
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   |
 | `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   |
@@ -49,7 +50,8 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-password`  | Copy and preview entries from pass           | ✅ | ✅   |
 | `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   |
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
-| `dfzf-tools`      | Clock, calendar, top popup      | ✅ |  ✅   |
+| `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth popup      | ✅ |  ✅   |
+| `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   |
 
 ---
 
@@ -119,16 +121,7 @@ set $term kitty -1
 #set $dfzf_term foot --app-id=dfzf-popup -e
 set $dfzf_term kitty -1 --class=dfzf-popup -e
 bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
-bindsym $mod+o      exec --no-startup-id $dfzf_term dfzf-launcher
-bindsym $mod+h      exec --no-startup-id $dfzf_term dfzf-notifs
-bindsym $mod+i      exec --no-startup-id $dfzf_term dfzf-clipboard
-bindsym $mod+m      exec --no-startup-id $dfzf_term dfzf-mail
-bindsym $mod+t      exec --no-startup-id $dfzf_term dfzf-tasks
-bindsym $mod+p      exec --no-startup-id $dfzf_term dfzf-password
-bindsym $mod+F1     exec --no-startup-id $dfzf_term dfzf-exit
-bindsym $mod+d      exec --no-startup-id $dfzf_term dfzf-tools clock
-bindsym $mod+g      exec --no-startup-id $dfzf_term dfzf-tools top
-bindsym $mod+k      exec --no-startup-id $dfzf_term dfzf-tools calendar
+bindsym $mod+l      exec --no-startup-id $dfzf_term dfzf-hub
 
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 # disable floating in general OTW they would stay behind other
@@ -156,14 +149,8 @@ set $term kitty -1
 #set $dfzf_term foot --app-id=dfzf-popup -e
 set $dfzf_term kitty -1 --class=dfzf-popup -e
 bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
-bindsym $mod+o      exec --no-startup-id $dfzf_term dfzf-launcher
-bindsym $mod+m      exec --no-startup-id $dfzf_term dfzf-mail
-bindsym $mod+p      exec --no-startup-id $dfzf_term dfzf-password
-bindsym $mod+t      exec --no-startup-id $dfzf_term dfzf-tasks
-bindsym $mod+F1     exec --no-startup-id $dfzf_term dfzf-exit
-bindsym $mod+d      exec --no-startup-id $dfzf_term dfzf-tools clock
-bindsym $mod+g      exec --no-startup-id $dfzf_term dfzf-tools top
-bindsym $mod+k      exec --no-startup-id $dfzf_term dfzf-tools calendar
+bindsym $mod+l      exec --no-startup-id $dfzf_term dfzf-hub
+
 for_window [class="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 # disable floating in general OTW they would stay behind other
 for_window [app_id="^(?!dfzf-popup$).*"] floating disable
@@ -326,8 +313,38 @@ Install the below extensions:
   ![Image](https://github.com/user-attachments/assets/ab76602c-9e04-4a08-bb9d-dcee16413fce)
 </details>
 
+<details>
+  <summary>
+ Scrollbacks
+  </summary>
 
+  Scrollbacks let you fuzzy-search across all your terminal histories (Kitty only) and focus the right one — great for digging up lost work from vague command memories.
 
+</details>
+
+<details>
+  <summary>
+ Hub
+  </summary>
+
+  The hub lets you launch any dfzf command with a single keystroke — one keybinding to rule them all.
+
+- `b`: Bluetooth
+- `c`: Clipboard
+- `d`: Date
+- `e`: exit
+- `g`: Gotop
+- `k`: Calendar
+- `l`: launcher
+- `m`: Mail
+- `n`: Notif
+- `p`: Password
+- `s`: Scrollback
+- `t`: Task
+- `w`: Wifi
+
+  ![Image](https://github.com/user-attachments/assets/1aa98ea6-3b59-48fc-9eea-1673857ed019)
+</details>
 
 
 
@@ -450,6 +467,8 @@ Password-store
   - resource usage: top, htop, gotop ...
   - calendar: khal, calcurse ...
   - clock: tty-clock ...
+  - wifi
+  - bluetooth
 
 ![Image](https://github.com/user-attachments/assets/dfb1ef58-38e0-44c1-b85b-5a8d0d99f0d4)
 ![Image](https://github.com/user-attachments/assets/ad0813b3-0090-4541-9077-f228508c9923)
