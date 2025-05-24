@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+current_tree=$(dfzf-kill-bro)
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+
+dfzf_map=$(dfzf-exec -t get_tree --raw | jq -rc '
+  .. | objects | select(.name != null)
+  | {title: (.name | gsub(" "; ".")), id}
+')
+
+result=$(kitty @ ls | jq -r '.[].tabs[].windows[].title | gsub(" "; ".")' | \
+xargs -n1 -P"$(
+  cpus=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+  if [ "$cpus" -gt 6 ]; then echo 8; else echo "$cpus"; fi
+)" -I{} bash -c '
+  title="{}"
+  dfzf_map_json="$1"
+  id=$(echo "$dfzf_map_json" | jq -r --arg t "$title" "select(.title == \$t) | .id")
+  if [ -n "$id" ]; then
+    text=$(kitten @ get-text --match "title:^$title" --extent all | tac| nl | sed "s/^[ \t]*//;s/[ \t]*$//;s/$/ #${id}/")
+    colors=(31 32 33 34 35 36)
+    sum=0
+    for ((i=0; i<${#id}; i++)); do
+      sum=$((sum + $(printf "%d" "''${id:i:1}")))
+    done
+    color=${colors[$((sum % ${#colors[@]}))]}
+    echo -e "\033[${color}m${text}\033[0m"
+  fi
+' _ "$dfzf_map" | \
+  fzf --prompt "Scrollbacks: " \
+  --no-hscroll \
+  --no-unicode \
+  --preview='
+id=$(echo {} | sed -Ez "s/.*#([0-9]+).*/\1/")
+dfzf-exec -t get_tree --raw | jq -r --arg id "$id" '"'"'.. | objects | select(.id == ($id | tonumber)) | .name | gsub(" "; ".")'"'"'
+' \
+  --preview-window="up:1,follow"
+)
+
+con_id=$(echo $result | sed -Ez 's/.*#([0-9]+).*/\1/')
+scroll_line=$(echo $result | sed -Ez 's/^([0-9]+).*/\1/')
+# arbitrary increase scroll by 2 to make the bottom terimal match the selected row
+scroll_line=$((scroll_line - 2))
+dfzf-exec "[con_id=$con_id]" focus
+title=$(dfzf-exec -t get_tree --raw | jq -r --arg id "$con_id" ' .. | objects | select(.id == ($id | tonumber)) | .name  | gsub(" "; ".")')
+kitty @ scroll-window --match "title:^$title$" "${scroll_line}l-"

@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+- **scrollbacks:** fzf all terminal content + focus window/scroll to it
+
 
 <a name="v0.5.0"></a>
 ## [v0.5.0] - 2025-05-22
