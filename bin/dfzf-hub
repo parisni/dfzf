@@ -8,6 +8,7 @@ hub_options=(
   "c: Clipboard"
   "d: Date"
   "e: exit"
+  "f: Fetch"
   "g: Gotop"
   "k: Calendar"
   "l: launcher"
@@ -24,6 +25,7 @@ hub_cmd_b='dfzf-tools bluetooth'
 hub_cmd_c='dfzf-clipboard'
 hub_cmd_d='dfzf-tools clock'
 hub_cmd_e='dfzf-exit'
+hub_cmd_f='dfzf-tools fetch'
 hub_cmd_g='dfzf-tools top'
 hub_cmd_k='dfzf-tools calendar'
 hub_cmd_l='dfzf-launcher'

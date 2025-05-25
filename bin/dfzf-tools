@@ -7,6 +7,7 @@ tools_calendar_cmd="${tools_calendar_cmd:-khal interactive}"
 tools_clock_cmd="${tools_clock_cmd:-tty-clock -c -C 4 -s}"
 tools_wifi_cmd="${tools_wifi_cmd:-nmtui connect}"
 tools_bluetooth_cmd="${tools_bluetooth_cmd:-bluetuith --no-warning}"
+tools_fetch_cmd="${tools_fetch_cmd:-fastfetch && sleep infinity}"
 
 # Check the first argument and run the corresponding command
 case "$1" in
@@ -25,8 +26,11 @@ case "$1" in
   bluetooth)
     eval "$tools_bluetooth_cmd"
     ;;
+  fetch)
+    eval "$tools_fetch_cmd"
+    ;;
   *)
-    echo "Usage: $0 {clock|top|calendar|wifi|bluetooth}"
+    echo "Usage: $0 {clock|top|calendar|wifi|bluetooth|fetch}"
     exit 1
     ;;
 esac
