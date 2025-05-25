@@ -36,6 +36,6 @@ done
 
 # Run fzf with dynamic binds
 echo "$choices" | 
-  fzf --prompt "Exit > " \
+  fzf --disabled --prompt "Exit > " \
     "${binds[@]}"
 

@@ -50,6 +50,6 @@ done
 
 # Run fzf with dynamic binds
 echo "$choices" | 
-  fzf --tac --prompt "Hub > " \
+  fzf --tac --disabled --prompt "Hub > " \
     "${binds[@]}"
 
