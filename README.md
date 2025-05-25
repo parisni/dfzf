@@ -471,6 +471,7 @@ Password-store
   - bluetooth
   - fetch: fastfetch
 
+![Image](https://github.com/user-attachments/assets/7cefe766-54c1-4f91-9833-946c6f4e139f)
 ![Image](https://github.com/user-attachments/assets/dfb1ef58-38e0-44c1-b85b-5a8d0d99f0d4)
 ![Image](https://github.com/user-attachments/assets/ad0813b3-0090-4541-9077-f228508c9923)
 ![Image](https://github.com/user-attachments/assets/ba17b777-5136-4172-b065-39a1fc8b7ed5)
