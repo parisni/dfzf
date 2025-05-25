@@ -50,7 +50,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-password`  | Copy and preview entries from pass           | ✅ | ✅   |
 | `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   |
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
-| `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth popup      | ✅ |  ✅   |
+| `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   |
 | `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   |
 
 ---
@@ -469,6 +469,7 @@ Password-store
   - clock: tty-clock ...
   - wifi
   - bluetooth
+  - fetch: fastfetch
 
 ![Image](https://github.com/user-attachments/assets/dfb1ef58-38e0-44c1-b85b-5a8d0d99f0d4)
 ![Image](https://github.com/user-attachments/assets/ad0813b3-0090-4541-9077-f228508c9923)
