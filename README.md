@@ -180,7 +180,7 @@ set $term kitty -1
 #set $term alacritty
 
 #set $dfzf_term foot --app-id=dfzf-popup -e
-set $dfzf_term kitty -1 --class=dfzf-popup -e
+set $dfzf_term kitty --override 'map escape close_window' --class=dfzf-popup -e
 bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
 bindsym $mod+l      exec --no-startup-id $dfzf_term dfzf-hub
 
@@ -208,7 +208,7 @@ set $term kitty -1
 #set $term alacritty
 
 #set $dfzf_term foot --app-id=dfzf-popup -e
-set $dfzf_term kitty -1 --class=dfzf-popup -e
+set $dfzf_term kitty --override 'map escape close_window' --class=dfzf-popup -e
 bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
 bindsym $mod+l      exec --no-startup-id $dfzf_term dfzf-hub
 
