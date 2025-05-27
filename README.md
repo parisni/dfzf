@@ -69,6 +69,7 @@ In general, dfzf needs:
 - fzf 
 - kitty version >= 0.41.1 OR alacritty OR foot
 - jq version >= 1.7
+- nerdfonts to display the glyphs (see nerdfont section)
 
 Moreover, each tool can have specific dependencies described in the `Features` section.
 
@@ -100,6 +101,66 @@ curl https://sh.rustup.rs -sSf | sh
 rustup update nightly
 cargo +nightly build --release
 find  dfzf-utils  -type f  -executable -name "dfzf-*" |xargs -I@ sudo cp @ /usr/local/bin/
+```
+</details>
+
+
+
+<details>
+<summary>Nerdfont</summary>
+
+
+Glyph are used in some dfzf modules (windows, tasks). If you don't wan't them you can override the config that way:
+```bash
+#~/.config/dfzf/dfzf.conf
+windows_glyph_rules_json='[{"glyph": ""}]'
+```
+
+You can install nerdfont by running this script ([source](https://gist.github.com/matthewjberger/7dd7e079f282f8138a9dc3b045ebefa0?permalink_comment_id=3839120)). Also snap apps cannot access to `.local/share/fonts`, reason I personally install them into `~/.fonts` instead.
+```bash
+  #!/bin/bash
+
+declare -a fonts=(
+BitstreamVeraSansMono
+CascadiaCode
+CodeNewRoman
+DroidSansMono
+FiraCode
+FiraMono
+Go-Mono
+Hack
+Hermit
+JetBrainsMono
+Meslo
+Noto
+Overpass
+ProggyClean
+RobotoMono
+SourceCodePro
+SpaceMono
+Ubuntu
+UbuntuMono
+)
+
+version=$(curl -s 'https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest' | jq -r '.name')
+fonts_dir="${HOME}/.fonts"
+
+if [[ ! -d "$fonts_dir" ]]; then
+mkdir -p "$fonts_dir"
+fi
+
+for font in "${fonts[@]}"; do
+zip_file="${font}.zip"
+download_url="https://github.com/ryanoasis/nerd-fonts/releases/download/${version}/${zip_file}"
+echo "Downloading $download_url"
+wget "$download_url"
+unzip "$zip_file" -d "$fonts_dir"
+rm "$zip_file"
+done
+
+find "$fonts_dir" -name 'Windows Compatible' -delete
+
+fc-cache -fv
 ```
 </details>
 
