@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
-# Load optional config
-[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 # Define defaults if not already set
-windows_app_id_map_json="${windows_app_id_map_json:-{\}}"
-windows_glyph_rules_json="${windows_glyph_rules_json:-[]}"
-windows_title_rm_pattern="${windows_title_rm_pattern:-— Mozilla Firefox }"
+windows_app_id_map_json="{}"
+windows_glyph_rules_json='[{"glyph": " "}]'
+windows_title_rm_pattern="— Mozilla Firefox "
+
+# Load optional config
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 # Accept optional input via stdin or first argument
 if [ -n "$1" ]; then
@@ -45,12 +46,13 @@ echo "$input_json" | jq -r \
                 . as $rule |
                 select(
                   ($rule.field == "app_id" and ($win.app_id // $win.window_properties.class // "" | test($rule.regex; "i"))) or
-                  ($rule.field == "name"   and ($win.name // "" | test($rule.regex; "i")))
+                  ($rule.field == "name"   and ($win.name // "" | test($rule.regex; "i"))) or
+                  ($rule.field == null) # default glyph
                 )
               )
             | first
             | .glyph
-          ) // " "
+          )
         )
       }
      | (
