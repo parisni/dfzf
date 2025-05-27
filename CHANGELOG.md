@@ -2,6 +2,23 @@
 ## [Unreleased]
 
 
+<a name="v0.6.2"></a>
+## [v0.6.2] - 2025-05-27
+### Bug Fixes
+- **all:** force usage of bash in zsh
+- **exec:** better identify sway/i3
+- **scrollbacks:** enable hscroll
+
+### Documentation
+- remove floating windows popup not supported by i3
+- **scrolback:** add screenshot
+- **windows:** nerdfont (optional)requirement
+
+### Features
+- **all:** make escape key kill any dfzf-popup in kitty
+- **tools:** add fastfetch
+
+
 <a name="v0.6.1"></a>
 ## [v0.6.1] - 2025-05-25
 ### Bug Fixes
@@ -221,7 +238,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.6.2...HEAD
+[v0.6.2]: https://github.com/parisni/dfzf/compare/v0.6.1...v0.6.2
 [v0.6.1]: https://github.com/parisni/dfzf/compare/v0.6.0...v0.6.1
 [v0.6.0]: https://github.com/parisni/dfzf/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/parisni/dfzf/compare/v0.4.0...v0.5.0
