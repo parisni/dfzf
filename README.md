@@ -67,7 +67,7 @@ In general, dfzf needs:
  
 - sway or i3
 - fzf 
-- kitty version >= 0.41.1 OR alacritty OR foot
+- kitty version >= 0.42.1 OR alacritty OR foot
 - jq version >= 1.7
 - nerdfonts to display the glyphs (see nerdfont section)
 
@@ -180,7 +180,8 @@ set $term kitty -1
 #set $term alacritty
 
 #set $dfzf_term foot --app-id=dfzf-popup -e
-set $dfzf_term kitty --override 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' --class=dfzf-popup -e
+exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
+set $dfzf_term kitty -1 --instance-group dfzf --class=dfzf-popup -e
 bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
 bindsym $mod+l      exec --no-startup-id $dfzf_term dfzf-hub
 
@@ -208,7 +209,8 @@ set $term kitty -1
 #set $term alacritty
 
 #set $dfzf_term foot --app-id=dfzf-popup -e
-set $dfzf_term kitty --override 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' --class=dfzf-popup -e
+exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
+set $dfzf_term kitty -1 --instance-group dfzf --class=dfzf-popup -e
 bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
 bindsym $mod+l      exec --no-startup-id $dfzf_term dfzf-hub
 
