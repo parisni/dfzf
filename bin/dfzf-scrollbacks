@@ -28,7 +28,6 @@ xargs -n1 -P"$(
   fi
 ' _ "$dfzf_map" | \
   fzf --prompt "Scrollbacks: " \
-  --no-hscroll \
   --no-unicode \
   --preview='
 id=$(echo {} | sed -Ez "s/.*#([0-9]+).*/\1/")
