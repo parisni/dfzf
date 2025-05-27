@@ -3,8 +3,17 @@ export SHELL="$(command -v bash)"
 current_tree=$(dfzf-kill-bro)
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
+if command -v fd > /dev/null; then
+  findcommand="fd"
+elif command -v fdfind > /dev/null; then
+  findcommand="fdfind"
+else
+  echo "Neither fd nor fdfind found. Please install one of them."
+  exit 1
+fi
+kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1| head -n1)
 if [ -n "$KITTY_WINDOW_ID" ]; then
-  export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview=\"echo {}| sed -z 's/^.*]\t//' | sed -z -E 's/\\\[[^][]*\\\]//g' |sed -z 's/ #.*//'|sed 's/^[[:space:]]*//;s/[[:space:]]*$//'|sed 's/ /./g'|xargs -I'#' kitten @ get-text --match 'title:^#$' --extent all  2>/dev/null || (echo {} |fold -s -w 90) |tail -n 100| grep -v '~'|grep -v '^$'\" --preview-window=\"up:60%,follow\""
+  export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview=\"echo {}| sed -z 's/^.*]\t//' | sed -z -E 's/\\\[[^][]*\\\]//g' |sed -z 's/ #.*//'|sed 's/^[[:space:]]*//;s/[[:space:]]*$//'|sed 's/ /./g'|xargs -I'#' kitten @ get-text --to unix:$kitty_sock --match 'title:^#$' --extent all  2>/dev/null || (echo {} |fold -s -w 90) |tail -n 100| grep -v '~'|grep -v '^$'\" --preview-window=\"up:60%,follow\""
 fi
 
 dfzf-windows-load "$current_tree"| fzf --sync --prompt "Windows > " \
