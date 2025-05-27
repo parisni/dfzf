@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.6.3"></a>
+## [v0.6.3] - 2025-05-28
+### Bug Fixes
+- **hub:** press enter to launch the tool
+- **scrollbacks:** regression on kitty access to socket
+- **windows:** fix kitty terminal preview regression
+- **windows:** allow empty glyph
+
+
 <a name="v0.6.2"></a>
 ## [v0.6.2] - 2025-05-27
 ### Bug Fixes
@@ -238,7 +247,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.6.3...HEAD
+[v0.6.3]: https://github.com/parisni/dfzf/compare/v0.6.2...v0.6.3
 [v0.6.2]: https://github.com/parisni/dfzf/compare/v0.6.1...v0.6.2
 [v0.6.1]: https://github.com/parisni/dfzf/compare/v0.6.0...v0.6.1
 [v0.6.0]: https://github.com/parisni/dfzf/compare/v0.5.0...v0.6.0
