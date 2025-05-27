@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
+export SHELL="$(command -v bash)"
 dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 HIST_FLAG="/tmp/dfzf-notif_history_mode"
 rm -f $HIST_FLAG
+
 dfzf-notifs-load | jq -r '.data[].[] | "\(.id.data):\(.summary.data)"' |
   fzf --prompt "Notifs > " \
     --preview 'dfzf-notifs-load | jq -r --arg id "$(echo {} | sed -z "s/:.*//")" ".data[][] | select(.id.data == (\$id | tonumber)) | .body.data" ' \

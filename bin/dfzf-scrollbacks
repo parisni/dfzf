@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export SHELL="$(command -v bash)"
 current_tree=$(dfzf-kill-bro)
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 

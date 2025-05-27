@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export SHELL="$(command -v bash)"
 dfzf-kill-bro > /dev/null
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
