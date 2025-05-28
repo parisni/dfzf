@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.6.4"></a>
+## [v0.6.4] - 2025-05-28
+### Bug Fixes
+- **exec:** consider i3 if I3SOCK is set
+
+### Documentation
+- **kitty:** use singleton groups and start dfzf hidden
+
+
 <a name="v0.6.3"></a>
 ## [v0.6.3] - 2025-05-28
 ### Bug Fixes
@@ -247,7 +256,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.6.3...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.6.4...HEAD
+[v0.6.4]: https://github.com/parisni/dfzf/compare/v0.6.3...v0.6.4
 [v0.6.3]: https://github.com/parisni/dfzf/compare/v0.6.2...v0.6.3
 [v0.6.2]: https://github.com/parisni/dfzf/compare/v0.6.1...v0.6.2
 [v0.6.1]: https://github.com/parisni/dfzf/compare/v0.6.0...v0.6.1
