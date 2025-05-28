@@ -36,7 +36,9 @@ for opt in "${exit_options[@]}"; do
 done
 
 # Run fzf with dynamic binds
-echo "$choices" | 
+result=$(echo "$choices" | 
   fzf --disabled --prompt "Exit > " \
-    "${binds[@]}"
+  --bind='enter:accept' \
+  "${binds[@]}"|sed -Ez 's/^([a-z]):.*/$exit_cmd_\1/g')
 
+eval "$result" && sleep infinity
