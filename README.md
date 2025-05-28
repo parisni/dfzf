@@ -189,8 +189,6 @@ bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-win
 bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
 
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
-# disable floating in general OTW they would stay behind other
-for_window [app_id="^(?!dfzf-popup$).*"] floating disable
 
 # optional: hide the tabs
 font pango:monospace 0.001

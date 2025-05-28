@@ -17,8 +17,9 @@ if [ -n "$KITTY_WINDOW_ID" ]; then
 else
   export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview=\"echo {}\" --preview-window=\"up:3,wrap\""
 fi
-
-dfzf-windows-load "$current_tree"| fzf --sync --prompt "Windows > " \
+result=$(dfzf-windows-load "$current_tree")
+(head -n1 <<< $result) | sed -Ez 's/.*#([0-9]+).*/\1/' | xargs -I@ dfzf-exec '[con_id=@]' floating disable
+fzf --sync --prompt "Windows > " \
   --bind "start:up" --bind "change:first" \
 	--bind="ctrl-r:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-red --append-ts)+reload(dfzf-windows-load)" \
 	--bind="ctrl-b:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-blue --append-ts)+reload(dfzf-windows-load)" \
@@ -33,4 +34,4 @@ dfzf-windows-load "$current_tree"| fzf --sync --prompt "Windows > " \
 	--bind="ctrl-u:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(dfzf-windows-load)" \
 	--bind="ctrl-j:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus || dfzf-exec '[class=\"^dfzf-popup$\"]' focus \")" \
 	--bind="enter:execute-silent(echo {}  |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus)+accept" \
-  --bind="esc:execute-silent(dfzf-windows-load | head -n1 | sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus)+abort"
+  --bind="esc:execute-silent(dfzf-windows-load | head -n1 | sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus)+abort" <<< $result
