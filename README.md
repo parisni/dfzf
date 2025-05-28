@@ -175,15 +175,18 @@ exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 exec wl-paste --watch cliphist -max-items 1000 store # for dfzf-clipboard  
 exec mako # for the dfzf-notifs
 
-set $term kitty -1
+# FOR FOOT OR ALACRITTY
 #set $term foot
 #set $term alacritty
-
 #set $dfzf_term foot --app-id=dfzf-popup -e
-exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
-set $dfzf_term kitty -1 --instance-group dfzf --class=dfzf-popup -e
-bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
-bindsym $mod+l      exec --no-startup-id $dfzf_term dfzf-hub
+#bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
+#bindsym $mod+l      exec --no-startup-id $dfzf_term dfzf-hub
+
+# FOR KITTY
+set $term kitty -1
+exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden  -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
+bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-windows
+bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
 
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 # disable floating in general OTW they would stay behind other
@@ -204,15 +207,18 @@ titlebar_border_thickness 0
 ```bash
 exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 
-set $term kitty -1
+# FOR FOOT OR ALACRITTY
 #set $term foot
 #set $term alacritty
-
 #set $dfzf_term foot --app-id=dfzf-popup -e
-exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
-set $dfzf_term kitty -1 --instance-group dfzf --class=dfzf-popup -e
-bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
-bindsym $mod+l      exec --no-startup-id $dfzf_term dfzf-hub
+#bindsym $mod+Tab    exec --no-startup-id $dfzf_term dfzf-windows
+#bindsym $mod+l      exec --no-startup-id $dfzf_term dfzf-hub
+
+# FOR KITTY
+set $term kitty -1
+exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden  -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
+bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-windows
+bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
 
 for_window [class="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 
