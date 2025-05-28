@@ -2,6 +2,22 @@
 ## [Unreleased]
 
 
+<a name="v0.7.0"></a>
+## [v0.7.0] - 2025-05-28
+### Bug Fixes
+- **scrollbacks:** improve preview title
+- **scrollbacks:** drop empty rows from terminal content
+- **windows:** preview improvement for alacritty/foot
+
+### Documentation
+- improve sway/i3 config for kitty
+- **terminal:** support table
+
+### Features
+- **exit:** allow press enter to chose action
+- **windows:** auto disable floating on focused window
+
+
 <a name="v0.6.4"></a>
 ## [v0.6.4] - 2025-05-28
 ### Bug Fixes
@@ -256,7 +272,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.6.4...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.7.0...HEAD
+[v0.7.0]: https://github.com/parisni/dfzf/compare/v0.6.4...v0.7.0
 [v0.6.4]: https://github.com/parisni/dfzf/compare/v0.6.3...v0.6.4
 [v0.6.3]: https://github.com/parisni/dfzf/compare/v0.6.2...v0.6.3
 [v0.6.2]: https://github.com/parisni/dfzf/compare/v0.6.1...v0.6.2
