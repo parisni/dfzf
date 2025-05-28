@@ -53,4 +53,4 @@ scroll_line=$(echo $result | sed -Ez 's/^([0-9]+).*/\1/')
 scroll_line=$((scroll_line - 2))
 dfzf-exec "[con_id=$con_id]" focus
 title=$(dfzf-exec -t get_tree --raw | jq -r --arg id "$con_id" ' .. | objects | select(.id == ($id | tonumber)) | .name  | gsub(" "; ".")')
-kitty @ scroll-window --to $kitty_sock --match "title:^$title$" "${scroll_line}l-"
+kitty @ scroll-window --to unix:$kitty_sock --match "title:^$title$" "${scroll_line}l-"
