@@ -387,6 +387,10 @@ Install the below extensions:
 
   Scrollbacks let you fuzzy-search across all your terminal histories (Kitty only) and focus the right one — great for digging up lost work from vague command memories.
 
+  ```bash
+    sudo apt install ripgrep
+  ```
+
 ![Image](https://github.com/user-attachments/assets/51f9ca01-ed27-48bf-81f0-2433f301771c)
 
 </details>

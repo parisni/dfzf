@@ -28,7 +28,7 @@ xargs  -P"$(
   sock="$3"
   id=$(echo "$dfzf_map_json" | jq -r --arg t "$title" "select(.title == \$t) | .id")
   if [ -n "$id" ]; then
-    text=$(kitten @ get-text --to "unix:$sock" --match "title:^$title" --extent all | tac| nl | sed "s/^[ \t]*//;s/[ \t]*$//;s/$/ #${id}/")
+    text=$(kitten @ get-text --to "unix:$sock" --match "title:^$title" --extent all | tac | nl | rg -v "^\s+[0-9]+\s*\$|^\s+[0-9]+\s*~\s*$" | sed "s/^[ \t]*//;s/[ \t]*$//;s/$/ #${id}/")
     colors=(31 32 33 34 35 36)
     sum=0
     for ((i=0; i<${#id}; i++)); do
