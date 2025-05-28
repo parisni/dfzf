@@ -54,7 +54,15 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   |
 
 ---
+## Terminal Support Matrix
 
+| Feature / Terminal                   | Kitty     | Foot              | Alacritty        |
+|-------------------------------------|-----------|-------------------|------------------|
+| `dfzf-windows` Terminal Preview     | ✅ Full   | ❌ Not supported  | ❌ Not supported |
+| `dfzf-scrollbacks` Support          | ✅ Full   | ❌ Not supported  | ❌ Not supported |
+| `dfzf-clipboard` Image Preview      | ✅ Full   | ⚠️ Intermediate   | 🔻 Degraded      |
+
+---
 
 ## Installation
 
