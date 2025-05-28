@@ -61,6 +61,8 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-windows` Terminal Preview     | ✅ Full   | ❌ Not supported  | ❌ Not supported |
 | `dfzf-scrollbacks` Support          | ✅ Full   | ❌ Not supported  | ❌ Not supported |
 | `dfzf-clipboard` Image Preview      | ✅ Full   | ⚠️ Intermediate   | 🔻 Degraded      |
+| Press `escape` to kill popup      | ✅ Full   | ⚠️ Intermediate   | ⚠️ Intermediate      |
+| Everything else      | ✅ Full   | ✅ Full   | ✅ Full      |
 
 ---
 
