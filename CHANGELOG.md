@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.7.1"></a>
+## [v0.7.1] - 2025-05-29
+### Bug Fixes
+- **scrollbacks:** regression on scroll to accepted row in terminal
+
+### Documentation
+- **termial:** add comparison criteria
+
+
 <a name="v0.7.0"></a>
 ## [v0.7.0] - 2025-05-28
 ### Bug Fixes
@@ -272,7 +281,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.7.1...HEAD
+[v0.7.1]: https://github.com/parisni/dfzf/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/parisni/dfzf/compare/v0.6.4...v0.7.0
 [v0.6.4]: https://github.com/parisni/dfzf/compare/v0.6.3...v0.6.4
 [v0.6.3]: https://github.com/parisni/dfzf/compare/v0.6.2...v0.6.3
