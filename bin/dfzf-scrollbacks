@@ -42,7 +42,7 @@ xargs  -P"$(
   --no-unicode \
   --preview='
 id=$(echo {} | sed -Ez "s/.*#([0-9]+).*/\1/")
-dfzf-exec -t get_tree --raw | jq -r --arg id "$id" '"'"'.. | objects | select(.id == ($id | tonumber)) | .name | gsub(" "; ".")'"'"'
+dfzf-exec -t get_tree --raw | jq -r --arg id "$id" '"'"'.. | objects | select(.id == ($id | tonumber)) | .name'"'"'
 ' \
   --preview-window="up:1,follow"
 )
