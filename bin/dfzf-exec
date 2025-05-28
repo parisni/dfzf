@@ -5,7 +5,7 @@ msgcommand=""
 
 if [ -n "$SWAYSOCK" ]; then
     msgcommand="swaymsg"
-elif pgrep -xq i3; then
+elif [ -n "$I3SOCK" ]; then
     msgcommand="i3-msg"
 fi
 
