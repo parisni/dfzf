@@ -14,6 +14,8 @@ fi
 kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1| head -n1)
 if [ -n "$KITTY_WINDOW_ID" ]; then
   export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview=\"echo {}| sed -z 's/^.*]\t//' | sed -z -E 's/\\\[[^][]*\\\]//g' |sed -z 's/ #.*//'|sed 's/^[[:space:]]*//;s/[[:space:]]*$//'|sed 's/ /./g'|xargs -I'#' kitten @ get-text --to unix:$kitty_sock --match 'title:^#$' --extent all  2>/dev/null || (echo {} |fold -s -w 90) |tail -n 100| grep -v '~'|grep -v '^$'\" --preview-window=\"up:60%,follow\""
+else
+  export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview=\"echo {}\" --preview-window=\"up:3,wrap\""
 fi
 
 dfzf-windows-load "$current_tree"| fzf --sync --prompt "Windows > " \
