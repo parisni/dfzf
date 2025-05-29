@@ -1,0 +1,23 @@
+#!/bin/bash
+
+windows=$(swaymsg -t get_tree | jq -r '
+  .. | objects
+  | select(.type == "workspace" and .name == "__temp_group__") as $ws
+  | $ws
+  | recurse(.nodes[]?, .floating_nodes[]?)
+  | select(.type == "con" and (.window_properties.title != null or .app_id != null))
+  | .id
+')
+
+workspace=$(swaymsg -t get_workspaces --raw| jq -r '.[].name' |grep -v __temp_group__|head -n1)
+
+first_window=""
+for id in $windows; do
+  swaymsg "[con_id=$id]" move container to workspace $workspace
+  if [ -z "$first_window" ]; then
+    first_window=$id
+  fi
+done
+
+swaymsg "[con_id=$first_window]" focus
+

@@ -380,12 +380,16 @@ Install the below extensions:
 - `ctrl-i`: toggle important (red color)
 - `ctrl-j`: preview windows
 - `escape`: return to current windows (works after previews)
+- `ctrl-t`: will toggle tilling to the multi-selected windows
 
   ```bash
     sudo apt install jq
   ```
 
   ![Image](https://github.com/user-attachments/assets/ab76602c-9e04-4a08-bb9d-dcee16413fce)
+Tilling with multi-select (ctrl-t):
+  ![Image](https://github.com/user-attachments/assets/fec7de04-550e-410c-9a81-351f09b63451)
+![Image](https://github.com/user-attachments/assets/9fa6c549-79eb-4619-934b-487a50d83aeb)
 </details>
 
 <details>
