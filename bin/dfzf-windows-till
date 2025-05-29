@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-if [ "$#" -lt 1 ]; then
-  echo "Usage: $0 <con_id1> [con_id2 ...]"
+dfzf-exec -t get_workspaces --raw| jq -r '.[].name' |grep -q __temp_group__ && dfzf-windows-untill && exit 0
+
+if [ "$#" -lt 2 ]; then
+  echo "Usage: $0 <con_id1> <con_id2> [con_id3 ...]"
   exit 1
 fi
 
 workspace="__temp_group__"
 
-swaymsg -t get_workspaces --raw| jq -r '.[].name' |grep -q __temp_group__ && dfzf-windows-untill && exit 0
 
 con_ids=("$@")  # put args in array
 
@@ -16,24 +17,24 @@ for i in "${!con_ids[@]}"; do
   echo "it: $i, con:$con_id"
 
   # Move container to the workspace first
-  swaymsg "[con_id=$con_id]" move container to workspace "$workspace"
+  dfzf-exec "[con_id=$con_id]" move container to workspace "$workspace"
 
   # Focus on this container
-  swaymsg "[con_id=$con_id]" focus
+  dfzf-exec "[con_id=$con_id]" focus
   echo "focused $con_id"
 
   # For the first container, no split needed
   if (( i == 0 )); then
     continue
-    swaymsg layout splitv
+    dfzf-exec layout splitv
   fi
 
   # Decide split direction based on index (example logic)
   if (( i % 2 == 0 )); then
-    swaymsg move right
+    dfzf-exec move right
     continue
   else
-    swaymsg layout splitv
+    dfzf-exec layout splitv
   fi
 
   # Move container right after split
