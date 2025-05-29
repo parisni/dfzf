@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.8.0"></a>
+## [v0.8.0] - 2025-05-29
+### Features
+- **windows:** multi-select to toggle tilling windows
+
+
 <a name="v0.7.1"></a>
 ## [v0.7.1] - 2025-05-29
 ### Bug Fixes
@@ -281,7 +287,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.8.0...HEAD
+[v0.8.0]: https://github.com/parisni/dfzf/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/parisni/dfzf/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/parisni/dfzf/compare/v0.6.4...v0.7.0
 [v0.6.4]: https://github.com/parisni/dfzf/compare/v0.6.3...v0.6.4
