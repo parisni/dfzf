@@ -1,18 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+workspace="_temp_dfzf_"
+initial_focus=$(dfzf-windows-load | head -n1 | sed -Ez 's/.*#([0-9]+).*/\1/')
+dfzf-exec workspace "$workspace"
 
 windows=$(dfzf-exec -t get_tree | jq -r '
   .. | objects
-  | select(.type == "workspace" and .name == "__temp_group__") as $ws
+  | select(.type == "workspace" and .name == "_temp_dfzf_") as $ws
   | $ws
   | recurse(.nodes[]?, .floating_nodes[]?)
   | select(.type == "con" and (.window_properties.title != null or .app_id != null))
   | .id
 ')
 
-workspace=$(dfzf-exec -t get_workspaces --raw| jq -r '.[].name' |grep -v __temp_group__|head -n1)
+workspace=$(dfzf-exec -t get_workspaces --raw| jq -r '.[].name' |grep -v "$workspace" | head -n1)
 
 for id in $windows; do
   dfzf-exec "[con_id=$id]" move container to workspace $workspace
 done
 
-dfzf-windows-load | head -n1 | sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus
+echo $initial_focus| xargs -I @ dfzf-exec '[con_id=@]' focus

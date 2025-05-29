@@ -185,6 +185,9 @@ exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 exec wl-paste --watch cliphist -max-items 1000 store # for dfzf-clipboard  
 exec mako # for the dfzf-notifs
 
+workspace_layout tabbed
+workspace_auto_back_and_forth no
+
 # FOR FOOT OR ALACRITTY
 #set $term foot
 #set $term alacritty
@@ -194,6 +197,7 @@ exec mako # for the dfzf-notifs
 
 # FOR KITTY
 set $term kitty -1
+exec --no-startup-id kitty -1 --start-as hidden
 exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden  -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
 bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-windows
 bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
@@ -215,6 +219,9 @@ titlebar_border_thickness 0
 ```bash
 exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 
+workspace_layout tabbed
+workspace_auto_back_and_forth no
+
 # FOR FOOT OR ALACRITTY
 #set $term foot
 #set $term alacritty
@@ -224,6 +231,7 @@ exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 
 # FOR KITTY
 set $term kitty -1
+exec --no-startup-id kitty -1 --start-as hidden
 exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden  -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
 bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-windows
 bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
