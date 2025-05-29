@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.8.1"></a>
+## [v0.8.1] - 2025-05-29
+### Bug Fixes
+- **windows:** auto-tile support on i3
+
+
 <a name="v0.8.0"></a>
 ## [v0.8.0] - 2025-05-29
 ### Features
@@ -287,7 +293,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.8.1...HEAD
+[v0.8.1]: https://github.com/parisni/dfzf/compare/v0.8.0...v0.8.1
 [v0.8.0]: https://github.com/parisni/dfzf/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/parisni/dfzf/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/parisni/dfzf/compare/v0.6.4...v0.7.0
