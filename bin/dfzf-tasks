@@ -1,35 +1,34 @@
 #!/usr/bin/env bash
 export SHELL="$(command -v bash)"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
-dfzf-kill-bro > /dev/null
+dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 tasks_cmd="${tasks_cmd:-todo}"
 tasks_vdirsyncer_cmd="${tasks_vdirsyncer_cmd:-vdirsyncer}"
 
 if [[ -s "/tmp/dfzf-tasks-lists" ]]; then
-  cat /tmp/dfzf-tasks-lists | jq -r ".[]" | fzf --sync  --prompt "Collection > "  > /tmp/dfzf-tasks-list
-  rm -f /tmp/dfzf-tasks-lists
+	cat /tmp/dfzf-tasks-lists | jq -r ".[]" | fzf --sync --prompt "Collection > " >/tmp/dfzf-tasks-list
+	rm -f /tmp/dfzf-tasks-lists
 elif [[ $# -eq 1 ]]; then
-    $tasks_cmd edit "$1"
+	$tasks_cmd edit "$1"
 elif [[ -e "/tmp/dfzf-tasks" ]]; then
-    rm -f /tmp/dfzf-tasks
-    $tasks_cmd new
+	rm -f /tmp/dfzf-tasks
+	$tasks_cmd new
 fi
 
 result=$(dfzf-tasks-load | fzf --sync --prompt "Tasks > " \
 	--preview-window="up:wrap" \
-  --preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I@ $tasks_cmd show @" \
-  --bind="ctrl-t:execute-silent(touch /tmp/dfzf-tasks)+abort" \
-  --bind="ctrl-e:accept" \
-  --bind="ctrl-k:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/' | xargs -I@ $tasks_cmd delete --yes @)+reload(dfzf-tasks-load)" \
-  --bind="ctrl-l:execute-silent($tasks_cmd lists --porcelain > /tmp/dfzf-tasks-lists)+abort" \
-  --bind="ctrl-r:execute($tasks_vdirsyncer_cmd sync)+reload(dfzf-tasks-load)" \
-  --bind="ctrl-d:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/' | xargs -I@ $tasks_cmd done @)+reload(dfzf-tasks-load)")
+	--preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I@ $tasks_cmd show @" \
+	--bind="ctrl-t:execute-silent(touch /tmp/dfzf-tasks)+abort" \
+	--bind="ctrl-e:accept" \
+	--bind="ctrl-k:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/' | xargs -I@ $tasks_cmd delete --yes @)+reload(dfzf-tasks-load)" \
+	--bind="ctrl-l:execute-silent($tasks_cmd lists --porcelain > /tmp/dfzf-tasks-lists)+abort" \
+	--bind="ctrl-r:execute($tasks_vdirsyncer_cmd sync)+reload(dfzf-tasks-load)" \
+	--bind="ctrl-d:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/' | xargs -I@ $tasks_cmd done @)+reload(dfzf-tasks-load)")
 
 if [[ -e /tmp/dfzf-tasks-lists || -e /tmp/dfzf-tasks ]]; then
-  dfzf-tasks
-elif [[ -n "$result" ]]; then
-  dfzf-tasks "$(echo "$result" | sed -E 's/.*#([0-9]+).*/\1/')"
+	dfzf-tasks
+elif [[ -n $result ]]; then
+	dfzf-tasks "$(echo "$result" | sed -E 's/.*#([0-9]+).*/\1/')"
 fi
-

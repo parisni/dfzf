@@ -4,11 +4,10 @@ HIST_FLAG="/tmp/dfzf-notif_history_mode"
 
 # Check if the history mode is enabled (file exists)
 if [ -f "$HIST_FLAG" ]; then
-  cmd="makoctl history"
+	cmd="makoctl history"
 else
-  cmd="makoctl list"
+	cmd="makoctl list"
 fi
 
 # Run the selected command
 $cmd
-

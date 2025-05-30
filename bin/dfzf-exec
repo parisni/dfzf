@@ -4,15 +4,14 @@ export SHELL="$(command -v bash)"
 msgcommand=""
 
 if [ -n "$SWAYSOCK" ]; then
-    msgcommand="swaymsg"
+	msgcommand="swaymsg"
 elif [ -n "$I3SOCK" ]; then
-    msgcommand="i3-msg"
+	msgcommand="i3-msg"
 fi
 
 if [ -z "$msgcommand" ]; then
-    echo "No running instance of Sway or i3 detected."
-    exit 1
+	echo "No running instance of Sway or i3 detected."
+	exit 1
 fi
 
 exec "$msgcommand" "$@"
-

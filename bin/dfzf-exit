@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 export SHELL="$(command -v bash)"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
-dfzf-kill-bro > /dev/null
+dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 exit_options=(
-  "l: Lock (swaylock)"
-  "e: Restart GDM"
-  "s: Lock and Suspend"
-  "r: Reboot"
-  "S: Shutdown"
-  "h: Hibernate"
+	"l: Lock (swaylock)"
+	"e: Restart GDM"
+	"s: Lock and Suspend"
+	"r: Reboot"
+	"S: Shutdown"
+	"h: Hibernate"
 )
 
 # Command mappings
@@ -27,18 +27,18 @@ choices=$(printf '%s\n' "${exit_options[@]}")
 # Prepare keybindings
 binds=()
 for opt in "${exit_options[@]}"; do
-    key=$(echo "$opt" | cut -d':' -f1)
-    cmd_var="exit_cmd_$key"
-    # Bind each key to "execute the command and abort fzf"
-    if [[ -n "${!cmd_var}" ]]; then
-        binds+=("--bind" "$key:execute-silent(${!cmd_var})")
-    fi
+	key=$(echo "$opt" | cut -d':' -f1)
+	cmd_var="exit_cmd_$key"
+	# Bind each key to "execute the command and abort fzf"
+	if [[ -n ${!cmd_var} ]]; then
+		binds+=("--bind" "$key:execute-silent(${!cmd_var})")
+	fi
 done
 
 # Run fzf with dynamic binds
-result=$(echo "$choices" | 
-  fzf --disabled --prompt "Exit > " \
-  --bind='enter:accept' \
-  "${binds[@]}"|sed -Ez 's/^([a-z]):.*/$exit_cmd_\1/g')
+result=$(echo "$choices" |
+	fzf --disabled --prompt "Exit > " \
+		--bind='enter:accept' \
+		"${binds[@]}" | sed -Ez 's/^([a-z]):.*/$exit_cmd_\1/g')
 
 eval "$result" && sleep infinity

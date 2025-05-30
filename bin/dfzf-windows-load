@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 # Define defaults if not already set
 windows_app_id_map_json="{}"
 windows_glyph_rules_json='[{"glyph": " "}]'
@@ -11,15 +10,15 @@ windows_title_rm_pattern="— Mozilla Firefox "
 
 # Accept optional input via stdin or first argument
 if [ -n "$1" ]; then
-  input_json="$1"
+	input_json="$1"
 else
-  input_json="$(dfzf-exec -t get_tree --raw)"
+	input_json="$(dfzf-exec -t get_tree --raw)"
 fi
 
 # Main processing logic using jq
 echo "$input_json" | jq -r \
-  --argjson map "$windows_app_id_map_json" \
-  --argjson glyph_rules "$windows_glyph_rules_json" '
+	--argjson map "$windows_app_id_map_json" \
+	--argjson glyph_rules "$windows_glyph_rules_json" '
     .. | objects
     | select(.type == "con" or .type == "floating_con")
     | select(.window_type == null or .window_type == "normal")
@@ -77,9 +76,9 @@ echo "$input_json" | jq -r \
   end
 ) #\(.id)" +
       (if .urgent or .important then "\u001b[0m" else "" end)
-  ' | sort -nr \
-    | sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' \
-    | awk 'NR == 1 {
+  ' | sort -nr |
+	sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' |
+	awk 'NR == 1 {
     # Remove existing ANSI escape codes from the first line
     gsub(/\033\[[0-9;]*m/, "");
     # Then apply the new color to the entire first line
@@ -87,5 +86,3 @@ echo "$input_json" | jq -r \
     next
 } 
 {print}'
-
-

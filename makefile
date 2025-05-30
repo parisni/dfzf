@@ -25,4 +25,3 @@ do-release-%:
 	bump2version --allow-dirty $*
 	$(MAKE) changelog
 	git push origin main --tags
-

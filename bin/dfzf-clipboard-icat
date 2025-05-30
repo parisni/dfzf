@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 # https://github.com/junegunn/fzf/blob/master/bin/fzf-preview.sh
 dim=${FZF_PREVIEW_COLUMNS}x${FZF_PREVIEW_LINES}
-kitten icat --clear --transfer-mode=memory --unicode-placeholder --place="$dim@0x0" --stdin=yes  "$1" | sed '$d' | sed $'$s/$/\e[m/'
+kitten icat --clear --transfer-mode=memory --unicode-placeholder --place="$dim@0x0" --stdin=yes "$1" | sed '$d' | sed $'$s/$/\e[m/'

@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 export SHELL="$(command -v bash)"
-dfzf-kill-bro > /dev/null
+dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 # due to kitty/wl-copy bug we have to kill the kitty window otw it hangs
 if [ -n "$KITTY_WINDOW_ID" ]; then
-    export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview 'echo {} | (grep -q \"binary data image\" && echo {} | cliphist decode | dfzf-clipboard-icat) || (echo {} | cliphist decode | dfzf-clipboard-cat)'"
+	export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview 'echo {} | (grep -q \"binary data image\" && echo {} | cliphist decode | dfzf-clipboard-icat) || (echo {} | cliphist decode | dfzf-clipboard-cat)'"
 else
-    export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview 'echo {} | (grep -q \"binary data image\" && echo {} | cliphist decode | chafa) || (echo {} | cliphist decode | dfzf-clipboard-cat)'"
+	export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview 'echo {} | (grep -q \"binary data image\" && echo {} | cliphist decode | chafa) || (echo {} | cliphist decode | dfzf-clipboard-cat)'"
 fi
 
 cliphist list |
-  fzf --prompt "Clipboard > " \
-    --preview-window="up" \
-    --bind="enter:execute-silent(echo {}|cliphist decode| wl-copy && dfzf-exec '[app_id=\"^dfzf-popup$\"]' kill)+accept" \
-    --bind="ctrl-k:execute-silent(echo {}|cliphist delete)+reload(cliphist list)"
+	fzf --prompt "Clipboard > " \
+		--preview-window="up" \
+		--bind="enter:execute-silent(echo {}|cliphist decode| wl-copy && dfzf-exec '[app_id=\"^dfzf-popup$\"]' kill)+accept" \
+		--bind="ctrl-k:execute-silent(echo {}|cliphist delete)+reload(cliphist list)"

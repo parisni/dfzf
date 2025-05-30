@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 export SHELL="$(command -v bash)"
-dfzf-kill-bro > /dev/null
+dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 hub_options=(
-  "b: Bluetooth"
-  "c: Clipboard"
-  "d: Date"
-  "e: exit"
-  "f: Fetch"
-  "g: Gotop"
-  "k: Calendar"
-  "l: launcher"
-  "m: Mail"
-  "n: Notif"
-  "p: Password"
-  "s: Scrollback"
-  "t: Task"
-  "w: Wifi"
+	"b: Bluetooth"
+	"c: Clipboard"
+	"d: Date"
+	"e: exit"
+	"f: Fetch"
+	"g: Gotop"
+	"k: Calendar"
+	"l: launcher"
+	"m: Mail"
+	"n: Notif"
+	"p: Password"
+	"s: Scrollback"
+	"t: Task"
+	"w: Wifi"
 )
 
 # Command mappings
@@ -44,19 +44,18 @@ choices=$(printf '%s\n' "${hub_options[@]}")
 # Prepare keybindings
 binds=()
 for opt in "${hub_options[@]}"; do
-    key=$(echo "$opt" | cut -d':' -f1)
-    cmd_var="hub_cmd_$key"
-    # Bind each key to "execute the command and abort fzf"
-    if [[ -n "${!cmd_var}" ]]; then
-        binds+=("--bind" "$key:execute(${!cmd_var})+abort")
-    fi
+	key=$(echo "$opt" | cut -d':' -f1)
+	cmd_var="hub_cmd_$key"
+	# Bind each key to "execute the command and abort fzf"
+	if [[ -n ${!cmd_var} ]]; then
+		binds+=("--bind" "$key:execute(${!cmd_var})+abort")
+	fi
 done
 
 # Run fzf with dynamic binds
-result=$(echo "$choices" | 
-  fzf --tac --disabled --prompt "Hub > " \
-  --bind='enter:accept' \
-  "${binds[@]}" |sed -Ez 's/^([a-z]):.*/$hub_cmd_\1/g') 
-
+result=$(echo "$choices" |
+	fzf --tac --disabled --prompt "Hub > " \
+		--bind='enter:accept' \
+		"${binds[@]}" | sed -Ez 's/^([a-z]):.*/$hub_cmd_\1/g')
 
 eval "$result"

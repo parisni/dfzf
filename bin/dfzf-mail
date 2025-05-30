@@ -4,8 +4,8 @@ dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 dfzf-mail-load |
-  fzf --prompt "Mail > " \
-    --preview-window="up:wrap" \
-    --preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message read" \
-    --bind="ctrl-k:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message delete)+reload(dfzf-mail-load)" \
-    --bind="ctrl-j:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message export -O)+accept"
+	fzf --prompt "Mail > " \
+		--preview-window="up:wrap" \
+		--preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message read" \
+		--bind="ctrl-k:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message delete)+reload(dfzf-mail-load)" \
+		--bind="ctrl-j:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message export -O)+accept"

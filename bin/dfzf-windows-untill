@@ -13,10 +13,10 @@ windows=$(dfzf-exec -t get_tree | jq -r '
   | .id
 ')
 
-workspace=$(dfzf-exec -t get_workspaces --raw| jq -r '.[].name' |grep -v "$workspace" | head -n1)
+workspace=$(dfzf-exec -t get_workspaces --raw | jq -r '.[].name' | grep -v "$workspace" | head -n1)
 
 for id in $windows; do
-  dfzf-exec "[con_id=$id]" move container to workspace $workspace
+	dfzf-exec "[con_id=$id]" move container to workspace $workspace
 done
 
-echo $initial_focus| xargs -I @ dfzf-exec '[con_id=@]' focus
+echo $initial_focus | xargs -I @ dfzf-exec '[con_id=@]' focus

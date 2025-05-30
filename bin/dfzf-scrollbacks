@@ -3,26 +3,27 @@ export SHELL="$(command -v bash)"
 current_tree=$(dfzf-kill-bro)
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
-if command -v fd > /dev/null; then
-  findcommand="fd"
-elif command -v fdfind > /dev/null; then
-  findcommand="fdfind"
+if command -v fd >/dev/null; then
+	findcommand="fd"
+elif command -v fdfind >/dev/null; then
+	findcommand="fdfind"
 else
-  echo "Neither fd nor fdfind found. Please install one of them."
-  exit 1
+	echo "Neither fd nor fdfind found. Please install one of them."
+	exit 1
 fi
-kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1| head -n1)
+kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1 | head -n1)
 
 dfzf_map=$(dfzf-exec -t get_tree --raw | jq -rc '
   .. | objects | select(.name != null)
   | {title: (.name | gsub(" "; ".")), id}
 ')
 
-result=$(kitty @ ls --to unix:$kitty_sock | jq -r '.[].tabs[].windows[].title | gsub(" "; ".")' | \
-xargs  -P"$(
-  cpus=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
-  if [ "$cpus" -gt 6 ]; then echo 8; else echo "$cpus"; fi
-)" -I{} bash -c '
+result=$(
+	kitty @ ls --to unix:$kitty_sock | jq -r '.[].tabs[].windows[].title | gsub(" "; ".")' |
+		xargs -P"$(
+			cpus=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+			if [ "$cpus" -gt 6 ]; then echo 8; else echo "$cpus"; fi
+		)" -I{} bash -c '
   title="$1"
   dfzf_map_json="$2"
   sock="$3"
@@ -37,14 +38,14 @@ xargs  -P"$(
     color=${colors[$((sum % ${#colors[@]}))]}
     echo -e "\033[${color}m${text}\033[0m"
   fi
-' _ "{}" "$dfzf_map" "$kitty_sock" | \
-  fzf --prompt "Scrollbacks: " \
-  --no-unicode \
-  --preview='
+' _ "{}" "$dfzf_map" "$kitty_sock" |
+		fzf --prompt "Scrollbacks: " \
+			--no-unicode \
+			--preview='
 id=$(echo {} | sed -Ez "s/.*#([0-9]+).*/\1/")
 dfzf-exec -t get_tree --raw | jq -r --arg id "$id" '"'"'.. | objects | select(.id == ($id | tonumber)) | .name'"'"'
 ' \
-  --preview-window="up:1,follow"
+			--preview-window="up:1,follow"
 )
 
 con_id=$(echo $result | sed -Ez 's/.*#([0-9]+).*/\1/')

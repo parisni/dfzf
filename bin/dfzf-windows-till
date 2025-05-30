@@ -1,35 +1,33 @@
 #!/usr/bin/env bash
 
 workspace="_temp_dfzf_"
-dfzf-exec -t get_workspaces --raw| jq -r '.[].name' |grep -q "$workspace" && dfzf-windows-untill && exit 0
+dfzf-exec -t get_workspaces --raw | jq -r '.[].name' | grep -q "$workspace" && dfzf-windows-untill && exit 0
 
 if [ "$#" -lt 2 ]; then
-  echo "Usage: $0 <con_id1> <con_id2> [con_id3 ...]"
-  exit 1
+	echo "Usage: $0 <con_id1> <con_id2> [con_id3 ...]"
+	exit 1
 fi
 
-
-
-con_ids=("$@")  # put args in array
+con_ids=("$@") # put args in array
 
 for i in "${!con_ids[@]}"; do
-  con_id="${con_ids[$i]}"
+	con_id="${con_ids[$i]}"
 
-  # Move container to the workspace first
-  dfzf-exec "[con_id=$con_id]" move container to workspace "$workspace"
+	# Move container to the workspace first
+	dfzf-exec "[con_id=$con_id]" move container to workspace "$workspace"
 
-  # For the first container, no move needed
-  if (( i == 0 )); then
-    dfzf-exec "[con_id=$con_id]" layout splitv
-    continue
-  fi
+	# For the first container, no move needed
+	if ((i == 0)); then
+		dfzf-exec "[con_id=$con_id]" layout splitv
+		continue
+	fi
 
-  # Decide split direction based on index
-  if (( i % 2 == 0 )); then
-    dfzf-exec "[con_id=$con_id]" move right
-  else
-    dfzf-exec "[con_id=$con_id]" layout splitv
-  fi
+	# Decide split direction based on index
+	if ((i % 2 == 0)); then
+		dfzf-exec "[con_id=$con_id]" move right
+	else
+		dfzf-exec "[con_id=$con_id]" layout splitv
+	fi
 
 done
 

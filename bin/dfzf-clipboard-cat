@@ -2,15 +2,14 @@
 # https://github.com/junegunn/fzf/blob/master/bin/fzf-preview.sh
 
 # Sometimes bat is installed as batcat.
-if command -v batcat > /dev/null; then
-  batname="batcat"
-elif command -v bat > /dev/null; then
-  batname="bat"
+if command -v batcat >/dev/null; then
+	batname="batcat"
+elif command -v bat >/dev/null; then
+	batname="bat"
 else
-  cat "$@"
-  exit
+	cat "$@"
+	exit
 fi
 
 dim=${FZF_PREVIEW_COLUMNS}x${FZF_PREVIEW_LINES}
-${batname} --style="${BAT_STYLE:-numbers}" --color=always --pager=never --highlight-line="${center:-0}"  -- $@
-
+${batname} --style="${BAT_STYLE:-numbers}" --color=always --pager=never --highlight-line="${center:-0}" -- $@

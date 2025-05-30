@@ -12,10 +12,10 @@ GREEN=$'\033[32m'
 GRAY=$'\033[90m'
 
 if [[ -s "/tmp/dfzf-tasks-list" ]]; then
-  list="$(cat /tmp/dfzf-tasks-list)"
-  $tasks_cmd --porcelain list "$list"
+	list="$(cat /tmp/dfzf-tasks-list)"
+	$tasks_cmd --porcelain list "$list"
 else
-  $tasks_cmd --porcelain list
+	$tasks_cmd --porcelain list
 fi | jq -r --arg red "$RED" --arg yellow "$YELLOW" --arg green "$GREEN" --arg gray "$GRAY" --arg reset "$RESET" '
   .[] |
   # Priority glyph with ANSI color
@@ -30,5 +30,4 @@ fi | jq -r --arg red "$RED" --arg yellow "$YELLOW" --arg green "$GREEN" --arg gr
 
   # Output format
   "\($prio) \($due)\t\($summary) #\($id)"
-' | column -s $'\t' -t 
-
+' | column -s $'\t' -t

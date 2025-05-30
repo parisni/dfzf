@@ -6,11 +6,11 @@ current_id="$(echo "$tree_json" | jq -r '.. | objects | select(.focused == true)
 
 # Extract and kill all dfzf-popup windows except the focused one
 echo "$tree_json" | jq -r \
-  --arg current_id "$current_id" \
-  ".. | objects 
+	--arg current_id "$current_id" \
+	".. | objects 
     | select((.app_id // .window_properties.class) == \"dfzf-popup\") 
     | select(.id != $current_id) 
-    | .id" \
-  | xargs -r -I'#' dfzf-exec '[con_id=#]' kill
+    | .id" |
+	xargs -r -I'#' dfzf-exec '[con_id=#]' kill
 
 echo "$tree_json"
