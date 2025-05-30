@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 export SHELL="$(command -v bash)"
 dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"

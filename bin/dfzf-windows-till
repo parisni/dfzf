@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 workspace="_temp_dfzf_"
 dfzf-exec -t get_workspaces --raw | jq -r '.[].name' | grep -q "$workspace" && dfzf-windows-untill && exit 0

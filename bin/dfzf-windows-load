@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# Define defaults if not already set
 windows_app_id_map_json="{}"
 windows_glyph_rules_json='[{"glyph": " "}]'
 windows_title_rm_pattern="— Mozilla Firefox "
-
-# Load optional config
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 # Accept optional input via stdin or first argument
-if [ -n "$1" ]; then
+if [ -n "${1:-}" ]; then
 	input_json="$1"
 else
 	input_json="$(dfzf-exec -t get_tree --raw)"

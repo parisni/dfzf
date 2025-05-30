@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 export SHELL="$(command -v bash)"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 dfzf-kill-bro >/dev/null
@@ -13,7 +14,7 @@ exit_options=(
 	"h: Hibernate"
 )
 
-# Command mappings
+# shellcheck disable=SC2034
 exit_cmd_l='swaylock -e -F -f -k -c 000000'
 exit_cmd_e='sudo /usr/bin/systemctl restart gdm'
 exit_cmd_s='swaylock -e -F -f -k -c 000000 && systemctl suspend'

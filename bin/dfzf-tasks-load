@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
+tasks_cmd="todo"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
-
-tasks_cmd="${tasks_cmd:-todo}"
 
 # Color codes
 RESET=$'\033[0m'

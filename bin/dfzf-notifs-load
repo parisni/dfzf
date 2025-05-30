@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 HIST_FLAG="/tmp/dfzf-notif_history_mode"
 

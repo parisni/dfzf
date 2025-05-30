@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # https://github.com/junegunn/fzf/blob/master/bin/fzf-preview.sh
 
 # Sometimes bat is installed as batcat.
@@ -11,5 +12,4 @@ else
 	exit
 fi
 
-dim=${FZF_PREVIEW_COLUMNS}x${FZF_PREVIEW_LINES}
-${batname} --style="${BAT_STYLE:-numbers}" --color=always --pager=never --highlight-line="${center:-0}" -- $@
+${batname} --style="${BAT_STYLE:-numbers}" --color=always --pager=never --highlight-line="${center:-0}" -- "$@"

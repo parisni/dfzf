@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 export SHELL="$(command -v bash)"
-current_tree=$(dfzf-kill-bro)
+dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 if command -v fd >/dev/null; then
@@ -19,7 +21,7 @@ dfzf_map=$(dfzf-exec -t get_tree --raw | jq -rc '
 ')
 
 result=$(
-	kitty @ ls --to unix:$kitty_sock | jq -r '.[].tabs[].windows[].title | gsub(" "; ".")' |
+	kitty @ ls --to "unix:$kitty_sock" | jq -r '.[].tabs[].windows[].title | gsub(" "; ".")' |
 		xargs -P"$(
 			cpus=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 			if [ "$cpus" -gt 6 ]; then echo 8; else echo "$cpus"; fi
@@ -48,10 +50,10 @@ dfzf-exec -t get_tree --raw | jq -r --arg id "$id" '"'"'.. | objects | select(.i
 			--preview-window="up:1,follow"
 )
 
-con_id=$(echo $result | sed -Ez 's/.*#([0-9]+).*/\1/')
-scroll_line=$(echo $result | sed -Ez 's/^([0-9]+).*/\1/')
+con_id=$(echo "$result" | sed -Ez 's/.*#([0-9]+).*/\1/')
+scroll_line=$(echo "$result" | sed -Ez 's/^([0-9]+).*/\1/')
 # arbitrary increase scroll by 2 to make the bottom terimal match the selected row
 scroll_line=$((scroll_line - 2))
 dfzf-exec "[con_id=$con_id]" focus
 title=$(dfzf-exec -t get_tree --raw | jq -r --arg id "$con_id" ' .. | objects | select(.id == ($id | tonumber)) | .name  | gsub(" "; ".")')
-kitty @ scroll-window --to unix:$kitty_sock --match "title:^$title$" "${scroll_line}l-"
+kitty @ scroll-window --to "unix:$kitty_sock" --match "title:^$title$" "${scroll_line}l-"

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-export SHELL="$(command -v bash)"
+set -euo pipefail
 
+export SHELL="$(command -v bash)"
 msgcommand=""
 
 if [ -n "$SWAYSOCK" ]; then

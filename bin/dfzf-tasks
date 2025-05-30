@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 export SHELL="$(command -v bash)"
-[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
-tasks_cmd="${tasks_cmd:-todo}"
-tasks_vdirsyncer_cmd="${tasks_vdirsyncer_cmd:-vdirsyncer}"
+tasks_cmd="todo"
+tasks_vdirsyncer_cmd="vdirsyncer"
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 if [[ -s "/tmp/dfzf-tasks-lists" ]]; then
-	cat /tmp/dfzf-tasks-lists | jq -r ".[]" | fzf --sync --prompt "Collection > " >/tmp/dfzf-tasks-list
+	jq -r ".[]" /tmp/dfzf-tasks-lists | fzf --sync --prompt "Collection > " >/tmp/dfzf-tasks-list
 	rm -f /tmp/dfzf-tasks-lists
 elif [[ $# -eq 1 ]]; then
 	$tasks_cmd edit "$1"

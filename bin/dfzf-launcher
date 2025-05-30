@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -eo pipefail
+
 export SHELL="$(command -v bash)"
 dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
@@ -208,7 +210,7 @@ function generate-command() {
 }
 
 function shouldAutostart() {
-	local condition="$(cat $1 | grep "AutostartCondition" | cut -d'=' -f2)"
+	local condition="$(grep "AutostartCondition" "$1" | cut -d'=' -f2)"
 	local filename="${XDG_CONFIG_HOME-${HOME}/.config}/${condition#* }"
 	case $condition in
 	if-exists*)
@@ -280,15 +282,15 @@ purge() {
 	>"${HIST_FILE}"
 	declare -A PURGE_CMDS
 	for PROVIDER_NAME in "${!PROVIDERS[@]}"; do
-		readarray -td ${DEL} PROVIDER_ARGS <<<${PROVIDERS[${PROVIDER_NAME}]}
+		readarray -td "${DEL}" PROVIDER_ARGS <<<${PROVIDERS[${PROVIDER_NAME}]}
 		PURGE_CMD=${PROVIDER_ARGS[3]}
 		[ -z "${PURGE_CMD}" ] && PURGE_CMD='test -f "{1}" || exit 43'
 		PURGE_CMDS[$PROVIDER_NAME]="${PURGE_CMD%$'\n'}"
 	done
 	for HIST_LINE in "${HIST_LINES[@]#*' '}"; do
-		readarray -td $'\034' HIST_ENTRY <<<${HIST_LINE}
+		readarray -td $'\034' HIST_ENTRY <<<"${HIST_LINE}"
 		ENTRY=${HIST_ENTRY[1]}
-		readarray -td ' ' FILTER <<<${PURGE_CMDS[$ENTRY]//\{1\}/${HIST_ENTRY[0]}}
+		readarray -td ' ' FILTER <<<"${PURGE_CMDS[$ENTRY]//\{1\}/${HIST_ENTRY[0]}}"
 		(eval "${FILTER[@]}" 1>/dev/null) # Run filter command discarding output. We only want the exit status
 		if [[ $? -ne 43 ]]; then
 			echo "1 ${HIST_LINE[@]%$'\n'}" >>"${HIST_FILE}"
@@ -316,7 +318,7 @@ for PROVIDER_NAME in "${!PROVIDERS[@]}"; do
 	(bash -c "${0} provide ${PROVIDER_NAME}" >>"$FZFPIPE") &
 done
 
-readarray -t COMMAND_STR <<<$(
+readarray -t COMMAND_STR <<<"$(
 	${FZF_COMMAND} --prompt="Launcher > " \
 		--delimiter '\034' --nth ..3 --with-nth 3 \
 		--print-query \
@@ -324,7 +326,7 @@ readarray -t COMMAND_STR <<<$(
 		--preview-window="${PREVIEW_WINDOW}" \
 		--no-multi \
 		<"$FZFPIPE"
-) || exit 1
+)" || exit 1
 # Get the last line of the fzf output. If there were no matches, it contains the query which we'll treat as a custom command
 # If there were matches, it contains the selected item
 COMMAND_STR=$(printf '%s\n' "${COMMAND_STR[@]: -1}")
