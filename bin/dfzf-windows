@@ -4,39 +4,54 @@ set -euo pipefail
 export SHELL="$(command -v bash)"
 current_tree=$(dfzf-kill-bro)
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+windows_prompt_pattern="^[>$%] "
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
-if command -v fd >/dev/null; then
-	findcommand="fd"
-elif command -v fdfind >/dev/null; then
-	findcommand="fdfind"
+extract_con_id() {
+	sed -Ez 's/.*#([0-9]+).*/\1/'
+}
+export -f extract_con_id
+
+if [[ "${KITTY_WINDOW_ID:-}" ]]; then
+	findcommand=$(command -v fd || command -v fdfind) || {
+		echo "Neither fd nor fdfind found"
+		exit 1
+	}
+	kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1 | head -n1)
+	PREVIEW="
+  kitty_title=\$(echo {}| sed -z 's/^.*]\t//' | sed -z -E 's/\[[^][]*\]//g' |sed -z 's/ #.*//'|sed 's/^[[:space:]]*//;s/[[:space:]]*$//'|sed 's/ /./g')
+  prompt_content=\$(kitten @ get-text --to unix:$kitty_sock --match \"title:^\$kitty_title$\" --extent all  2>/dev/null | rg -U '$windows_prompt_pattern(.+)' -o --replace '$> \$1'|tail -n 100)
+  if [[ -n \"\$prompt_content\" ]]; then
+    printf '%s\n' \"\$prompt_content\" 
+  else
+    (kitten @ get-text --to unix:$kitty_sock --match \"title:^\$kitty_title$\" --extent screen  2>/dev/null || (echo {} |fold -s -w 90))|rg -v '^\\~\\s*$|^\\s+$'
+  fi
+    "
+	PREVIEW_WINDOW='up:60%,wrap,follow'
 else
-	echo "Neither fd nor fdfind found. Please install one of them."
-	exit 1
-fi
-kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1 | head -n1)
-if [ -n "$KITTY_WINDOW_ID" ]; then
-	export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview=\"echo {}| sed -z 's/^.*]\t//' | sed -z -E 's/\\\[[^][]*\\\]//g' |sed -z 's/ #.*//'|sed 's/^[[:space:]]*//;s/[[:space:]]*$//'|sed 's/ /./g'|xargs -I'#' kitten @ get-text --to unix:$kitty_sock --match 'title:^#$' --extent all  2>/dev/null || (echo {} |fold -s -w 90) |tail -n 100| grep -v '~'|grep -v '^$'\" --preview-window=\"up:60%,follow\""
-else
-	export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview=\"echo {}\" --preview-window=\"up:3,wrap\""
+	PREVIEW='echo {}'
+	PREVIEW_WINDOW='up:3,wrap'
 fi
 
 result=$(dfzf-windows-load "$current_tree")
-(head -n1 <<<"$result") | sed -Ez 's/.*#([0-9]+).*/\1/' | xargs -I@ dfzf-exec '[con_id=@]' floating disable
+dfzf-exec '[con_id='"$(head -n1 <<<"$result" | extract_con_id)"']' floating disable
 
 fzf --sync --multi --prompt "Windows > " \
 	--bind "start:up" --bind "change:first" \
-	--bind "ctrl-t:execute-silent( echo {+} |rg -o '#\d+\b' | rg -o '\d+' | paste -sd ' ' - | xargs dfzf-windows-till)+abort" \
-	--bind="ctrl-r:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-red --append-ts)+reload(dfzf-windows-load)" \
-	--bind="ctrl-b:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-blue --append-ts)+reload(dfzf-windows-load)" \
-	--bind="ctrl-g:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-green --append-ts)+reload(dfzf-windows-load)" \
-	--bind="ctrl-o:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-orange --append-ts)+reload(dfzf-windows-load)" \
+	--preview="$PREVIEW" \
+	--preview-window="$PREVIEW_WINDOW" \
+	--bind "ctrl-t:execute-silent(echo {+} |rg -o '#\d+\b' | rg -o '\d+' | paste -sd ' ' - | xargs dfzf-windows-till)+abort" \
+	--bind="ctrl-r:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-red --append-ts)+reload(dfzf-windows-load)" \
+	--bind="ctrl-b:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-blue --append-ts)+reload(dfzf-windows-load)" \
+	--bind="ctrl-g:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-green --append-ts)+reload(dfzf-windows-load)" \
+	--bind="ctrl-o:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-orange --append-ts)+reload(dfzf-windows-load)" \
 	--bind="A:reload(dfzf-windows-load)" \
 	--bind="R:reload(dfzf-windows-load  | grep '\[red\]' || dfzf-windows-load)" \
 	--bind="B:reload(dfzf-windows-load  | grep '\[blue\]' || dfzf-windows-load)" \
 	--bind="G:reload(dfzf-windows-load  | grep '\[green\]' || dfzf-windows-load)" \
 	--bind="O:reload(dfzf-windows-load  | grep '\[orange\]' || dfzf-windows-load)" \
-	--bind="ctrl-k:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-windows-kill @)+reload(dfzf-windows-load)" \
-	--bind="ctrl-u:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(dfzf-windows-load)" \
-	--bind="ctrl-j:execute-silent(echo {} |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus || dfzf-exec '[class=\"^dfzf-popup$\"]' focus \")" \
-	--bind="enter:execute-silent(echo {}  |sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus)+accept" \
-	--bind="esc:execute-silent(dfzf-windows-load | head -n1 | sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I @ dfzf-exec '[con_id=@]' focus)+abort" <<<"$result"
+	--bind="ctrl-k:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-windows-kill @)+reload(dfzf-windows-load)" \
+	--bind="ctrl-u:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(dfzf-windows-load)" \
+	--bind="ctrl-j:execute-silent(echo {} |extract_con_id| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus || dfzf-exec '[class=\"^dfzf-popup$\"]' focus \")" \
+	--bind="enter:execute-silent(echo {}  |extract_con_id| xargs -I @ dfzf-exec '[con_id=@]' focus)+accept" \
+	--bind="esc:execute-silent(dfzf-windows-load | head -n1 | extract_con_id| xargs -I @ dfzf-exec '[con_id=@]' focus)+abort" <<<"$result"

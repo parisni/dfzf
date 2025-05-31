@@ -258,6 +258,8 @@ bar {
   ```bash
 # ~/.config/dfzf/dfzf.conf
 
+#kitty only: regexp to match the prompt
+windows_prompt_pattern="^[>$%] "
 #remove pattern from the window's title
 windows_title_rm_pattern=' —[^—]*?— Mozilla Firefox'
 # rename the application classes
