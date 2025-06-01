@@ -17,6 +17,7 @@ fi
 echo "$input_json" | jq -r \
 	--argjson map "$windows_app_id_map_json" \
 	--argjson glyph_rules "$windows_glyph_rules_json" '
+  def format_title(text): "\u2063" + text + "\u2063";
     .. | objects
     | select(.type == "con" or .type == "floating_con")
     | select(.window_type == null or .window_type == "normal")
@@ -65,7 +66,7 @@ echo "$input_json" | jq -r \
       (if .urgent then "\u001b[33m" 
        elif .red then "\u001b[31m" 
        else "" end) +
-      "\($colored_glyph) [\(.app_id)]\u001b[0m\t\(.name) \(
+         "\($colored_glyph) [\(.app_id)]\u001b[0m\t\(format_title(.name)) \(
   if .red then " [red]"
   elif .blue then " [blue]"
   elif .green then " [green]"

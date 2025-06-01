@@ -19,7 +19,7 @@ if [[ "${KITTY_WINDOW_ID:-}" ]]; then
 	}
 	kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1 | head -n1)
 	PREVIEW="
-  kitty_title=\$(echo {}| sed -z 's/^.*]\t//' | sed -z -E 's/\[[^][]*\]//g' |sed -z 's/ #.*//'|sed 's/^[[:space:]]*//;s/[[:space:]]*$//'|sed 's/ /./g')
+  kitty_title=\$(echo {}| rg $'\u2063(.*)\u2063' -o --replace '\$1' |sed 's/ /./g')
   prompt_content=\$(kitten @ get-text --to unix:$kitty_sock --match \"title:^\$kitty_title$\" --extent all  2>/dev/null | rg -U '$windows_prompt_pattern(.+)' -o --replace '$> \$1'|tail -n 100)
   if [[ -n \"\$prompt_content\" ]]; then
     printf '%s\n' \"\$prompt_content\" 
@@ -27,7 +27,7 @@ if [[ "${KITTY_WINDOW_ID:-}" ]]; then
     (kitten @ get-text --to unix:$kitty_sock --match \"title:^\$kitty_title$\" --extent screen  2>/dev/null || (echo {} |fold -s -w 90))|rg -v '^\\~\\s*$|^\\s+$'
   fi
     "
-	PREVIEW_WINDOW='up:60%,wrap,follow'
+	PREVIEW_WINDOW='up:60%,follow'
 else
 	PREVIEW='echo {}'
 	PREVIEW_WINDOW='up:3,wrap'
