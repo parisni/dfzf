@@ -13,8 +13,13 @@ else
 	input_json="$(dfzf-exec -t get_tree --raw)"
 fi
 
+RESET=$'\033[0m'
+RED=$'\033[31m'
+BLUE=$'\033[34m'
+GREEN=$'\033[32m'
+ORANGE=$'\033[38;5;208m'
 # Main processing logic using jq
-echo "$input_json" | jq -r \
+echo "$input_json" | jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GREEN" --arg orange "$ORANGE" --arg reset "$RESET" \
 	--argjson map "$windows_app_id_map_json" \
 	--argjson glyph_rules "$windows_glyph_rules_json" '
   def format_title(text): "\u2063" + text + "\u2063";
@@ -34,10 +39,10 @@ echo "$input_json" | jq -r \
           | ($map[$app_id] // $app_id)
         ),
         urgent: .urgent,
-        red: ([.marks[]? | select(startswith("_dfzf-red-"))] | first | length > 0),
-        blue: ([.marks[]? | select(startswith("_dfzf-blue-"))] | first | length > 0),
-        green: ([.marks[]? | select(startswith("_dfzf-green-"))] | first | length > 0),
-        orange: ([.marks[]? | select(startswith("_dfzf-orange-"))] | first | length > 0),
+        red: (if any(.marks[]?; startswith("_dfzf-red-")) then "\($red) \($reset)" else "" end),
+        blue: (if any(.marks[]?; startswith("_dfzf-blue-")) then "\($blue) \($reset)" else "" end),
+        green: (if any(.marks[]?; startswith("_dfzf-green-")) then "\($green) \($reset)" else "" end),
+        orange: (if any(.marks[]?; startswith("_dfzf-orange-")) then "\($orange) \($reset)" else "" end),
         glyph: (
           ($glyph_rules
             | map(
@@ -53,28 +58,8 @@ echo "$input_json" | jq -r \
           )
         )
       }
-     | (
-        # Color the glyph only
-        (if .urgent then "\u001b[33m" 
-         elif .red then "\u001b[31m"
-         elif .blue then "\u001b[34m"
-         elif .green then "\u001b[32m"
-         elif .orange then "\u001b[38;5;208m"
-         else "" end) + .glyph 
-      ) as $colored_glyph
-    | "\(.sort)" +
-      (if .urgent then "\u001b[33m" 
-       elif .red then "\u001b[31m" 
-       else "" end) +
-         "\($colored_glyph) [\(.app_id)]\u001b[0m\t\(format_title(.name)) \(
-  if .red then " [red]"
-  elif .blue then " [blue]"
-  elif .green then " [green]"
-  elif .orange then " [orange]"
-  else ""
-  end
-) #\(.id)" +
-      (if .urgent or .important then "\u001b[0m" else "" end)
+      
+    | "\(.sort)\(if .urgent then "\u001b[33m" else "" end)\(.glyph) [\(.app_id)]\(if .urgent then "\u001b[0m" else "" end)\t\(.red)\(.blue)\(.green)\(.orange) \(format_title(.name)) #\(.id)"
   ' | sort -nr |
 	sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' |
 	awk 'NR == 1 {

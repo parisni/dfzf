@@ -46,10 +46,10 @@ fzf --sync --multi --prompt "Windows > " \
 	--bind="ctrl-g:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-green --append-ts)+reload(dfzf-windows-load)" \
 	--bind="ctrl-o:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-orange --append-ts)+reload(dfzf-windows-load)" \
 	--bind="A:reload(dfzf-windows-load)" \
-	--bind="R:reload(dfzf-windows-load  | grep '\[red\]' || dfzf-windows-load)" \
-	--bind="B:reload(dfzf-windows-load  | grep '\[blue\]' || dfzf-windows-load)" \
-	--bind="G:reload(dfzf-windows-load  | grep '\[green\]' || dfzf-windows-load)" \
-	--bind="O:reload(dfzf-windows-load  | grep '\[orange\]' || dfzf-windows-load)" \
+	--bind="R:reload(dfzf-windows-load | rg -F $'\033[31m' || dfzf-windows-load)" \
+	--bind="B:reload(dfzf-windows-load | rg -F $'\033[34m' || dfzf-windows-load)" \
+	--bind="G:reload(dfzf-windows-load | rg -F $'\033[32m' || dfzf-windows-load)" \
+	--bind="O:reload(dfzf-windows-load | rg -F $'\033[38;5;208m' || dfzf-windows-load)" \
 	--bind="ctrl-k:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-windows-kill @)+reload(dfzf-windows-load)" \
 	--bind="ctrl-u:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(dfzf-windows-load)" \
 	--bind="ctrl-j:execute-silent(echo {} |extract_con_id| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus || dfzf-exec '[class=\"^dfzf-popup$\"]' focus \")" \
