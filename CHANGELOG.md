@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.8.4"></a>
+## [v0.8.4] - 2025-06-01
+### Features
+- **windows:** kitty preview to only list prompt commands
+
+
 <a name="v0.8.3"></a>
 ## [v0.8.3] - 2025-05-30
 ### Bug Fixes
@@ -309,7 +315,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.8.3...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.8.4...HEAD
+[v0.8.4]: https://github.com/parisni/dfzf/compare/v0.8.3...v0.8.4
 [v0.8.3]: https://github.com/parisni/dfzf/compare/v0.8.2...v0.8.3
 [v0.8.2]: https://github.com/parisni/dfzf/compare/v0.8.1...v0.8.2
 [v0.8.1]: https://github.com/parisni/dfzf/compare/v0.8.0...v0.8.1
