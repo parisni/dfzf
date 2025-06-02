@@ -5,6 +5,10 @@ windows_app_id_map_json="{}"
 windows_glyph_rules_json='[{"glyph": " "}]'
 windows_title_rm_pattern="— Mozilla Firefox "
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
+findcommand=$(command -v fd || command -v fdfind) || {
+	echo "Neither fd nor fdfind found"
+	exit 1
+}
 
 # Accept optional input via stdin or first argument
 if [ -n "${1:-}" ]; then
@@ -18,10 +22,12 @@ RED=$'\033[31m'
 BLUE=$'\033[34m'
 GREEN=$'\033[32m'
 ORANGE=$'\033[38;5;208m'
+color_state_file=$($findcommand 'dfzf-windows-color-.+' /tmp -d 1 -t f 2>/dev/null | head -n 1)
 # Main processing logic using jq
-echo "$input_json" | jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GREEN" --arg orange "$ORANGE" --arg reset "$RESET" \
-	--argjson map "$windows_app_id_map_json" \
-	--argjson glyph_rules "$windows_glyph_rules_json" '
+result=$(
+	echo "$input_json" | jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GREEN" --arg orange "$ORANGE" --arg reset "$RESET" \
+		--argjson map "$windows_app_id_map_json" \
+		--argjson glyph_rules "$windows_glyph_rules_json" '
   def format_title(text): "\u2063" + text + "\u2063";
     .. | objects
     | select(.type == "con" or .type == "floating_con")
@@ -61,12 +67,38 @@ echo "$input_json" | jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GRE
       
     | "\(.sort)\(if .urgent then "\u001b[33m" else "" end)\(.glyph) [\(.app_id)]\(if .urgent then "\u001b[0m" else "" end)\t\(.red)\(.blue)\(.green)\(.orange) \(format_title(.name)) #\(.id)"
   ' | sort -nr |
-	sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' |
-	awk 'NR == 1 {
-    # Remove existing ANSI escape codes from the first line
-    gsub(/\033\[[0-9;]*m/, "");
-    # Then apply the new color to the entire first line
-    print "\033[38;2;76;120;153m" $0 "\033[0m";
-    next
-} 
-{print}'
+		sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' |
+		perl -pe '
+  use Term::ANSIColor;
+  BEGIN {
+    $color_start = "\033[38;2;76;120;153m";
+    $color_end = "\033[0m";
+  }
+
+  if ($. == 1) {
+    s{(.*)}{
+      my $line = $1;
+
+      # ANSI pattern: \033[...m
+      my @chunks = split /(\033\[[0-9;]+m.*?\033\[0m)/, $line;
+
+      for (@chunks) {
+        next if /\033\[[0-9;]+m.*?\033\[0m/;  # already colored: skip
+        $_ = $color_start . $_ . $color_end; # wrap in new color
+      }
+
+      join "", @chunks;
+    }e;
+  }
+'
+
+)
+
+if [[ -f $color_state_file ]]; then
+	# Extract the color number from the filename
+	color="${color_state_file##*-}" # removes everything before last dash
+	color_code=$(printf "\033[%sm" "$color")
+	rg -F $"$color_code" <<<"$result" || printf '%s\n' "$result"
+else
+	printf '%s\n' "$result"
+fi
