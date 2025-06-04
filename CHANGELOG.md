@@ -2,6 +2,16 @@
 ## [Unreleased]
 
 
+<a name="v0.9.0"></a>
+## [v0.9.0] - 2025-06-04
+### Bug Fixes
+- **windows:** better extract title to be merged with kitty title
+
+### Features
+- **windows:** keep category colors across invocation and in focus windows
+- **windows:** support multiple color category per window
+
+
 <a name="v0.8.4"></a>
 ## [v0.8.4] - 2025-06-01
 ### Features
@@ -315,7 +325,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.8.4...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.9.0...HEAD
+[v0.9.0]: https://github.com/parisni/dfzf/compare/v0.8.4...v0.9.0
 [v0.8.4]: https://github.com/parisni/dfzf/compare/v0.8.3...v0.8.4
 [v0.8.3]: https://github.com/parisni/dfzf/compare/v0.8.2...v0.8.3
 [v0.8.2]: https://github.com/parisni/dfzf/compare/v0.8.1...v0.8.2
