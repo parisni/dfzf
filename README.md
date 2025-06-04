@@ -1,4 +1,4 @@
-# dfzf — Effortless Window Navigation for Sway and i3
+# dfzf — Effortless Window Navigation for Sway/i3
 
 **dfzf** redefines how you interact with windows in sway and i3, letting you switch windows with `fzf`, sorted by recency — no more cycling or losing your mind. Unlike traditional workspaces or tabbing, it frees you from relying on mental cartography, using name- and time-based navigation to keep access effortless, even with dozens of windows.
 
@@ -17,6 +17,17 @@ This GIF shows dfzf-windows in action:
 
   
 </details>
+
+---
+## A New Way to Navigate Your Desktop
+
+Using `dfzf` invites you to rethink how you use your window manager:
+
+- **No more tabs** — Use `dfzf-windows` to manage windows efficiently, without relying on tabbed layouts.
+- **No more workspaces** — Replace static workspaces with a flexible color tagging system. Assign multiple tags to a single window for powerful cross-grouping and faster navigation.
+- **No more bars** — Free up screen space and ditch the traditional bar. Invoke minimal, dedicated popups for clock, system monitor, system info, wifi, and more — only when needed.
+
+These  make your desktop cleaner, more dynamic, and easier to manage — with more pixels dedicated to what actually matters —  always full-screen !
 
 
 ---
@@ -373,19 +384,20 @@ Install the below extensions:
 
 - windows ordered by last access
 - cycle previous window
-- Return: focus window
-- focus window with enter
-- `A`: reload windows
-- `B`: color blue
-- `G`: color green
-- `O`: color blue
-- `R`: color red
-- `ctrl-b`: select color blue
-- `ctrl-g`: select color green
-- `ctrl-o`: select color blue
-- `ctrl-r`: select color red
+- terminal scrollback preview (kitty only)
+
+keybindings:
+
+- `Return`: focus window
+- `ctrl-b`: toggle color blue
+- `ctrl-g`: toggle color green
+- `ctrl-o`: toggle color orange
+- `ctrl-r`: toggle color red
+- `B`: filter color blue
+- `G`: filter color green
+- `O`: filter color orange
+- `R`: filter color red
 - `ctrl-k`: kill window
-- `terminal scrollback preview (kitty only)
 - `ctrl-u`: toggle urgent  (yellow color)
 - `ctrl-i`: toggle important (red color)
 - `ctrl-j`: preview windows
@@ -393,7 +405,7 @@ Install the below extensions:
 - `ctrl-t`: will toggle tilling to the multi-selected windows
 
   ```bash
-    sudo apt install jq
+    sudo apt install jq ripgrep
   ```
 
   ![Image](https://github.com/user-attachments/assets/ab76602c-9e04-4a08-bb9d-dcee16413fce)
