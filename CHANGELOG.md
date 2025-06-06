@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.9.1"></a>
+## [v0.9.1] - 2025-06-06
+### Bug Fixes
+- **password:** don't kill popup after copy
+
+### Documentation
+- **windows:** color tagging system
+
+
 <a name="v0.9.0"></a>
 ## [v0.9.0] - 2025-06-04
 ### Bug Fixes
@@ -325,7 +334,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.9.1...HEAD
+[v0.9.1]: https://github.com/parisni/dfzf/compare/v0.9.0...v0.9.1
 [v0.9.0]: https://github.com/parisni/dfzf/compare/v0.8.4...v0.9.0
 [v0.8.4]: https://github.com/parisni/dfzf/compare/v0.8.3...v0.8.4
 [v0.8.3]: https://github.com/parisni/dfzf/compare/v0.8.2...v0.8.3
