@@ -15,18 +15,34 @@ toggle_color() {
 	state_base="/tmp/dfzf-windows-color-"
 	state_file="${state_base}${color}"
 	if [[ -f $state_file ]]; then
+		# File exists → de-toggle: remove the file
+		rm -f "$state_file"
+	else
 		findcommand=$(command -v fd || command -v fdfind) || {
 			echo "Neither fd nor fdfind found"
 			exit 1
 		}
 		$findcommand 'dfzf-windows-color-.+' /tmp | xargs rm -f || true
-	else
 		touch "$state_file"
 	fi
 	dfzf-windows-load
 }
 export -f extract_con_id
 export -f toggle_color
+set_prompt() {
+	PROMPT="Windows > "
+	for code in 31 32 34; do
+		if [[ -f "/tmp/dfzf-windows-color-$code" ]]; then
+			case "$code" in
+			31) PROMPT=$'\033[31m Windows > \033[0m' ;; # red prompt
+			32) PROMPT=$'\033[32m Windows > \033[0m' ;; # green prompt
+			34) PROMPT=$'\033[34m Windows > \033[0m' ;; # blue prompt
+			esac
+			break
+		fi
+	done
+}
+set_prompt
 
 if [[ "${KITTY_WINDOW_ID:-}" ]]; then
 	findcommand=$(command -v fd || command -v fdfind) || {
@@ -52,7 +68,7 @@ fi
 result=$(dfzf-windows-load "$current_tree")
 dfzf-exec '[con_id='"$(head -n1 <<<"$result" | extract_con_id)"']' floating disable
 
-fzf --sync --multi --prompt "Windows > " \
+fzf --sync --multi --prompt "$PROMPT" \
 	--bind "start:up" --bind "change:first" \
 	--preview="$PREVIEW" \
 	--preview-window="$PREVIEW_WINDOW" \
@@ -61,10 +77,9 @@ fzf --sync --multi --prompt "Windows > " \
 	--bind="ctrl-b:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-blue --append-ts)+reload(dfzf-windows-load)" \
 	--bind="ctrl-g:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-green --append-ts)+reload(dfzf-windows-load)" \
 	--bind="ctrl-o:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-orange --append-ts)+reload(dfzf-windows-load)" \
-	--bind="R:reload(toggle_color '31')" \
-	--bind="B:reload(toggle_color '34')" \
-	--bind="G:reload(toggle_color '32')" \
-	--bind="O:reload(toggle_color '38;5;208')" \
+	--bind $'B:reload(toggle_color 34)+change-prompt(\033[34m Windows > \033[0m)' \
+	--bind $'R:reload(toggle_color 31)+change-prompt(\033[31m Windows > \033[0m)' \
+	--bind $'G:reload(toggle_color 32)+change-prompt(\033[32m Windows > \033[0m)' \
 	--bind="ctrl-k:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-windows-kill @)+reload(dfzf-windows-load)" \
 	--bind="ctrl-u:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-exec '[con_id=@] urgent toggle')+reload(dfzf-windows-load)" \
 	--bind="ctrl-j:execute-silent(echo {} |extract_con_id| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec '[app_id=\"^dfzf-popup$\"]' focus || dfzf-exec '[class=\"^dfzf-popup$\"]' focus \")" \

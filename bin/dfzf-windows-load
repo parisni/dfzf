@@ -21,11 +21,10 @@ RESET=$'\033[0m'
 RED=$'\033[31m'
 BLUE=$'\033[34m'
 GREEN=$'\033[32m'
-ORANGE=$'\033[38;5;208m'
 color_state_file=$($findcommand 'dfzf-windows-color-.+' /tmp -d 1 -t f 2>/dev/null | head -n 1)
 # Main processing logic using jq
 result=$(
-	echo "$input_json" | jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GREEN" --arg orange "$ORANGE" --arg reset "$RESET" \
+	echo "$input_json" | jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GREEN" --arg reset "$RESET" \
 		--argjson map "$windows_app_id_map_json" \
 		--argjson glyph_rules "$windows_glyph_rules_json" '
   def format_title(text): "\u2063" + text + "\u2063";
@@ -48,7 +47,6 @@ result=$(
         red: (if any(.marks[]?; startswith("_dfzf-red-")) then "\($red) \($reset)" else "" end),
         blue: (if any(.marks[]?; startswith("_dfzf-blue-")) then "\($blue) \($reset)" else "" end),
         green: (if any(.marks[]?; startswith("_dfzf-green-")) then "\($green) \($reset)" else "" end),
-        orange: (if any(.marks[]?; startswith("_dfzf-orange-")) then "\($orange) \($reset)" else "" end),
         glyph: (
           ($glyph_rules
             | map(
@@ -65,7 +63,7 @@ result=$(
         )
       }
       
-    | "\(.sort)\(if .urgent then "\u001b[33m" else "" end)\(.glyph) [\(.app_id)]\(if .urgent then "\u001b[0m" else "" end)\t\(.red)\(.blue)\(.green)\(.orange) \(format_title(.name)) #\(.id)"
+    | "\(.sort)\(if .urgent then "\u001b[33m" else "" end)\(.glyph) [\(.app_id)]\(if .urgent then "\u001b[0m" else "" end)\t\(.red)\(.blue)\(.green) \(format_title(.name)) #\(.id)"
   ' | sort -nr |
 		sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' |
 		perl -pe '
