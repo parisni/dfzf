@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.9.2"></a>
+## [v0.9.2] - 2025-06-09
+### Features
+- **windows:** turn prompt to category color and rm orange color
+
+
 <a name="v0.9.1"></a>
 ## [v0.9.1] - 2025-06-06
 ### Bug Fixes
@@ -334,7 +340,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.9.2...HEAD
+[v0.9.2]: https://github.com/parisni/dfzf/compare/v0.9.1...v0.9.2
 [v0.9.1]: https://github.com/parisni/dfzf/compare/v0.9.0...v0.9.1
 [v0.9.0]: https://github.com/parisni/dfzf/compare/v0.8.4...v0.9.0
 [v0.8.4]: https://github.com/parisni/dfzf/compare/v0.8.3...v0.8.4
