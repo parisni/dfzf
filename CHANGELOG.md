@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.9.4"></a>
+## [v0.9.4] - 2025-06-20
+### Bug Fixes
+- **password:** copy first line only
+
+
 <a name="v0.9.3"></a>
 ## [v0.9.3] - 2025-06-13
 ### Bug Fixes
@@ -346,7 +352,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.9.3...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.9.4...HEAD
+[v0.9.4]: https://github.com/parisni/dfzf/compare/v0.9.3...v0.9.4
 [v0.9.3]: https://github.com/parisni/dfzf/compare/v0.9.2...v0.9.3
 [v0.9.2]: https://github.com/parisni/dfzf/compare/v0.9.1...v0.9.2
 [v0.9.1]: https://github.com/parisni/dfzf/compare/v0.9.0...v0.9.1
