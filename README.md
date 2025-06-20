@@ -63,6 +63,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
 | `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   |
 | `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   |
+| `dfzf-term`   | Terminal management (kill/new/toggle)            | ✅ | ✅   |
 
 ---
 ## Terminal Support Matrix
@@ -582,6 +583,35 @@ Password-store
 ![Image](https://github.com/user-attachments/assets/dfb1ef58-38e0-44c1-b85b-5a8d0d99f0d4)
 ![Image](https://github.com/user-attachments/assets/ad0813b3-0090-4541-9077-f228508c9923)
 ![Image](https://github.com/user-attachments/assets/ba17b777-5136-4172-b065-39a1fc8b7ed5)
+</details>
+
+<details>
+  <summary>
+    Terminal Management
+  </summary>
+
+  `dfzf-term` provides smart terminal management with three main functions:
+
+  **Usage:**
+  - `dfzf-term kill` - Kill dfzf-hidden terminal and reorganize windows
+  - `dfzf-term new` - Create new terminal from root container  
+  - `dfzf-term toggle` - Toggle fullscreen/split layout for terminals
+
+  **Smart Path Detection:**
+  The toggle feature automatically detects the current working directory from various window types:
+  - **JetBrains IDE**: Extracts project path from window title `[/path/to/project]`
+  - **Neovim/Vim**: Extracts path from terminal title ending with ` - NVIM` or `^vim`
+  - **Terminal**: Extracts path from window title using pattern before `/[a-zA-Z]{2}`
+  - **Firefox**: Defaults to home directory
+
+  **Layout Intelligence:**
+  When you have a dfzf-hidden terminal paired with another application:
+  - Toggles between split view and stacking layout
+  - Maintains focus on the active application
+  - Automatically reorganizes windows when killing terminals
+
+  Works with JetBrains IDEs, Firefox, Neovim, Vim, and regular terminal windows for seamless workspace management.
+
 </details>
 
 ## Related work

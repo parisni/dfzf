@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# dfzf-term - Terminal management script
+# Usage: dfzf-term {kill|new|toggle}
+
+show_usage() {
+	echo "Usage: dfzf-term {kill|new|toggle}"
+	echo "  kill   - Kill dfzf-hidden terminal and reorganize windows"
+	echo "  new    - Create new terminal from root container"
+	echo "  toggle - Toggle fullscreen/split layout for terminal"
+	exit 1
+}
+
+term_kill() {
+	windows_json=$(swaymsg -t get_tree | jq -c '
+      [recurse(.nodes[] | select(.nodes)) 
+       | select(any(.nodes[]; .focused == true))][0]
+      | [recurse(.nodes[])]
+      | map(select(.app_id != null))
+      | map({app_id, id})
+    ')
+
+	hidden_id=$(echo "$windows_json" | jq -r '.[] | select(.app_id == "dfzf-hidden").id')
+	parent_id=$(echo "$windows_json" | jq -r '.[] | select(.app_id == null).id')
+	jet_id=$(echo "$windows_json" | jq -r '.[] | select(.app_id != "dfzf-hidden").id')
+
+	if [[ -n $hidden_id ]]; then
+		dfzf-windows-kill "$hidden_id"
+		# this one for the jetbrain window to loose its container. we have to wait until the hidden is killed
+		pomatez_id=$(swaymsg -t get_tree | jq -r 'recurse(.nodes[]?) | select(.app_id == "pomatez") | .id')
+		swaymsg "[con_id=$jet_id] move to workspace 2"
+		dfzf-mark --con-id "$pomatez_id" --mark _dfzf-preview
+		swaymsg "[con_id=$pomatez_id] focus"
+		dfzf-mark --con-id "$pomatez_id" --mark _dfzf-preview
+		swaymsg "[con_id=$jet_id] move to workspace 1, focus"
+	fi
+}
+
+term_new() {
+	# identify and focus window with app_id=pomatez, then exec kitty
+	pomatez_id=$(swaymsg -t get_tree | jq -r 'recurse(.nodes[]?) | select(.app_id == "pomatez") | .id')
+
+	if [[ -n $pomatez_id ]]; then
+		dfzf-mark --con-id "$pomatez_id" --mark _dfzf-preview
+		swaymsg "[con_id=$pomatez_id] focus"
+		dfzf-mark --con-id "$pomatez_id" --mark _dfzf-preview
+	fi
+
+	exec kitty -1
+}
+
+term_toggle() {
+	windows_json=$(swaymsg -t get_tree | jq -c '
+      [recurse(.nodes[] | select(.nodes)) 
+       | select(any(.nodes[]; .focused == true))][0]
+      | [recurse(.nodes[])]
+      | map({app_id, name, focused, layout})
+    ')
+
+	focused_app=$(echo "$windows_json" | jq -r '.[] | select(.focused).app_id')
+	focused_name=$(echo "$windows_json" | jq -r '.[] | select(.focused).name')
+	window_count=$(echo "$windows_json" | jq 'length')
+
+	# Decision logic
+	if [ "$window_count" -eq 3 ]; then
+		other_app=$(echo "$windows_json" | jq -r '.[] | select(.name != null) | select(.focused | not).app_id')
+		other_app_name=$(echo "$windows_json" | jq -r '.[] | select(.name != null) | select(.focused | not).name')
+		layout=$(echo "$windows_json" | jq -r '.[] | select(.name == null).layout')
+		if [[ $focused_app == "dfzf-hidden" && ($other_app == "jetbrains-idea-ce" || $other_app == "firefox" || $other_app == "kitty" || $other_app_name =~ NVIM$ || $other_app_name =~ ^vim) ]]; then
+			if [[ $layout == "splitv" ]]; then
+				swaymsg 'focus next, layout stacking'
+				exit
+			fi
+			swaymsg 'focus next, layout splitv'
+			exit
+		elif [[ $other_app == "dfzf-hidden" && ($focused_app == "jetbrains-idea-ce" || $focused_app == "firefox" || $focused_app == "kitty" || $focused_name =~ NVIM$ || $focused_name =~ ^vim) ]]; then
+			swaymsg 'layout splitv, focus next'
+			exit
+		fi
+	fi
+
+	if [[ $focused_app == "jetbrains-idea-ce" ]]; then
+		dir=$(echo "$focused_name" | sed -n 's/.*\[\(.*\)\].*/\1/p')
+	elif [[ $focused_app == "kitty" && $focused_name =~ NVIM$ ]]; then
+		dir=$(echo "$focused_name" | sed -n 's|^\(.*\) - NVIM$|\1|p')
+	elif [[ $focused_app == "kitty" ]]; then
+		dir=$(echo "$focused_name" | sed -n 's|\(.*\) /.\{2\}|\1|p')
+	elif [[ $focused_app == "firefox" || $focused_name =~ ^vim ]]; then
+		dir="~"
+	fi
+
+	if [ -n "$dir" ]; then
+		swaymsg "split v"
+		kitty -1 --app-id "dfzf-hidden" -d "$dir"
+	fi
+}
+
+# Main script logic
+case "${1:-}" in
+kill)
+	term_kill
+	;;
+new)
+	term_new
+	;;
+toggle)
+	term_toggle
+	;;
+*)
+	show_usage
+	;;
+esac
