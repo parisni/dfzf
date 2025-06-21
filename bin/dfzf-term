@@ -91,6 +91,7 @@ term_toggle() {
 	fi
 
 	if [ -n "$dir" ]; then
+    dir="${dir/#\~/$HOME}"
 		swaymsg "split v"
 		kitty -1 --app-id "dfzf-hidden" -d "$dir"
 	fi
