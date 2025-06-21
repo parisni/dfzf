@@ -369,7 +369,7 @@ if [ -t 1 ]; then
 	echo "Launching command: ${COMMAND}" >&3
 
 	# Always focus Pomatez before launching new apps
-	pomatez_id=$(swaymsg -t get_tree | jq -r 'recurse(.nodes[]?) | select(.app_id == "pomatez") | .id')
+	pomatez_id=$(swaymsg -t get_tree | jq -r 'recurse(.nodes[]?) | select(.name == "Pomatez") | .id')
 	if [[ -n $pomatez_id ]]; then
 		dfzf-mark --con-id "$pomatez_id" --mark _dfzf-preview
 		swaymsg "[con_id=$pomatez_id] focus"
