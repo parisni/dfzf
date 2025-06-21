@@ -28,23 +28,23 @@ term_kill() {
 	if [[ -n $hidden_id ]]; then
 		dfzf-windows-kill "$hidden_id"
 		# this one for the jetbrain window to loose its container. we have to wait until the hidden is killed
-		pomatez_id=$(swaymsg -t get_tree | jq -r 'recurse(.nodes[]?) | select(.name and (.name | test("pomatez"; "i"))) | .id')
+	first_window_id=$(swaymsg -t get_tree | jq -r 'recurse(.nodes[]?) | select(.app_id) | .id' | head -1)
 		swaymsg "[con_id=$jet_id] move to workspace 2"
-		dfzf-mark --con-id "$pomatez_id" --mark _dfzf-preview
-		swaymsg "[con_id=$pomatez_id] focus"
-		dfzf-mark --con-id "$pomatez_id" --mark _dfzf-preview
+		dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
+		swaymsg "[con_id=$first_window_id] focus"
+		dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
 		swaymsg "[con_id=$jet_id] move to workspace 1, focus"
 	fi
 }
 
 term_new() {
-	# identify and focus window with app_id=pomatez, then exec kitty
-	pomatez_id=$(swaymsg -t get_tree | jq -r 'recurse(.nodes[]?) | select(.name and (.name | test("pomatez"; "i"))) | .id')
+	# identify and focus first window in current workspace, then exec kitty
+	first_window_id=$(swaymsg -t get_tree | jq -r 'recurse(.nodes[]?) | select(.app_id) | .id' | head -1)
 
-	if [[ -n $pomatez_id ]]; then
-		dfzf-mark --con-id "$pomatez_id" --mark _dfzf-preview
-		swaymsg "[con_id=$pomatez_id] focus"
-		dfzf-mark --con-id "$pomatez_id" --mark _dfzf-preview
+	if [[ -n $first_window_id ]]; then
+		dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
+		swaymsg "[con_id=$first_window_id] focus"
+		dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
 	fi
 
 	exec kitty -1
