@@ -596,28 +596,28 @@ Password-store
     Terminal Management
   </summary>
 
-  `dfzf-term` provides smart terminal management with three main functions:
+  `dfzf-term` allows you to attach a companion terminal to any existing window, including terminals, Firefox, or any other application. It provides the ability to toggle the companion terminal between hidden, split, and stacked views for enhanced workflow management.
 
-  **Usage:**
-  - `dfzf-term kill` - Kill dfzf-hidden terminal and reorganize windows
-  - `dfzf-term new` - Create new terminal from root container  
-  - `dfzf-term toggle` - Toggle fullscreen/split layout for terminals
+  **Key Bindings:**
+  - `Ctrl + /` - Create or toggle companion terminal visibility
+  - `Shift + Ctrl + /` - Kill the companion terminal
+  - `Ctrl + N` - Create a new independent terminal
 
   **Smart Path Detection:**
-  The toggle feature automatically detects the current working directory from various window types:
+  The companion terminal automatically detects and opens in the appropriate working directory based on the focused window:
   - **JetBrains IDE**: Extracts project path from window title `[/path/to/project]`
   - **Neovim/Vim**: Extracts path from terminal title ending with ` - NVIM` or `^vim`
   - **Terminal**: Extracts path from window title using pattern before `/[a-zA-Z]{2}`
   - **Firefox**: Defaults to home directory
 
   **Layout Intelligence:**
-  When you have a dfzf-hidden terminal paired with another application:
-  - Toggles between split view and stacking layout
-  - Maintains focus on the active application
-  - Automatically reorganizes windows when killing terminals
+  - Seamlessly toggles between hidden, split, and stacked layouts
+  - Maintains focus on the primary application while providing quick terminal access
+  - Automatically manages window organization when creating or destroying companion terminals
 
-  Works with JetBrains IDEs, Firefox, Neovim, Vim, and regular terminal windows for seamless workspace management.
+  Works with any application window, providing universal terminal access across your entire workspace.
 
+  ![Image](https://github.com/user-attachments/assets/ca5c3a4d-eff2-490c-871e-ae413acfba08)
 </details>
 
 ## Related work
