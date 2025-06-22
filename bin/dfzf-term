@@ -2,13 +2,14 @@
 set -euo pipefail
 
 # dfzf-term - Terminal management script
-# Usage: dfzf-term {kill|new|toggle}
+# Usage: dfzf-term {kill|new|toggle} [terminal_command]
 
 show_usage() {
-	echo "Usage: dfzf-term {kill|new|toggle}"
+	echo "Usage: dfzf-term {kill|new|toggle} [terminal_command]"
 	echo "  kill   - Kill dfzf-hidden terminal and reorganize windows"
-	echo "  new    - Create new terminal from root container"
-	echo "  toggle - Toggle fullscreen/split layout for terminal"
+	echo "  new    - Create new terminal from root container (requires terminal_command)"
+	echo "  toggle - Toggle fullscreen/split layout for terminal (requires terminal_command)"
+	echo "  terminal_command - Terminal command to run (e.g., 'kitty -1', 'alacritty')"
 	exit 1
 }
 
@@ -38,10 +39,11 @@ term_kill() {
 }
 
 term_new() {
-	# identify and focus first window in current workspace, then exec kitty
+	local term_cmd="${2:?Terminal command is required for 'new' operation}"
+	# identify and focus first window in current workspace, then exec terminal
 	layout=$(dfzf-focus focus)
 
-	dfzf-exec exec "kitty -1"
+	dfzf-exec exec "$term_cmd"
 
 	if [[ $layout != "tabbed" ]]; then
 		sleep 0.1
@@ -83,21 +85,22 @@ term_toggle() {
 	dir=$(echo "$focused_name" | sed -n -E 's/.*\[([^]]+)\].*|^(.+) - NVIM$|(.+) \/..$/\1\2\3/p')
 	dir="${dir:-~}"
 
+	local term_cmd="${2:?Terminal command is required for 'toggle' operation}"
 	dir="${dir/#\~/$HOME}"
 	dfzf-exec "split v"
-	kitty -1 --app-id "dfzf-hidden" -d "$dir"
+	$term_cmd --app-id "dfzf-hidden" -d "$dir"
 }
 
 # Main script logic
 case "${1:-}" in
 kill)
-	term_kill
+	term_kill "$@"
 	;;
 new)
-	term_new
+	term_new "$@"
 	;;
 toggle)
-	term_toggle
+	term_toggle "$@"
 	;;
 *)
 	show_usage
