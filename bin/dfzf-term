@@ -29,7 +29,7 @@ term_kill() {
 		dfzf-windows-kill "$hidden_id"
 		# this one for the jetbrain window to loose its container. we have to wait until the hidden is killed
 		dfzf-exec "[con_id=$jet_id] move to workspace 2"
-		layout=$(dfzf-focus-first focus)
+		layout=$(dfzf-focus focus)
 		dfzf-exec "[con_id=$jet_id] move to workspace 1, focus"
 		if [[ $layout != "tabbed" ]]; then
 			dfzf-exec "move left"
@@ -39,7 +39,7 @@ term_kill() {
 
 term_new() {
 	# identify and focus first window in current workspace, then exec kitty
-	layout=$(dfzf-focus-first focus)
+	layout=$(dfzf-focus focus)
 
 	dfzf-exec exec "kitty -1"
 
