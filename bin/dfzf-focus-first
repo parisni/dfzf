@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# Focus on the first window in current workspace
+# Used to factorize common window focusing logic across dfzf scripts
+
+first_window_id=$(swaymsg -t get_tree | jq -r 'recurse(.nodes[]?) | select(.app_id) | .id' | head -1)
+
+if [[ -n $first_window_id ]]; then
+	dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
+	swaymsg "[con_id=$first_window_id] focus"
+	dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
+fi

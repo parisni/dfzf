@@ -369,12 +369,7 @@ if [ -t 1 ]; then
 	echo "Launching command: ${COMMAND}" >&3
 
 	# Always focus first window before launching new apps
-	first_window_id=$(swaymsg -t get_tree | jq -r 'recurse(.nodes[]?) | select(.app_id) | .id' | head -1)
-	if [[ -n $first_window_id ]]; then
-		dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
-		swaymsg "[con_id=$first_window_id] focus"
-		dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
-	fi
+	dfzf-focus-first
 
 	setsid /bin/sh -c "${COMMAND}" >&/dev/null </dev/null &
 	sleep 0.01
