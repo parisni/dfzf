@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.9.5"></a>
+## [v0.9.5] - 2025-06-22
+### Bug Fixes
+- i3 broken due to undefined var
+
+
 <a name="v0.9.4"></a>
 ## [v0.9.4] - 2025-06-20
 ### Bug Fixes
@@ -352,7 +358,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.9.4...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.9.5...HEAD
+[v0.9.5]: https://github.com/parisni/dfzf/compare/v0.9.4...v0.9.5
 [v0.9.4]: https://github.com/parisni/dfzf/compare/v0.9.3...v0.9.4
 [v0.9.3]: https://github.com/parisni/dfzf/compare/v0.9.2...v0.9.3
 [v0.9.2]: https://github.com/parisni/dfzf/compare/v0.9.1...v0.9.2
