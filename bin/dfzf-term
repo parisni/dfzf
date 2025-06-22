@@ -13,7 +13,7 @@ show_usage() {
 }
 
 term_kill() {
-	windows_json=$(swaymsg -t get_tree | jq -c '
+	windows_json=$(dfzf-exec -t get_tree | jq -c '
       [recurse(.nodes[] | select(.nodes)) 
        | select(any(.nodes[]; .focused == true))][0]
       | [recurse(.nodes[])]
@@ -28,21 +28,29 @@ term_kill() {
 	if [[ -n $hidden_id ]]; then
 		dfzf-windows-kill "$hidden_id"
 		# this one for the jetbrain window to loose its container. we have to wait until the hidden is killed
-		swaymsg "[con_id=$jet_id] move to workspace 2"
-		dfzf-focus-first
-		swaymsg "[con_id=$jet_id] move to workspace 1, focus"
+		dfzf-exec "[con_id=$jet_id] move to workspace 2"
+		layout=$(dfzf-focus-first focus)
+		dfzf-exec "[con_id=$jet_id] move to workspace 1, focus"
+		if [[ $layout != "tabbed" ]]; then
+			dfzf-exec "move left"
+		fi
 	fi
 }
 
 term_new() {
 	# identify and focus first window in current workspace, then exec kitty
-	dfzf-focus-first
+	layout=$(dfzf-focus-first focus)
 
-	exec kitty -1
+	dfzf-exec exec "kitty -1"
+
+	if [[ $layout != "tabbed" ]]; then
+		sleep 0.1
+		dfzf-exec "move left"
+	fi
 }
 
 term_toggle() {
-	windows_json=$(swaymsg -t get_tree | jq -c '
+	windows_json=$(dfzf-exec -t get_tree | jq -c '
       [recurse(.nodes[] | select(.nodes)) 
        | select(any(.nodes[]; .focused == true))][0]
       | [recurse(.nodes[])]
@@ -60,13 +68,13 @@ term_toggle() {
 		layout=$(echo "$windows_json" | jq -r '.[] | select(.name == null).layout')
 		if [[ $focused_app == "dfzf-hidden" ]]; then
 			if [[ $layout == "splitv" ]]; then
-				swaymsg 'focus next, layout stacking'
+				dfzf-exec 'focus next, layout stacking'
 				exit
 			fi
-			swaymsg 'focus next, layout splitv'
+			dfzf-exec 'focus next, layout splitv'
 			exit
 		elif [[ $other_app == "dfzf-hidden" ]]; then
-			swaymsg 'layout splitv, focus next'
+			dfzf-exec 'layout splitv, focus next'
 			exit
 		fi
 	fi
@@ -76,7 +84,7 @@ term_toggle() {
 	dir="${dir:-~}"
 
 	dir="${dir/#\~/$HOME}"
-	swaymsg "split v"
+	dfzf-exec "split v"
 	kitty -1 --app-id "dfzf-hidden" -d "$dir"
 }
 
