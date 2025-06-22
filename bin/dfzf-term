@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Default configuration
+term_dir_regex='s/.*\[([^]]+)\].*|^(.+) - NVIM$|(.+) \/..$/\1\2\3/p'
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
+
 # dfzf-term - Terminal management script
 # Usage: dfzf-term {kill|new|toggle} [terminal_command]
 
@@ -70,24 +74,24 @@ term_toggle() {
 		layout=$(echo "$windows_json" | jq -r '.[] | select(.name == null).layout')
 		if [[ $focused_app == "dfzf-hidden" ]]; then
 			if [[ $layout == "splitv" ]]; then
-				dfzf-exec 'focus next, layout stacking'
+				dfzf-exec -q 'focus next, layout stacking'
 				exit
 			fi
-			dfzf-exec 'focus next, layout splitv'
+			dfzf-exec -q 'focus next, layout splitv'
 			exit
 		elif [[ $other_app == "dfzf-hidden" ]]; then
-			dfzf-exec 'layout splitv, focus next'
+			dfzf-exec -q 'layout splitv, focus next'
 			exit
 		fi
 	fi
 
-	# Extract directory with unified regex, fallback to ~
-	dir=$(echo "$focused_name" | sed -n -E 's/.*\[([^]]+)\].*|^(.+) - NVIM$|(.+) \/..$/\1\2\3/p')
+	# Extract directory with configurable regex, fallback to ~
+	dir=$(echo "$focused_name" | sed -n -E "$term_dir_regex")
 	dir="${dir:-~}"
 
 	local term_cmd="${2:?Terminal command is required for 'toggle' operation}"
 	dir="${dir/#\~/$HOME}"
-	dfzf-exec "split v"
+	dfzf-exec -q "split v"
 	$term_cmd --app-id "dfzf-hidden" -d "$dir"
 }
 
