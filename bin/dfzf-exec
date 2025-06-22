@@ -4,9 +4,9 @@ set -euo pipefail
 export SHELL="$(command -v bash)"
 msgcommand=""
 
-if [ -n "$SWAYSOCK" ]; then
+if [ -n "${SWAYSOCK:-}" ]; then
 	msgcommand="swaymsg"
-elif [ -n "$I3SOCK" ]; then
+elif [ -n "${I3SOCK:-}" ]; then
 	msgcommand="i3-msg"
 fi
 
