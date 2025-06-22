@@ -63,6 +63,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
 | `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   |
 | `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   |
+| `dfzf-term`   | Terminal management (kill/new/toggle)            | ✅ | ✅   |
 
 ---
 ## Terminal Support Matrix
@@ -86,7 +87,7 @@ Prerequisite
 
 In general, dfzf needs:
  
-- sway or i3
+- sway or i3, with default layout `tabbed`
 - fzf 
 - kitty version >= 0.42.1 OR alacritty OR foot
 - jq version >= 1.7
@@ -196,7 +197,7 @@ exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 exec wl-paste --watch cliphist -max-items 1000 store # for dfzf-clipboard  
 exec mako # for the dfzf-notifs
 
-workspace_layout tabbed
+exec swaymsg workspace 1, layout tabbed
 workspace_auto_back_and_forth no
 
 # FOR FOOT OR ALACRITTY
@@ -212,6 +213,9 @@ exec --no-startup-id kitty -1 --start-as hidden
 exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden  -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
 bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-windows
 bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
+bindsym $mod+n exec dfzf-term new $term
+bindsym ctrl+slash exec dfzf-term toggle $term
+bindsym shift+ctrl+slash exec dfzf-term kill $term
 
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 
@@ -246,6 +250,9 @@ exec --no-startup-id kitty -1 --start-as hidden
 exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden  -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
 bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-windows
 bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
+bindsym $mod+n exec dfzf-term new $term
+bindsym ctrl+slash exec dfzf-term toggle $term
+bindsym shift+ctrl+slash exec dfzf-term kill $term
 
 for_window [class="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 
@@ -582,6 +589,35 @@ Password-store
 ![Image](https://github.com/user-attachments/assets/dfb1ef58-38e0-44c1-b85b-5a8d0d99f0d4)
 ![Image](https://github.com/user-attachments/assets/ad0813b3-0090-4541-9077-f228508c9923)
 ![Image](https://github.com/user-attachments/assets/ba17b777-5136-4172-b065-39a1fc8b7ed5)
+</details>
+
+<details>
+  <summary>
+    Terminal Management
+  </summary>
+
+  `dfzf-term` allows you to attach a companion terminal to any existing window, including terminals, Firefox, or any other application. It provides the ability to toggle the companion terminal between hidden, split, and stacked views for enhanced workflow management.
+
+  **Key Bindings:**
+  - `Ctrl + /` - Create or toggle companion terminal visibility
+  - `Shift + Ctrl + /` - Kill the companion terminal
+  - `Ctrl + N` - Create a new independent terminal
+
+  **Smart Path Detection:**
+  The companion terminal automatically detects and opens in the appropriate working directory based on the focused window:
+  - **JetBrains IDE**: Extracts project path from window title `[/path/to/project]`
+  - **Neovim/Vim**: Extracts path from terminal title ending with ` - NVIM` or `^vim`
+  - **Terminal**: Extracts path from window title using pattern before `/[a-zA-Z]{2}`
+  - **Firefox**: Defaults to home directory
+
+  **Layout Intelligence:**
+  - Seamlessly toggles between hidden, split, and stacked layouts
+  - Maintains focus on the primary application while providing quick terminal access
+  - Automatically manages window organization when creating or destroying companion terminals
+
+  Works with any application window, providing universal terminal access across your entire workspace.
+
+  ![Image](https://github.com/user-attachments/assets/ca5c3a4d-eff2-490c-871e-ae413acfba08)
 </details>
 
 ## Related work

@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Default configuration
+term_dir_regex='s/.*\[([^]]+)\].*|^(.+) - NVIM$|(.+) \/..$/\1\2\3/p'
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
+
+# dfzf-term - Terminal management script
+# Usage: dfzf-term {kill|new|toggle} [terminal_command]
+
+show_usage() {
+	echo "Usage: dfzf-term {kill|new|toggle} [terminal_command]"
+	echo "  kill   - Kill dfzf-hidden terminal and reorganize windows"
+	echo "  new    - Create new terminal from root container (requires terminal_command)"
+	echo "  toggle - Toggle fullscreen/split layout for terminal (requires terminal_command)"
+	echo "  terminal_command - Terminal command to run (e.g., 'kitty -1', 'alacritty')"
+	exit 1
+}
+
+term_kill() {
+	windows_json=$(dfzf-exec -t get_tree | jq -c '
+      [recurse(.nodes[] | select(.nodes)) 
+       | select(any(.nodes[]; .focused == true))][0]
+      | [recurse(.nodes[])]
+      | map(select((.app_id // .window_properties.class) != null))
+      | map({app_id: (.app_id // .window_properties.class), id})
+    ')
+
+	hidden_id=$(echo "$windows_json" | jq -r '.[] | select(.app_id == "dfzf-hidden").id')
+	parent_id=$(echo "$windows_json" | jq -r '.[] | select(.app_id == null).id')
+	jet_id=$(echo "$windows_json" | jq -r '.[] | select(.app_id != "dfzf-hidden").id')
+
+	if [[ -n $hidden_id ]]; then
+		dfzf-windows-kill "$hidden_id"
+		# this one for the jetbrain window to loose its container. we have to wait until the hidden is killed
+		dfzf-exec -q "[con_id=$jet_id] move to workspace 2"
+		layout=$(dfzf-focus focus)
+		dfzf-exec -q "[con_id=$jet_id] move to workspace 1, focus"
+		if [[ $layout != "tabbed" ]]; then
+			dfzf-exec -q "move left"
+		fi
+	fi
+}
+
+term_new() {
+	local term_cmd="${2:?Terminal command is required for 'new' operation}"
+	# identify and focus first window in current workspace, then exec terminal
+	layout=$(dfzf-focus focus)
+
+	dfzf-exec -q exec "$term_cmd"
+
+	if [[ $layout != "tabbed" ]]; then
+		sleep 0.1
+		dfzf-exec -q "move left"
+	fi
+}
+
+term_toggle() {
+	windows_json=$(dfzf-exec -t get_tree | jq -c '
+      [recurse(.nodes[] | select(.nodes)) 
+       | select(any(.nodes[]; .focused == true))][0]
+      | [recurse(.nodes[])]
+      | map({app_id: (.app_id // .window_properties.class), name, focused, layout})
+    ')
+
+	focused_app=$(echo "$windows_json" | jq -r '.[] | select(.focused).app_id')
+	focused_name=$(echo "$windows_json" | jq -r '.[] | select(.focused).name')
+	window_count=$(echo "$windows_json" | jq 'length')
+
+	# Decision logic
+	if [ "$window_count" -eq 3 ]; then
+		other_app=$(echo "$windows_json" | jq -r '.[] | select(.name != null) | select(.focused | not).app_id')
+		other_app_name=$(echo "$windows_json" | jq -r '.[] | select(.name != null) | select(.focused | not).name')
+		layout=$(echo "$windows_json" | jq -r '.[] | select(.name == null).layout')
+		if [[ $focused_app == "dfzf-hidden" ]]; then
+			if [[ $layout == "splitv" ]]; then
+				dfzf-exec -q 'focus next, layout stacking'
+				exit
+			fi
+			dfzf-exec -q 'focus next, layout splitv'
+			exit
+		elif [[ $other_app == "dfzf-hidden" ]]; then
+			dfzf-exec -q 'layout splitv, focus next'
+			exit
+		fi
+	fi
+
+	# Extract directory with configurable regex, fallback to ~
+	dir=$(echo "$focused_name" | sed -n -E "$term_dir_regex")
+	dir="${dir:-~}"
+
+	local term_cmd="${2:?Terminal command is required for 'toggle' operation}"
+	dir="${dir/#\~/$HOME}"
+	dfzf-exec -q "split v"
+	$term_cmd --app-id "dfzf-hidden" -d "$dir"
+}
+
+# Main script logic
+case "${1:-}" in
+kill)
+	term_kill "$@"
+	;;
+new)
+	term_new "$@"
+	;;
+toggle)
+	term_toggle "$@"
+	;;
+*)
+	show_usage
+	;;
+esac

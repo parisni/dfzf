@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# Focus on the first window in current workspace
+# Used to factorize common window focusing logic across dfzf scripts
+
+get_first_window_info() {
+	dfzf-exec -t get_tree | jq -r '
+def find_first_layout(wid):
+  def get_parents: recurse(.nodes[]?) | select(.nodes[]?.id == wid);
+  [get_parents] | map(select(.layout and .layout != "none")) | if length > 0 then .[0].layout else "none" end;
+
+(recurse(.nodes[]?) | select(.app_id) | .id) as $first |
+"\($first):\(find_first_layout($first))"' | head -1
+}
+
+focus_first_window() {
+	local first_window_info=$(get_first_window_info)
+
+	if [[ -n $first_window_info ]]; then
+		local first_window_id=$(echo "$first_window_info" | cut -d: -f1)
+		local layout=$(echo "$first_window_info" | cut -d: -f2)
+
+		dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
+		dfzf-exec -q "[con_id=$first_window_id] focus"
+		dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
+
+		echo "$layout"
+	fi
+}
+
+if [[ $1 == "info" ]]; then
+	first_window_info=$(get_first_window_info)
+	if [[ -n $first_window_info ]]; then
+		echo "$first_window_info" | cut -d: -f2
+	fi
+elif [[ $1 == "focus" ]]; then
+	focus_first_window
+else
+	focus_first_window
+fi

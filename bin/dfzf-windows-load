@@ -34,6 +34,7 @@ result=$(
     | select(.name != null)
     | select((.app_id // .window_properties.class) != null)
     | select((.app_id // .window_properties.class) != "dfzf-popup")
+    | select((.app_id // .window_properties.class) != "dfzf-hidden")
     | . as $win
     | {
         id: .id,
