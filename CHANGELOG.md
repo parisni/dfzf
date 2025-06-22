@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.10.0"></a>
+## [v0.10.0] - 2025-06-22
+### Features
+- **term:** toggle a companion terminal on any window ([#3](https://github.com/parisni/dfzf/issues/3))
+
+
 <a name="v0.9.5"></a>
 ## [v0.9.5] - 2025-06-22
 ### Bug Fixes
@@ -358,7 +364,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.9.5...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.0...HEAD
+[v0.10.0]: https://github.com/parisni/dfzf/compare/v0.9.5...v0.10.0
 [v0.9.5]: https://github.com/parisni/dfzf/compare/v0.9.4...v0.9.5
 [v0.9.4]: https://github.com/parisni/dfzf/compare/v0.9.3...v0.9.4
 [v0.9.3]: https://github.com/parisni/dfzf/compare/v0.9.2...v0.9.3
