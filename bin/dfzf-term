@@ -17,8 +17,8 @@ term_kill() {
       [recurse(.nodes[] | select(.nodes)) 
        | select(any(.nodes[]; .focused == true))][0]
       | [recurse(.nodes[])]
-      | map(select(.app_id != null))
-      | map({app_id, id})
+      | map(select((.app_id // .window_properties.class) != null))
+      | map({app_id: (.app_id // .window_properties.class), id})
     ')
 
 	hidden_id=$(echo "$windows_json" | jq -r '.[] | select(.app_id == "dfzf-hidden").id')
@@ -54,7 +54,7 @@ term_toggle() {
       [recurse(.nodes[] | select(.nodes)) 
        | select(any(.nodes[]; .focused == true))][0]
       | [recurse(.nodes[])]
-      | map({app_id, name, focused, layout})
+      | map({app_id: (.app_id // .window_properties.class), name, focused, layout})
     ')
 
 	focused_app=$(echo "$windows_json" | jq -r '.[] | select(.focused).app_id')
