@@ -87,7 +87,7 @@ Prerequisite
 
 In general, dfzf needs:
  
-- sway or i3
+- sway or i3, with default layout `tabbed`
 - fzf 
 - kitty version >= 0.42.1 OR alacritty OR foot
 - jq version >= 1.7
@@ -197,7 +197,7 @@ exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 exec wl-paste --watch cliphist -max-items 1000 store # for dfzf-clipboard  
 exec mako # for the dfzf-notifs
 
-workspace_layout tabbed
+exec swaymsg workspace 1, layout tabbed
 workspace_auto_back_and_forth no
 
 # FOR FOOT OR ALACRITTY
@@ -213,6 +213,9 @@ exec --no-startup-id kitty -1 --start-as hidden
 exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden  -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
 bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-windows
 bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
+bindsym $mod+n exec dfzf-term new $term
+bindsym ctrl+slash exec dfzf-term toggle $term
+bindsym shift+ctrl+slash exec dfzf-term kill $term
 
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 
@@ -247,6 +250,9 @@ exec --no-startup-id kitty -1 --start-as hidden
 exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden  -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
 bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-windows
 bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
+bindsym $mod+n exec dfzf-term new $term
+bindsym ctrl+slash exec dfzf-term toggle $term
+bindsym shift+ctrl+slash exec dfzf-term kill $term
 
 for_window [class="^dfzf-popup$"] floating enable, sticky enable, resize set 60 ppt 70 ppt, border pixel 6
 
