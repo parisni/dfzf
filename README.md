@@ -54,7 +54,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 |------------------|----------------------------------------------|:--:|:----:|
 | `dfzf-windows`   | Navigate windows by title or time            | ✅ | ✅   |
 | `dfzf-scrollbacks`   | Fuzzy-search within all your terminals at once            | ✅ | ✅   |
-| `dfzf-launcher`  | Launch desktop apps instantly                | ✅ | ✅   |
+| `dfzf-launcher`  | Launch desktop apps or cmds in terminal      | ✅ | ✅   |
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   |
 | `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   |
 | `dfzf-clipboard` | Searchable clipboard with image/text preview | ❌ | ✅   |
@@ -63,7 +63,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
 | `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   |
 | `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   |
-| `dfzf-term`   | Terminal management (kill/new/toggle)            | ✅ | ✅   |
+| `dfzf-term`   | Terminal management (kill/new/toggle/scratchpad) | ✅ | ✅   |
 
 ---
 ## Terminal Support Matrix
@@ -213,7 +213,7 @@ exec --no-startup-id kitty -1 --start-as hidden
 exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden  -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
 bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-windows
 bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
-bindsym $mod+n exec dfzf-term new $term
+bindsym $mod+n exec dfzf-term scratchpad $term
 bindsym ctrl+slash exec dfzf-term toggle $term
 bindsym shift+ctrl+slash exec dfzf-term kill $term
 
@@ -250,7 +250,7 @@ exec --no-startup-id kitty -1 --start-as hidden
 exec --no-startup-id kitty -1 --instance-group dfzf --start-as hidden  -o 'map escape close_window' -o 'listen_on=unix:/tmp/kitty-dfzf' 
 bindsym $mod+Tab    exec --no-startup-id kitty -1 --class=dfzf-popup -e dfzf-windows
 bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=dfzf-popup -e dfzf-hub
-bindsym $mod+n exec dfzf-term new $term
+bindsym $mod+n exec dfzf-term scratchpad $term
 bindsym ctrl+slash exec dfzf-term toggle $term
 bindsym shift+ctrl+slash exec dfzf-term kill $term
 
@@ -602,6 +602,14 @@ Password-store
   - `Ctrl + /` - Create or toggle companion terminal visibility
   - `Shift + Ctrl + /` - Kill the companion terminal
   - `Ctrl + N` - Create a new independent terminal
+
+  **Global Scratchpad Terminal:**
+  `dfzf-term scratchpad [terminal_command]` provides a floating scratchpad terminal that can be toggled from any workspace:
+  - Creates a floating terminal window sized at 90% of screen
+  - Automatically moves to scratchpad and centers on screen
+  - Toggles between hidden (in scratchpad) and visible states
+  - Works across both sway and i3 window managers
+  - Independent of companion terminal functionality
 
   **Smart Path Detection:**
   The companion terminal automatically detects and opens in the appropriate working directory based on the focused window:
