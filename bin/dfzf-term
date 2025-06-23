@@ -6,13 +6,14 @@ term_dir_regex='s/.*\[([^]]+)\].*|^(.+) - NVIM$|(.+) \/..$/\1\2\3/p'
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 # dfzf-term - Terminal management script
-# Usage: dfzf-term {kill|new|toggle} [terminal_command]
+# Usage: dfzf-term {kill|new|toggle|scratchpad} [terminal_command]
 
 show_usage() {
-	echo "Usage: dfzf-term {kill|new|toggle} [terminal_command]"
-	echo "  kill   - Kill dfzf-hidden terminal and reorganize windows"
-	echo "  new    - Create new terminal from root container (requires terminal_command)"
-	echo "  toggle - Toggle fullscreen/split layout for terminal (requires terminal_command)"
+	echo "Usage: dfzf-term {kill|new|toggle|scratchpad} [terminal_command]"
+	echo "  kill       - Kill dfzf-hidden terminal and reorganize windows"
+	echo "  new        - Create new terminal from root container (requires terminal_command)"
+	echo "  toggle     - Toggle fullscreen/split layout for terminal (requires terminal_command)"
+	echo "  scratchpad - Manage dfzf-scratchpad terminal (requires terminal_command)"
 	echo "  terminal_command - Terminal command to run (e.g., 'kitty -1', 'alacritty')"
 	exit 1
 }
@@ -52,6 +53,71 @@ term_new() {
 	if [[ $layout != "tabbed" ]]; then
 		sleep 0.1
 		dfzf-exec -q "move left"
+	fi
+}
+
+resize_scratchpad() {
+	local percentage="${1:-90}"
+	# Detect sway vs i3 and use appropriate selector
+	if [ -n "${SWAYSOCK:-}" ]; then
+		local selector='app_id="dfzf-scratchpad"'
+	elif [ -n "${I3SOCK:-}" ]; then
+		local selector='class="dfzf-scratchpad"'
+	else
+		echo "No running instance of Sway or i3 detected."
+		return 1
+	fi
+
+	# Get screen dimensions and resize to specified percentage of screen, centered
+	screen_size=$(dfzf-exec -t get_outputs | jq -r '.[] | select(.focused == true) | "\(.rect.width) \(.rect.height)"')
+	read -r width height <<<"$screen_size"
+	width_resized=$((width * percentage / 100))
+	height_resized=$((height * percentage / 100))
+	pos_x=$(((width - width_resized) / 2))
+	pos_y=$(((height - height_resized) / 2))
+
+	dfzf-exec -q "[$selector] resize set ${width_resized}px ${height_resized}px"
+	dfzf-exec -q "[$selector] move position ${pos_x} ${pos_y}"
+}
+
+term_scratchpad() {
+	local term_cmd="${2:?Terminal command is required for 'scratchpad' operation}"
+
+	# Detect sway vs i3 and use appropriate selector
+	if [ -n "${SWAYSOCK:-}" ]; then
+		local selector='app_id="dfzf-scratchpad"'
+		local create_args="--app-id dfzf-scratchpad"
+	elif [ -n "${I3SOCK:-}" ]; then
+		local selector='class="dfzf-scratchpad"'
+		local create_args="--class dfzf-scratchpad"
+	else
+		echo "No running instance of Sway or i3 detected."
+		return 1
+	fi
+
+	# Check if dfzf-scratchpad window exists and get its workspace
+	workspace=$(dfzf-exec -t get_tree | jq -r '
+		.nodes[] | .nodes[] | select(.type == "workspace") | 
+		select([.. | objects | select((.app_id // .window_properties.class) == "dfzf-scratchpad")] | length > 0) | .name
+	' | head -1)
+
+	if [[ -z $workspace ]]; then
+		# No dfzf-scratchpad window exists, create new one directly in scratchpad
+		dfzf-exec -q "exec $term_cmd $create_args"
+		sleep 0.2
+		dfzf-exec -q "[$selector] move scratchpad, scratchpad show"
+		resize_scratchpad 90
+		return
+	fi
+
+	# Window exists, check workspace
+	if [[ $workspace == "__i3_scratch" ]]; then
+		# Window is in scratchpad, show it
+		dfzf-exec -q "[$selector] scratchpad show"
+		resize_scratchpad 90
+	else
+		# Window is visible, move it to scratchpad
+		dfzf-exec -q "[$selector] move scratchpad"
 	fi
 }
 
@@ -105,6 +171,9 @@ new)
 	;;
 toggle)
 	term_toggle "$@"
+	;;
+scratchpad)
+	term_scratchpad "$@"
 	;;
 *)
 	show_usage
