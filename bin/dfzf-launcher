@@ -17,7 +17,7 @@ IFS=$'\n\t'
 DEL=$'\34'
 
 FZF_COMMAND="${FZF_COMMAND:=fzf}"
-TERMINAL_COMMAND="${TERMINAL_COMMAND:="$TERMINAL -e"}"
+TERMINAL_COMMAND="${TERMINAL_COMMAND:="kitty -1 -e"}"
 GLYPH_COMMAND="${GLYPH_COMMAND-  }"
 GLYPH_DESKTOP="${GLYPH_DESKTOP-  }"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/dfzf-launcher"
@@ -167,7 +167,8 @@ function entries() {
 function run-desktop() {
 	CMD="$("${0}" generate-command "$@" 2>&3)"
 	echo "Generated Launch command from .desktop file: ${CMD}" >&3
-	eval "${CMD}"
+	dfzf-focus focus >/dev/null
+	dfzf-exec -q "exec ${CMD}"
 }
 function generate-command() {
 	# Define the search pattern that specifies the block to search for within the .desktop file
