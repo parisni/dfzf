@@ -2,6 +2,16 @@
 ## [Unreleased]
 
 
+<a name="v0.10.2"></a>
+## [v0.10.2] - 2025-06-23
+### Documentation
+- update with new features
+
+### Features
+- **launcher:** allow commands, and create the window at root container
+- **term:** global scratchpad term
+
+
 <a name="v0.10.1"></a>
 ## [v0.10.1] - 2025-06-23
 ### Bug Fixes
@@ -370,7 +380,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.2...HEAD
+[v0.10.2]: https://github.com/parisni/dfzf/compare/v0.10.1...v0.10.2
 [v0.10.1]: https://github.com/parisni/dfzf/compare/v0.10.0...v0.10.1
 [v0.10.0]: https://github.com/parisni/dfzf/compare/v0.9.5...v0.10.0
 [v0.9.5]: https://github.com/parisni/dfzf/compare/v0.9.4...v0.9.5
