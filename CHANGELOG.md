@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.10.1"></a>
+## [v0.10.1] - 2025-06-23
+### Bug Fixes
+- **lanncher:** rollback focus first window since it prevent app to start
+
+
 <a name="v0.10.0"></a>
 ## [v0.10.0] - 2025-06-22
 ### Features
@@ -364,7 +370,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.1...HEAD
+[v0.10.1]: https://github.com/parisni/dfzf/compare/v0.10.0...v0.10.1
 [v0.10.0]: https://github.com/parisni/dfzf/compare/v0.9.5...v0.10.0
 [v0.9.5]: https://github.com/parisni/dfzf/compare/v0.9.4...v0.9.5
 [v0.9.4]: https://github.com/parisni/dfzf/compare/v0.9.3...v0.9.4
