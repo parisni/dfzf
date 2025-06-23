@@ -368,9 +368,6 @@ COMMAND=${COMMAND%%[[:space:]]}
 if [ -t 1 ]; then
 	echo "Launching command: ${COMMAND}" >&3
 
-	# Always focus first window before launching new apps
-	dfzf-focus focus
-
 	setsid /bin/sh -c "${COMMAND}" >&/dev/null </dev/null &
 	sleep 0.01
 else
