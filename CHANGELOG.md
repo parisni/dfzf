@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.10.3"></a>
+## [v0.10.3] - 2025-06-24
+### Maintenance
+- **term:** support more than 2 windows in the term container
+
+
 <a name="v0.10.2"></a>
 ## [v0.10.2] - 2025-06-23
 ### Documentation
@@ -380,7 +386,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.2...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.3...HEAD
+[v0.10.3]: https://github.com/parisni/dfzf/compare/v0.10.2...v0.10.3
 [v0.10.2]: https://github.com/parisni/dfzf/compare/v0.10.1...v0.10.2
 [v0.10.1]: https://github.com/parisni/dfzf/compare/v0.10.0...v0.10.1
 [v0.10.0]: https://github.com/parisni/dfzf/compare/v0.9.5...v0.10.0
