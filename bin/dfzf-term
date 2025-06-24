@@ -122,10 +122,13 @@ term_scratchpad() {
 }
 
 term_toggle() {
-	windows_json=$(dfzf-exec -t get_tree | jq -c '
+	container_json=$(dfzf-exec -t get_tree | jq -c '
       [recurse(.nodes[] | select(.nodes)) 
        | select(any(.nodes[]; .focused == true))][0]
-      | [recurse(.nodes[])]
+    ')
+	container_type=$(echo "$container_json" | jq -r '.type')
+	windows_json=$(echo "$container_json" | jq -c '
+      [recurse(.nodes[])]
       | map({app_id: (.app_id // .window_properties.class), name, focused, layout})
     ')
 
@@ -134,18 +137,17 @@ term_toggle() {
 	window_count=$(echo "$windows_json" | jq 'length')
 
 	# Decision logic
-	if [ "$window_count" -eq 3 ]; then
-		other_app=$(echo "$windows_json" | jq -r '.[] | select(.name != null) | select(.focused | not).app_id')
-		other_app_name=$(echo "$windows_json" | jq -r '.[] | select(.name != null) | select(.focused | not).name')
+	if [ "$window_count" -ge 3 ] && [ "$container_type" = "con" ]; then
+		has_dfzf_hidden=$(echo "$windows_json" | jq -r 'any(.[]; .name != null and (.focused | not) and .app_id == "dfzf-hidden")')
 		layout=$(echo "$windows_json" | jq -r '.[] | select(.name == null).layout')
 		if [[ $focused_app == "dfzf-hidden" ]]; then
 			if [[ $layout == "splitv" ]]; then
-				dfzf-exec -q 'focus next, layout stacking'
+				dfzf-exec -q 'focus prev, layout stacking'
 				exit
 			fi
 			dfzf-exec -q 'focus next, layout splitv'
 			exit
-		elif [[ $other_app == "dfzf-hidden" ]]; then
+		elif [[ $has_dfzf_hidden == "true" ]]; then
 			dfzf-exec -q 'layout splitv, focus next'
 			exit
 		fi
