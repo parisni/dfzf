@@ -69,7 +69,12 @@ resize_scratchpad() {
 	fi
 
 	# Get screen dimensions and resize to specified percentage of screen, centered
-	screen_size=$(dfzf-exec -t get_outputs | jq -r '.[] | select(.focused == true) | "\(.rect.width) \(.rect.height)"')
+	if [ -n "${SWAYSOCK:-}" ]; then
+		screen_size=$(dfzf-exec -t get_outputs | jq -r '.[] | select(.focused == true) | "\(.rect.width) \(.rect.height)"')
+	elif [ -n "${I3SOCK:-}" ]; then
+		current_ws=$(dfzf-exec -t get_workspaces | jq -r '.[] | select(.focused == true) | .output')
+		screen_size=$(dfzf-exec -t get_outputs | jq -r --arg ws "$current_ws" '.[] | select(.name == $ws) | "\(.rect.width) \(.rect.height)"')
+	fi
 	read -r width height <<<"$screen_size"
 	width_resized=$((width * percentage / 100))
 	height_resized=$((height * percentage / 100))
