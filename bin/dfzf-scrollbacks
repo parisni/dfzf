@@ -3,6 +3,8 @@ set -euo pipefail
 
 export SHELL="$(command -v bash)"
 dfzf-kill-bro >/dev/null
+windows_prompt_pattern="^[>$%] "
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 if command -v fd >/dev/null; then
@@ -19,6 +21,23 @@ dfzf_map=$(dfzf-exec -t get_tree --raw | jq -rc '
   .. | objects | select(.name != null)
   | {title: (.name | gsub(" "; ".")), id}
 ')
+
+
+findcommand=$(command -v fd || command -v fdfind) || {
+	echo "Neither fd nor fdfind found"
+	exit 1
+}
+kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1 | head -n1)
+PREVIEW="
+id=\$(echo {} | sed -Ez 's/.*#([0-9]+).*/\1/')
+kitty_title=\$(dfzf-exec -t get_tree --raw | jq -r --arg id "\$id" '.. | objects | select(.id == (\$id | tonumber)) | .name' | sed 's/ /./g')
+prompt_content=\$(kitten @ get-text --to unix:$kitty_sock --match \"title:^\$kitty_title$\" --extent all  2>/dev/null | rg -U '$windows_prompt_pattern(.+)' -o --replace '$> \$1'|tail -n 100)
+if [[ -n \"\$prompt_content\" ]]; then
+  printf '%s\n' \"\$prompt_content\" 
+else
+  (kitten @ get-text --to unix:$kitty_sock --match \"title:^\$kitty_title$\" --extent screen  2>/dev/null || (echo {} |fold -s -w 90))|rg -v '^\\~\\s*$|^\\s+$'
+fi
+"
 
 result=$(
 	kitty @ ls --to "unix:$kitty_sock" | jq -r '.[].tabs[].windows[].title | gsub(" "; ".")' |
@@ -43,11 +62,8 @@ result=$(
 ' _ "{}" "$dfzf_map" "$kitty_sock" |
 		fzf --prompt "Scrollbacks: " \
 			--no-unicode \
-			--preview='
-id=$(echo {} | sed -Ez "s/.*#([0-9]+).*/\1/")
-dfzf-exec -t get_tree --raw | jq -r --arg id "$id" '"'"'.. | objects | select(.id == ($id | tonumber)) | .name'"'"'
-' \
-			--preview-window="up:1,follow"
+			--preview="$PREVIEW" \
+			--preview-window="up,follow"
 )
 
 con_id=$(echo "$result" | sed -Ez 's/.*#([0-9]+).*/\1/')
