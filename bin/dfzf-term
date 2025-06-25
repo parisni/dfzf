@@ -44,7 +44,7 @@ term_kill() {
 }
 
 term_new() {
-	local term_cmd="${2:?Terminal command is required for 'new' operation}"
+	local term_cmd="${@:2}"
 	# identify and focus first window in current workspace, then exec terminal
 	layout=$(dfzf-focus focus)
 
@@ -81,7 +81,7 @@ resize_scratchpad() {
 }
 
 term_scratchpad() {
-	local term_cmd="${2:?Terminal command is required for 'scratchpad' operation}"
+	local term_cmd="${@:2}"
 
 	# Detect sway vs i3 and use appropriate selector
 	if [ -n "${SWAYSOCK:-}" ]; then
@@ -157,7 +157,7 @@ term_toggle() {
 	dir=$(echo "$focused_name" | sed -n -E "$term_dir_regex")
 	dir="${dir:-~}"
 
-	local term_cmd="${2:?Terminal command is required for 'toggle' operation}"
+	local term_cmd="${@:2}"
 	dir="${dir/#\~/$HOME}"
 	dfzf-exec -q "split v"
 	$term_cmd --app-id "dfzf-hidden" -d "$dir"
