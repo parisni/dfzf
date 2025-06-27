@@ -315,6 +315,45 @@ tools_clock_cmd="tty-clock -c -C 4 -s"
 tools_calendar_cmd="~/.venv/3.11.6/bin/khal interactive"
 tools_top_cmd="gotop"
 
+# hub user customization
+hub_options=(
+  "a: Audio"
+  "b: Bluetooth"
+  "c: Clipboard"
+  "d: Date"
+  "e: Exit"
+  "f: Fetch"
+  "g: Gotop"
+  "k: Calendar"
+  "l: Launcher"
+  "m: Mail"
+  "n: Notif"
+  "p: Password"
+  "s: Scrollback"
+  "t: Task"
+  "w: Wifi"
+  "i: Iotop"
+  "q: Pomatez"
+)
+
+# hub custom command mappings
+hub_cmd_a='dfzf-exec exec pavucontrol'
+hub_cmd_b='dfzf-tools bluetooth'
+hub_cmd_c='dfzf-clipboard'
+hub_cmd_d='dfzf-tools clock'
+hub_cmd_e='dfzf-exit'
+hub_cmd_f='dfzf-tools fetch'
+hub_cmd_g='dfzf-tools top'
+hub_cmd_k='dfzf-tools calendar'
+hub_cmd_l='dfzf-launcher'
+hub_cmd_m='dfzf-mail'
+hub_cmd_n='dfzf-notifs'
+hub_cmd_p='dfzf-password'
+hub_cmd_s='dfzf-scrollbacks'
+hub_cmd_t='dfzf-tasks'
+hub_cmd_w='dfzf-tools wifi'
+hub_cmd_i='TERM=xterm sudo /usr/sbin/iotop -o'
+hub_cmd_q="pomatez || dfzf-windows-load|rg pomatez|sed -Ez 's/.*#([0-9]+).*/\1/'|xargs -I@ dfzf-exec '[con_id=@]' focus"
 ```
 
 </details>
