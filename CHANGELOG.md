@@ -2,6 +2,13 @@
 ## [Unreleased]
 
 
+<a name="v0.10.5"></a>
+## [v0.10.5] - 2025-06-27
+### Bug Fixes
+- **term:** resize scratchpad term on i3
+- **term:** i3 support for scratchpad
+
+
 <a name="v0.10.4"></a>
 ## [v0.10.4] - 2025-06-27
 ### Bug Fixes
@@ -400,7 +407,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.4...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.5...HEAD
+[v0.10.5]: https://github.com/parisni/dfzf/compare/v0.10.4...v0.10.5
 [v0.10.4]: https://github.com/parisni/dfzf/compare/v0.10.3...v0.10.4
 [v0.10.3]: https://github.com/parisni/dfzf/compare/v0.10.2...v0.10.3
 [v0.10.2]: https://github.com/parisni/dfzf/compare/v0.10.1...v0.10.2
