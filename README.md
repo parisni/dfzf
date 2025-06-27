@@ -596,34 +596,19 @@ Password-store
     Terminal Management
   </summary>
 
-  `dfzf-term` allows you to attach a companion terminal to any existing window, including terminals, Firefox, or any other application. It provides the ability to toggle the companion terminal between hidden, split, and stacked views for enhanced workflow management.
+  `dfzf-term` provides two terminal integrations for different work contexts: project-specific tasks in companion terminals and general tasks in a shared global terminal.
 
-  **Key Bindings:**
-  - `Ctrl + /` - Create or toggle companion terminal visibility
-  - `Shift + Ctrl + /` - Kill the companion terminal
-  - `Ctrl + N` - Create a new independent terminal
+  **Companion Terminals** (project-specific work):
+  - One terminal per window, attached to any application (IDE, browser, etc.)
+  - Auto-detects working directory: JetBrains `[/path/to/project]`, Neovim `- NVIM` suffix, Terminal path patterns, defaults to home
+  - Toggles between split vertical and stacked layouts (stacked allows fullscreen switching between windows)
+  - `Ctrl + /` - Toggle layout | `Shift + Ctrl + /` - Kill
 
-  **Global Scratchpad Terminal:**
-  `dfzf-term scratchpad [terminal_command]` provides a floating scratchpad terminal that can be toggled from any workspace:
-  - Creates a floating terminal window sized at 90% of screen
-  - Automatically moves to scratchpad and centers on screen
-  - Toggles between hidden (in scratchpad) and visible states
-  - Works across both sway and i3 window managers
-  - Independent of companion terminal functionality
-
-  **Smart Path Detection:**
-  The companion terminal automatically detects and opens in the appropriate working directory based on the focused window:
-  - **JetBrains IDE**: Extracts project path from window title `[/path/to/project]`
-  - **Neovim/Vim**: Extracts path from terminal title ending with ` - NVIM` or `^vim`
-  - **Terminal**: Extracts path from window title using pattern before `/[a-zA-Z]{2}`
-  - **Firefox**: Defaults to home directory
-
-  **Layout Intelligence:**
-  - Seamlessly toggles between hidden, split, and stacked layouts
-  - Maintains focus on the primary application while providing quick terminal access
-  - Automatically manages window organization when creating or destroying companion terminals
-
-  Works with any application window, providing universal terminal access across your entire workspace.
+  **Global Terminal** (general tasks):
+  - Single floating scratchpad terminal shared across workspaces
+  - 90% screen size, centered and floating
+  - `dfzf-term scratchpad [terminal_command]` - Toggle visibility
+  - Works across sway/i3, independent of companion terminals
 
   ![Image](https://github.com/user-attachments/assets/ca5c3a4d-eff2-490c-871e-ae413acfba08)
 </details>
