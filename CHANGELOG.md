@@ -2,6 +2,20 @@
 ## [Unreleased]
 
 
+<a name="v0.10.4"></a>
+## [v0.10.4] - 2025-06-27
+### Bug Fixes
+- **scrollback:** drop empty lines
+- **term:** pass whole terminal command
+
+### Documentation
+- **hub:** example of user custom cmds
+- **term:** improve
+
+### Features
+- **scrollback:** make preview list terminal command
+
+
 <a name="v0.10.3"></a>
 ## [v0.10.3] - 2025-06-24
 ### Maintenance
@@ -386,7 +400,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.3...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.4...HEAD
+[v0.10.4]: https://github.com/parisni/dfzf/compare/v0.10.3...v0.10.4
 [v0.10.3]: https://github.com/parisni/dfzf/compare/v0.10.2...v0.10.3
 [v0.10.2]: https://github.com/parisni/dfzf/compare/v0.10.1...v0.10.2
 [v0.10.1]: https://github.com/parisni/dfzf/compare/v0.10.0...v0.10.1
