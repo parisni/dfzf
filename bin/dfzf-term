@@ -97,9 +97,10 @@ term_scratchpad() {
 
 	# Check if dfzf-scratchpad window exists and get its workspace
 	workspace=$(dfzf-exec -t get_tree | jq -r '
-		.nodes[] | .nodes[] | select(.type == "workspace") | 
-		select([.. | objects | select((.app_id // .window_properties.class) == "dfzf-scratchpad")] | length > 0) | .name
-	' | head -1)
+		[.. | objects | select(.type == "workspace")] | 
+		map(select([.. | objects | select((.app_id // .window_properties.class) == "dfzf-scratchpad")] | length > 0)) | 
+		.[0].name // empty
+	')
 
 	if [[ -z $workspace ]]; then
 		# No dfzf-scratchpad window exists, create new one directly in scratchpad
