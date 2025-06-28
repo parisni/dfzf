@@ -2,6 +2,20 @@
 ## [Unreleased]
 
 
+<a name="v0.11.0"></a>
+## [v0.11.0] - 2025-06-28
+### Bug Fixes
+- **launcher:** make sure run cmds in a tabbed layout
+- **term:** improve i3 compatibility for term toggle ([#4](https://github.com/parisni/dfzf/issues/4))
+- **windows:** handle case when there is no windows
+
+### Features
+- **windows:** resize popup as percentage of screen size
+
+### Maintenance
+- **term:** simplify code by reusing dfzf-resize
+
+
 <a name="v0.10.5"></a>
 ## [v0.10.5] - 2025-06-27
 ### Bug Fixes
@@ -407,7 +421,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.10.5...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.11.0...HEAD
+[v0.11.0]: https://github.com/parisni/dfzf/compare/v0.10.5...v0.11.0
 [v0.10.5]: https://github.com/parisni/dfzf/compare/v0.10.4...v0.10.5
 [v0.10.4]: https://github.com/parisni/dfzf/compare/v0.10.3...v0.10.4
 [v0.10.3]: https://github.com/parisni/dfzf/compare/v0.10.2...v0.10.3
