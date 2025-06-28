@@ -66,6 +66,17 @@ else
 fi
 
 result=$(dfzf-windows-load "$current_tree")
+
+# Check if result is empty and provide a working fzf with no entries
+if [[ -z $result ]]; then
+	echo "No windows found" | fzf --sync --prompt "$PROMPT" \
+		--preview='echo "No windows available"' \
+		--preview-window="up:3,wrap" \
+		--bind="enter:abort" \
+		--bind="esc:abort"
+	exit 0
+fi
+
 dfzf-exec '[con_id='"$(head -n1 <<<"$result" | extract_con_id)"']' floating disable
 
 fzf --sync --multi --prompt "$PROMPT" \
