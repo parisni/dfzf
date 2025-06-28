@@ -10,7 +10,7 @@ def find_first_layout(wid):
   def get_parents: recurse(.nodes[]?) | select(.nodes[]?.id == wid);
   [get_parents] | map(select(.layout and .layout != "none")) | if length > 0 then .[0].layout else "none" end;
 
-(recurse(.nodes[]?) | select(.app_id) | .id) as $first |
+(recurse(.nodes[]?) | select(.app_id or .window_properties.class) | .id) as $first |
 "\($first):\(find_first_layout($first))"' | head -1
 }
 
