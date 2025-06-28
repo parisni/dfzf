@@ -44,7 +44,7 @@ term_kill() {
 }
 
 term_new() {
-	local term_cmd="${@:2}"
+	local term_cmd="${*:2}"
 	# identify and focus first window in current workspace, then exec terminal
 	layout=$(dfzf-focus focus)
 
@@ -86,7 +86,7 @@ resize_scratchpad() {
 }
 
 term_scratchpad() {
-	local term_cmd="${@:2}"
+	local term_cmd="${*:2}"
 
 	# Detect sway vs i3 and use appropriate selector
 	if [ -n "${SWAYSOCK:-}" ]; then
@@ -132,7 +132,18 @@ term_toggle() {
       [recurse(.nodes[] | select(.nodes)) 
        | select(any(.nodes[]; .focused == true))][0]
     ')
-	container_type=$(echo "$container_json" | jq -r '.type')
+
+	# For i3, check grandparent to skip intermediate container layer
+	if [ -z "${SWAYSOCK:-}" ]; then
+		grandparent_json=$(dfzf-exec -t get_tree | jq -c '
+		  [recurse(.nodes[] | select(.nodes)) 
+		   | select(any(.nodes[] | .nodes[]?; .focused == true))][0]
+		')
+		container_type=$(echo "$grandparent_json" | jq -r '.type')
+	else
+		container_type=$(echo "$container_json" | jq -r '.type')
+	fi
+
 	windows_json=$(echo "$container_json" | jq -c '
       [recurse(.nodes[])]
       | map({app_id: (.app_id // .window_properties.class), name, focused, layout})
@@ -142,7 +153,9 @@ term_toggle() {
 	focused_name=$(echo "$windows_json" | jq -r '.[] | select(.focused).name')
 	window_count=$(echo "$windows_json" | jq 'length')
 
-	# Decision logic
+	# Decision logic: Only apply 3+ window layout management in true containers
+	# Expected container_type: "con" (nested containers with multiple windows)
+	# Excluded: "workspace", "output" (workspace-level windows)
 	if [ "$window_count" -ge 3 ] && [ "$container_type" = "con" ]; then
 		has_dfzf_hidden=$(echo "$windows_json" | jq -r 'any(.[]; .name != null and (.focused | not) and .app_id == "dfzf-hidden")')
 		layout=$(echo "$windows_json" | jq -r '.[] | select(.name == null).layout')
@@ -150,6 +163,7 @@ term_toggle() {
 			if [[ $layout == "splitv" ]]; then
 				dfzf-exec -q 'focus prev, layout stacking'
 				exit
+
 			fi
 			dfzf-exec -q 'focus next, layout splitv'
 			exit
@@ -163,7 +177,7 @@ term_toggle() {
 	dir=$(echo "$focused_name" | sed -n -E "$term_dir_regex")
 	dir="${dir:-~}"
 
-	local term_cmd="${@:2}"
+	local term_cmd="${*:2}"
 	dir="${dir/#\~/$HOME}"
 	dfzf-exec -q "split v"
 	$term_cmd --app-id "dfzf-hidden" -d "$dir"
