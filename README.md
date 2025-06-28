@@ -217,7 +217,7 @@ bindsym $mod+n exec dfzf-term scratchpad $term
 bindsym ctrl+slash exec dfzf-term toggle $term
 bindsym shift+ctrl+slash exec dfzf-term kill $term
 
-for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, border pixel 6, exec dfzf-windows 65
+for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, border pixel 6, exec dfzf-resize 65
 
 # optional: hide the tabs
 font pango:monospace 0.001
@@ -254,7 +254,7 @@ bindsym $mod+n exec dfzf-term scratchpad $term
 bindsym ctrl+slash exec dfzf-term toggle $term
 bindsym shift+ctrl+slash exec dfzf-term kill $term
 
-for_window [class="^dfzf-popup$"] floating enable, sticky enable, border pixel 6, exec dfzf-windows 65
+for_window [class="^dfzf-popup$"] floating enable, sticky enable, border pixel 6, exec dfzf-resize 65
 
 # optional: hide the tabs
 font pango:monospace 0
