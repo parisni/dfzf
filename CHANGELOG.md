@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.11.2"></a>
+## [v0.11.2] - 2025-06-29
+### Bug Fixes
+- **focus:** succeed when there is no windows
+
+### Documentation
+- fix typo
+
+
 <a name="v0.11.1"></a>
 ## [v0.11.1] - 2025-06-28
 ### Bug Fixes
@@ -427,7 +436,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.11.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.11.2...HEAD
+[v0.11.2]: https://github.com/parisni/dfzf/compare/v0.11.1...v0.11.2
 [v0.11.1]: https://github.com/parisni/dfzf/compare/v0.11.0...v0.11.1
 [v0.11.0]: https://github.com/parisni/dfzf/compare/v0.10.5...v0.11.0
 [v0.10.5]: https://github.com/parisni/dfzf/compare/v0.10.4...v0.10.5
