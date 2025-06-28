@@ -234,6 +234,8 @@ titlebar_border_thickness 0
 ```bash
 exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 
+# make sure the workspace is tabbed by default
+exec i3-msg workspace 1, layout tabbed
 workspace_layout tabbed
 workspace_auto_back_and_forth no
 

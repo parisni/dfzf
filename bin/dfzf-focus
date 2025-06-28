@@ -26,6 +26,8 @@ focus_first_window() {
 		dfzf-mark --con-id "$first_window_id" --mark _dfzf-preview
 
 		echo "$layout"
+	else
+		echo "tabbed"
 	fi
 }
 
@@ -33,6 +35,8 @@ if [[ $1 == "info" ]]; then
 	first_window_info=$(get_first_window_info)
 	if [[ -n $first_window_info ]]; then
 		echo "$first_window_info" | cut -d: -f2
+	else
+		echo "tabbed"
 	fi
 elif [[ $1 == "focus" ]]; then
 	focus_first_window
