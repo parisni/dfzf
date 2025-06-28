@@ -167,7 +167,14 @@ function entries() {
 function run-desktop() {
 	CMD="$("${0}" generate-command "$@" 2>&3)"
 	echo "Generated Launch command from .desktop file: ${CMD}" >&3
-	dfzf-focus focus >/dev/null
+	layout=$(dfzf-focus focus >/dev/null)
+
+	if [[ $layout != "tabbed" ]]; then
+		# Create a dummy terminal window that auto-destroys, move it to desired position
+		dfzf-exec -q "exec ${TERMINAL_COMMAND} sh -c 'sleep 10 && exit 0'"
+		sleep 0.1 # Wait for dummy window to appear
+		dfzf-exec -q "move left"
+	fi
 	dfzf-exec -q "exec ${CMD}"
 }
 function generate-command() {
