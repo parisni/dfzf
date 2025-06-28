@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.11.1"></a>
+## [v0.11.1] - 2025-06-28
+### Bug Fixes
+- **focus:** i3 compat ([#5](https://github.com/parisni/dfzf/issues/5))
+
+
 <a name="v0.11.0"></a>
 ## [v0.11.0] - 2025-06-28
 ### Bug Fixes
@@ -421,7 +427,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.11.1...HEAD
+[v0.11.1]: https://github.com/parisni/dfzf/compare/v0.11.0...v0.11.1
 [v0.11.0]: https://github.com/parisni/dfzf/compare/v0.10.5...v0.11.0
 [v0.10.5]: https://github.com/parisni/dfzf/compare/v0.10.4...v0.10.5
 [v0.10.4]: https://github.com/parisni/dfzf/compare/v0.10.3...v0.10.4
