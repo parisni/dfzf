@@ -104,17 +104,6 @@ term_toggle() {
        | select(any(.nodes[]; .focused == true))][0]
     ')
 
-	# For i3, check grandparent to skip intermediate container layer
-	if [[ -z ${SWAYSOCK:-} ]]; then
-		grandparent_json=$(dfzf-exec -t get_tree | jq -c '
-		  [recurse(.nodes[] | select(.nodes)) 
-		   | select(any(.nodes[] | .nodes[]?; .focused == true))][0]
-		')
-		container_type=$(echo "$grandparent_json" | jq -r '.type')
-	else
-		container_type=$(echo "$container_json" | jq -r '.type')
-	fi
-
 	windows_json=$(echo "$container_json" | jq -c '
       [.nodes[] | select(.type == "con")]
       | map({id, app_id: (.app_id // .window_properties.class), name, focused, layout})
@@ -131,7 +120,7 @@ term_toggle() {
 	# Decision logic: Handle both normal toggle (2 windows) and reorganization (3+ windows) when dfzf-hidden exists
 	# Expected: container_type="con" AND layout in (splitv, stacked) AND exactly one dfzf-hidden window
 	# Excluded: "workspace", "output" or containers with other layouts (tabbed, splith, etc) or wrong dfzf-hidden count
-	if [[ $window_count -ge 2 && $container_type == "con" && $container_layout =~ ^(splitv|stacked)$ && $dfzf_hidden_count -eq 1 ]]; then
+	if [[ $window_count -ge 2 && $container_layout =~ ^(splitv|stacked)$ && $dfzf_hidden_count -eq 1 ]]; then
 		if [[ $window_count -ge 3 ]]; then
 			# Keep the first application window as primary work context
 			main_window_id=$(echo "$windows_json" | jq -r 'map(select(.app_id != "dfzf-hidden" and .app_id != null and .name != null)) | .[0].id')
