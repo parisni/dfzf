@@ -2,6 +2,16 @@
 ## [Unreleased]
 
 
+<a name="v0.12.0"></a>
+## [v0.12.0] - 2025-06-29
+### Bug Fixes
+- **launcher:** make sure anchor term started on slow system
+
+### Features
+- provide dfzf-workspace-representation, useful for devs
+- **term:** keep compagnion containers at 2 windows by moving the accidental added away ([#8](https://github.com/parisni/dfzf/issues/8))
+
+
 <a name="v0.11.4"></a>
 ## [v0.11.4] - 2025-06-29
 ### Maintenance
@@ -454,7 +464,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.11.4...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.12.0...HEAD
+[v0.12.0]: https://github.com/parisni/dfzf/compare/v0.11.4...v0.12.0
 [v0.11.4]: https://github.com/parisni/dfzf/compare/v0.11.3...v0.11.4
 [v0.11.3]: https://github.com/parisni/dfzf/compare/v0.11.2...v0.11.3
 [v0.11.2]: https://github.com/parisni/dfzf/compare/v0.11.1...v0.11.2
