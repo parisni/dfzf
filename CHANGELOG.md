@@ -2,6 +2,18 @@
 ## [Unreleased]
 
 
+<a name="v0.11.3"></a>
+## [v0.11.3] - 2025-06-29
+### Bug Fixes
+- **term:** make toggle more robust
+
+### Code Refactoring
+- **term:** simplify logic
+
+### Maintenance
+- **windows:** rm terminal preview now used dfzf-scrollback
+
+
 <a name="v0.11.2"></a>
 ## [v0.11.2] - 2025-06-29
 ### Bug Fixes
@@ -436,7 +448,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.11.2...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.11.3...HEAD
+[v0.11.3]: https://github.com/parisni/dfzf/compare/v0.11.2...v0.11.3
 [v0.11.2]: https://github.com/parisni/dfzf/compare/v0.11.1...v0.11.2
 [v0.11.1]: https://github.com/parisni/dfzf/compare/v0.11.0...v0.11.1
 [v0.11.0]: https://github.com/parisni/dfzf/compare/v0.10.5...v0.11.0
