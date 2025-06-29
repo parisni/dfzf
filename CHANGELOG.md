@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.11.4"></a>
+## [v0.11.4] - 2025-06-29
+### Maintenance
+- **all:** make dfzf-exec calls quiet
+
+
 <a name="v0.11.3"></a>
 ## [v0.11.3] - 2025-06-29
 ### Bug Fixes
@@ -448,7 +454,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.11.3...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.11.4...HEAD
+[v0.11.4]: https://github.com/parisni/dfzf/compare/v0.11.3...v0.11.4
 [v0.11.3]: https://github.com/parisni/dfzf/compare/v0.11.2...v0.11.3
 [v0.11.2]: https://github.com/parisni/dfzf/compare/v0.11.1...v0.11.2
 [v0.11.1]: https://github.com/parisni/dfzf/compare/v0.11.0...v0.11.1
