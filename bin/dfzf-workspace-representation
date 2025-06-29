@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Script to generate workspace layout representation for both Sway and i3
+# Usage: ./workspace-representation.sh
+
+get_app_name() {
+	local node="$1"
+	echo "$node" | jq -r '(.app_id // .window_properties.class // .name // "unknown")'
+}
+
+generate_representation() {
+	local node="$1"
+	local layout=$(echo "$node" | jq -r '.layout // "none"')
+	local type=$(echo "$node" | jq -r '.type')
+
+	# If it's a window (leaf node), return just the app name
+	if [[ $type == "con" ]] && echo "$node" | jq -e '.window != null' >/dev/null 2>&1; then
+		get_app_name "$node"
+		return
+	fi
+
+	# If it has no child nodes, return app name or empty
+	local has_nodes=$(echo "$node" | jq -e '.nodes | length > 0' >/dev/null 2>&1 && echo "true" || echo "false")
+	local has_floating=$(echo "$node" | jq -e '.floating_nodes | length > 0' >/dev/null 2>&1 && echo "true" || echo "false")
+
+	if [[ $has_nodes == "false" ]] && [[ $has_floating == "false" ]]; then
+		get_app_name "$node"
+		return
+	fi
+
+	# Process child nodes
+	local children=""
+
+	# Process regular nodes
+	if [[ $has_nodes == "true" ]]; then
+		while IFS= read -r child_node; do
+			if [[ -n $child_node ]]; then
+				local child_repr=$(generate_representation "$child_node")
+				if [[ -n $child_repr ]]; then
+					if [[ -n $children ]]; then
+						children="$children $child_repr"
+					else
+						children="$child_repr"
+					fi
+				fi
+			fi
+		done < <(echo "$node" | jq -c '.nodes[]?')
+	fi
+
+	# Process floating nodes
+	if [[ $has_floating == "true" ]]; then
+		while IFS= read -r floating_node; do
+			if [[ -n $floating_node ]]; then
+				local floating_repr=$(generate_representation "$floating_node")
+				if [[ -n $floating_repr ]]; then
+					if [[ -n $children ]]; then
+						children="$children $floating_repr"
+					else
+						children="$floating_repr"
+					fi
+				fi
+			fi
+		done < <(echo "$node" | jq -c '.floating_nodes[]?')
+	fi
+
+	# Format based on layout
+	if [[ -n $children ]]; then
+		case $layout in
+		"splitv")
+			echo "S[$children]"
+			;;
+		"splith")
+			echo "H[$children]"
+			;;
+		"stacked")
+			echo "S[$children]"
+			;;
+		"tabbed")
+			echo "T[$children]"
+			;;
+		*)
+			echo "$children"
+			;;
+		esac
+	fi
+}
+
+# Main logic - works for both Sway and i3
+tree_data=$(dfzf-exec -t get_tree)
+workspaces_data=$(dfzf-exec -t get_workspaces)
+
+echo "["
+first=true
+while IFS= read -r workspace_node; do
+	if [[ -n $workspace_node ]]; then
+		if [[ $first == true ]]; then
+			first=false
+		else
+			echo ","
+		fi
+
+		workspace_name=$(echo "$workspace_node" | jq -r '.name')
+
+		# Check if this workspace is focused by cross-referencing with get_workspaces
+		focused=$(echo "$workspaces_data" | jq -r --arg name "$workspace_name" '.[] | select(.name == $name) | .focused // false')
+		[[ $focused == "" ]] && focused="false"
+
+		# Generate representation from tree structure
+		representation=$(generate_representation "$workspace_node")
+
+		if [[ -n $representation ]]; then
+			echo -n "{\"workspace\": \"$workspace_name\", \"focused\": $focused, \"representation\": \"$representation\"}"
+		else
+			echo -n "{\"workspace\": \"$workspace_name\", \"focused\": $focused, \"representation\": \"\"}"
+		fi
+	fi
+done < <(echo "$tree_data" | jq -c '.. | objects | select(.type == "workspace")')
+echo ""
+echo "]"
