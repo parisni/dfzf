@@ -170,9 +170,21 @@ function run-desktop() {
 	layout=$(dfzf-focus focus >/dev/null)
 
 	if [[ $layout != "tabbed" ]]; then
-		# Create a dummy terminal window that auto-destroys, move it to desired position
-		dfzf-exec -q "exec ${TERMINAL_COMMAND} sh -c 'sleep 10 && exit 0'"
-		sleep 0.1 # Wait for dummy window to appear
+		# Get current focused window before creating dummy terminal
+		current_focused=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .id')
+		
+		# Create a dummy terminal window that auto-destroys
+		dfzf-exec -q "exec ${TERMINAL_COMMAND} sh -c 'sleep 30 && exit 0'"
+		
+		# Wait until focus changes (new window appears)
+		while true; do
+			new_focused=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .id')
+			if [[ $new_focused != $current_focused ]]; then
+				break
+			fi
+			sleep 0.05
+		done
+		
 		dfzf-exec -q "move left"
 	fi
 	dfzf-exec -q "exec ${CMD}"
