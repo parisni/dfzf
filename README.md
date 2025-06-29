@@ -236,7 +236,6 @@ exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 
 # make sure the workspace is tabbed by default
 exec i3-msg workspace 1, layout tabbed
-workspace_layout tabbed
 workspace_auto_back_and_forth no
 
 # FOR FOOT OR ALACRITTY
@@ -643,7 +642,8 @@ Password-store
   - One terminal per window, attached to any application (IDE, browser, etc.)
   - Auto-detects working directory: JetBrains `[/path/to/project]`, Neovim `- NVIM` suffix, Terminal path patterns, defaults to home
   - Toggles between split vertical and stacked layouts (stacked allows fullscreen switching between windows)
-  - `Ctrl + /` - Toggle layout | `Shift + Ctrl + /` - Kill
+  - `Ctrl + /` - Toggle layout | `Shift + Ctrl + /` - Kill the companion
+  - Automatically moves away any non-companion windows that might be added inadvertently during toggle operations
 
   **Global Terminal** (general tasks):
   - Single floating scratchpad terminal shared across workspaces
