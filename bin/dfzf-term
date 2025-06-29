@@ -104,44 +104,91 @@ term_toggle() {
        | select(any(.nodes[]; .focused == true))][0]
     ')
 
-	# For i3, check grandparent to skip intermediate container layer
-	if [[ -z ${SWAYSOCK:-} ]]; then
-		grandparent_json=$(dfzf-exec -t get_tree | jq -c '
-		  [recurse(.nodes[] | select(.nodes)) 
-		   | select(any(.nodes[] | .nodes[]?; .focused == true))][0]
-		')
-		container_type=$(echo "$grandparent_json" | jq -r '.type')
-	else
-		container_type=$(echo "$container_json" | jq -r '.type')
-	fi
-
 	windows_json=$(echo "$container_json" | jq -c '
-      [recurse(.nodes[])]
-      | map({app_id: (.app_id // .window_properties.class), name, focused, layout})
+      [.nodes[] | select(.type == "con")]
+      | map({id, app_id: (.app_id // .window_properties.class), name, focused, layout})
     ')
 
 	focused_app=$(echo "$windows_json" | jq -r '.[] | select(.focused).app_id')
 	focused_name=$(echo "$windows_json" | jq -r '.[] | select(.focused).name')
+	original_focused_id=$(echo "$windows_json" | jq -r '.[] | select(.focused).id')
 	window_count=$(echo "$windows_json" | jq 'length')
 	dfzf_hidden_count=$(echo "$windows_json" | jq -r '[.[] | select(.name != null and .app_id == "dfzf-hidden")] | length')
 
 	# Get container layout for additional robustness check
 	container_layout=$(echo "$container_json" | jq -r '.layout')
 
-	# Decision logic: Only apply 3+ window layout management in true containers with splitv/stacked layouts when exactly one dfzf-hidden exists
+	# Decision logic: Handle both normal toggle (2 windows) and reorganization (3+ windows) when dfzf-hidden exists
 	# Expected: container_type="con" AND layout in (splitv, stacked) AND exactly one dfzf-hidden window
 	# Excluded: "workspace", "output" or containers with other layouts (tabbed, splith, etc) or wrong dfzf-hidden count
-	if [[ $window_count -ge 3 && $container_type == "con" && $container_layout =~ ^(splitv|stacked)$ && $dfzf_hidden_count -eq 1 ]]; then
-		layout=$(echo "$windows_json" | jq -r '.[] | select(.name == null).layout')
-		if [[ $focused_app == "dfzf-hidden" ]]; then
-			if [[ $layout == "splitv" ]]; then
-				dfzf-exec -q 'focus prev, layout stacking'
-			else
-				dfzf-exec -q 'focus prev, layout splitv'
+	if [[ $window_count -ge 2 && $container_layout =~ ^(splitv|stacked)$ && $dfzf_hidden_count -eq 1 ]]; then
+		if [[ $window_count -ge 3 ]]; then
+			# Keep the first application window as primary work context
+			main_window_id=$(echo "$windows_json" | jq -r 'map(select(.app_id != "dfzf-hidden" and .app_id != null and .name != null)) | .[0].id')
+
+			# Reorganize by moving additional windows to workspace root
+			current_workspace=$(dfzf-exec -t get_workspaces | jq -r '.[] | select(.focused == true) | .name')
+
+			# Identify windows to relocate (excluding terminal and primary application)
+			windows_to_move=$(echo "$windows_json" | jq -r --arg main_id "$main_window_id" '
+				.[] | 
+				select(.app_id != "dfzf-hidden") | 
+				select(.id != ($main_id | tonumber)) | 
+				.id
+			')
+
+			if [[ -n $windows_to_move ]]; then
+				# Stage windows for extraction by moving to temporary workspace
+				echo "$windows_to_move" | while read -r window_id; do
+					if [[ -n $window_id ]]; then
+						dfzf-exec -q "[con_id=$window_id] move to workspace 2"
+					fi
+				done
+
+				# Get layout before creating temporary terminal
+				layout=$(dfzf-focus focus)
+
+				# Create temporary terminal to facilitate container extraction
+				current_focused=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .id')
+				dfzf-exec -q "exec ${TERMINAL_COMMAND:-kitty -1} --app-id dfzf-hidden sh -c 'sleep 10 && exit 0'"
+
+				# Wait for temporary terminal to become active
+				while true; do
+					new_focused=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .id')
+					if [[ $new_focused != "$current_focused" ]]; then
+						break
+					fi
+					sleep 0.05
+				done
+
+				# Extract windows from containers using layout manipulation (skip for tabbed layouts)
+				if [[ $layout != "tabbed" ]]; then
+					dfzf-exec -q "move left"
+				fi
+
+				# Return relocated windows to current workspace at root level
+				echo "$windows_to_move" | while read -r window_id; do
+					if [[ -n $window_id ]]; then
+						dfzf-exec -q "[con_id=$window_id] move to workspace $current_workspace, focus"
+					fi
+				done
 			fi
+
+			# Return focus to originally focused window
+			dfzf-exec -q "[con_id=$original_focused_id] focus"
 		else
-			# dfzf-hidden exists but is not focused, focus it
-			dfzf-exec -q 'layout splitv, focus prev'
+			# Standard toggle behavior for application and terminal pair
+			layout=$container_layout
+			if [[ $focused_app == "dfzf-hidden" ]]; then
+				if [[ $layout == "splitv" ]]; then
+					dfzf-exec -q 'focus prev, layout stacking'
+				else
+					dfzf-exec -q 'focus prev, layout splitv'
+				fi
+			else
+				# Terminal exists but not focused, focus it
+				dfzf-exec -q 'layout splitv, focus prev'
+			fi
 		fi
 	else
 		# Extract directory with configurable regex, fallback to ~
