@@ -60,10 +60,10 @@ term_scratchpad() {
 	local term_cmd="${*:2}"
 
 	# Detect sway vs i3 and use appropriate selector
-	if [ -n "${SWAYSOCK:-}" ]; then
+	if [[ -n ${SWAYSOCK:-} ]]; then
 		local selector='app_id="dfzf-scratchpad"'
 		local create_args="--app-id dfzf-scratchpad"
-	elif [ -n "${I3SOCK:-}" ]; then
+	elif [[ -n ${I3SOCK:-} ]]; then
 		local selector='class="dfzf-scratchpad"'
 		local create_args="--class dfzf-scratchpad"
 	else
@@ -105,7 +105,7 @@ term_toggle() {
     ')
 
 	# For i3, check grandparent to skip intermediate container layer
-	if [ -z "${SWAYSOCK:-}" ]; then
+	if [[ -z ${SWAYSOCK:-} ]]; then
 		grandparent_json=$(dfzf-exec -t get_tree | jq -c '
 		  [recurse(.nodes[] | select(.nodes)) 
 		   | select(any(.nodes[] | .nodes[]?; .focused == true))][0]
@@ -123,38 +123,36 @@ term_toggle() {
 	focused_app=$(echo "$windows_json" | jq -r '.[] | select(.focused).app_id')
 	focused_name=$(echo "$windows_json" | jq -r '.[] | select(.focused).name')
 	window_count=$(echo "$windows_json" | jq 'length')
+	dfzf_hidden_count=$(echo "$windows_json" | jq -r '[.[] | select(.name != null and .app_id == "dfzf-hidden")] | length')
 
 	# Get container layout for additional robustness check
 	container_layout=$(echo "$container_json" | jq -r '.layout')
 
-	# Decision logic: Only apply 3+ window layout management in true containers with splitv/stacked layouts
-	# Expected: container_type="con" AND layout in (splitv, stacked)
-	# Excluded: "workspace", "output" or containers with other layouts (tabbed, splith, etc)
-	if [ "$window_count" -ge 3 ] && [ "$container_type" = "con" ] && [[ $container_layout =~ ^(splitv|stacked)$ ]]; then
-		has_dfzf_hidden=$(echo "$windows_json" | jq -r 'any(.[]; .name != null and (.focused | not) and .app_id == "dfzf-hidden")')
+	# Decision logic: Only apply 3+ window layout management in true containers with splitv/stacked layouts when exactly one dfzf-hidden exists
+	# Expected: container_type="con" AND layout in (splitv, stacked) AND exactly one dfzf-hidden window
+	# Excluded: "workspace", "output" or containers with other layouts (tabbed, splith, etc) or wrong dfzf-hidden count
+	if [[ $window_count -ge 3 && $container_type == "con" && $container_layout =~ ^(splitv|stacked)$ && $dfzf_hidden_count -eq 1 ]]; then
 		layout=$(echo "$windows_json" | jq -r '.[] | select(.name == null).layout')
 		if [[ $focused_app == "dfzf-hidden" ]]; then
 			if [[ $layout == "splitv" ]]; then
 				dfzf-exec -q 'focus prev, layout stacking'
-				exit
-
+			else
+				dfzf-exec -q 'focus prev, layout splitv'
 			fi
-			dfzf-exec -q 'focus next, layout splitv'
-			exit
-		elif [[ $has_dfzf_hidden == "true" ]]; then
-			dfzf-exec -q 'layout splitv, focus next'
-			exit
+		else
+			# dfzf-hidden exists but is not focused, focus it
+			dfzf-exec -q 'layout splitv, focus prev'
 		fi
+	else
+		# Extract directory with configurable regex, fallback to ~
+		dir=$(echo "$focused_name" | sed -n -E "$term_dir_regex")
+		dir="${dir:-~}"
+
+		local term_cmd="${*:2}"
+		dir="${dir/#\~/$HOME}"
+		dfzf-exec -q "split v"
+		$term_cmd --app-id "dfzf-hidden" -d "$dir"
 	fi
-
-	# Extract directory with configurable regex, fallback to ~
-	dir=$(echo "$focused_name" | sed -n -E "$term_dir_regex")
-	dir="${dir:-~}"
-
-	local term_cmd="${*:2}"
-	dir="${dir/#\~/$HOME}"
-	dfzf-exec -q "split v"
-	$term_cmd --app-id "dfzf-hidden" -d "$dir"
 }
 
 # Main script logic
