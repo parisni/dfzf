@@ -15,22 +15,22 @@ for i in "${!con_ids[@]}"; do
 	con_id="${con_ids[$i]}"
 
 	# Move container to the workspace first
-	dfzf-exec "[con_id=$con_id]" move container to workspace "$workspace"
+	dfzf-exec -q "[con_id=$con_id]" move container to workspace "$workspace"
 
 	# For the first container, no move needed
 	if ((i == 0)); then
-		dfzf-exec "[con_id=$con_id]" layout splitv
+		dfzf-exec -q "[con_id=$con_id]" layout splitv
 		continue
 	fi
 
 	# Decide split direction based on index
 	if ((i % 2 == 0)); then
-		dfzf-exec "[con_id=$con_id]" move right
+		dfzf-exec -q "[con_id=$con_id]" move right
 	else
-		dfzf-exec "[con_id=$con_id]" layout splitv
+		dfzf-exec -q "[con_id=$con_id]" layout splitv
 	fi
 
 done
 
-dfzf-exec workspace "$workspace"
+dfzf-exec -q workspace "$workspace"
 #dfzf-exec "[con_id=${con_ids[0]}]" focus

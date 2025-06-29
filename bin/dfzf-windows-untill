@@ -3,7 +3,7 @@ set -euo pipefail
 
 workspace="_temp_dfzf_"
 initial_focus=$(dfzf-windows-load | head -n1 | sed -Ez 's/.*#([0-9]+).*/\1/')
-dfzf-exec workspace "$workspace"
+dfzf-exec -q workspace "$workspace"
 
 windows=$(dfzf-exec -t get_tree | jq -r '
   .. | objects
@@ -17,7 +17,7 @@ windows=$(dfzf-exec -t get_tree | jq -r '
 workspace=$(dfzf-exec -t get_workspaces --raw | jq -r '.[].name' | grep -v "$workspace" | head -n1)
 
 for id in $windows; do
-	dfzf-exec "[con_id=$id]" move container to workspace "$workspace"
+	dfzf-exec -q "[con_id=$id]" move container to workspace "$workspace"
 done
 
-dfzf-exec "[con_id=$initial_focus]" focus
+dfzf-exec -q "[con_id=$initial_focus]" focus

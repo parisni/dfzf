@@ -9,7 +9,7 @@ if [[ -z $CID || ! $CID =~ ^[0-9]+$ ]]; then
 fi
 
 # Kill the container
-dfzf-exec "[con_id=$CID]" kill >/dev/null
+dfzf-exec -q "[con_id=$CID]" kill
 
 # Initial short delay
 sleep 0.05

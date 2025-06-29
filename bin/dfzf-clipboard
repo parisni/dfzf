@@ -15,5 +15,5 @@ fi
 cliphist list |
 	fzf --prompt "Clipboard > " \
 		--preview-window="up" \
-		--bind="enter:execute-silent(echo {}|cliphist decode| wl-copy && dfzf-exec '[app_id=\"^dfzf-popup$\"]' kill)+accept" \
+		--bind="enter:execute-silent(echo {}|cliphist decode| wl-copy && dfzf-exec -q '[app_id=\"^dfzf-popup$\"]' kill)+accept" \
 		--bind="ctrl-k:execute-silent(echo {}|cliphist delete)+reload(cliphist list)"
