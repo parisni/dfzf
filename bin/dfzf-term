@@ -111,6 +111,7 @@ term_toggle() {
 
 	focused_app=$(echo "$windows_json" | jq -r '.[] | select(.focused).app_id')
 	focused_name=$(echo "$windows_json" | jq -r '.[] | select(.focused).name')
+	original_focused_id=$(echo "$windows_json" | jq -r '.[] | select(.focused).id')
 	window_count=$(echo "$windows_json" | jq 'length')
 	dfzf_hidden_count=$(echo "$windows_json" | jq -r '[.[] | select(.name != null and .app_id == "dfzf-hidden")] | length')
 
@@ -173,8 +174,8 @@ term_toggle() {
 				done
 			fi
 
-			# Return focus to primary application window
-			dfzf-exec -q "[con_id=$main_window_id] focus"
+			# Return focus to originally focused window
+			dfzf-exec -q "[con_id=$original_focused_id] focus"
 		else
 			# Standard toggle behavior for application and terminal pair
 			layout=$container_layout
