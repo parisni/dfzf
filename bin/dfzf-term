@@ -124,10 +124,13 @@ term_toggle() {
 	focused_name=$(echo "$windows_json" | jq -r '.[] | select(.focused).name')
 	window_count=$(echo "$windows_json" | jq 'length')
 
-	# Decision logic: Only apply 3+ window layout management in true containers
-	# Expected container_type: "con" (nested containers with multiple windows)
-	# Excluded: "workspace", "output" (workspace-level windows)
-	if [ "$window_count" -ge 3 ] && [ "$container_type" = "con" ]; then
+	# Get container layout for additional robustness check
+	container_layout=$(echo "$container_json" | jq -r '.layout')
+
+	# Decision logic: Only apply 3+ window layout management in true containers with splitv/stacked layouts
+	# Expected: container_type="con" AND layout in (splitv, stacked)
+	# Excluded: "workspace", "output" or containers with other layouts (tabbed, splith, etc)
+	if [ "$window_count" -ge 3 ] && [ "$container_type" = "con" ] && [[ $container_layout =~ ^(splitv|stacked)$ ]]; then
 		has_dfzf_hidden=$(echo "$windows_json" | jq -r 'any(.[]; .name != null and (.focused | not) and .app_id == "dfzf-hidden")')
 		layout=$(echo "$windows_json" | jq -r '.[] | select(.name == null).layout')
 		if [[ $focused_app == "dfzf-hidden" ]]; then
