@@ -150,7 +150,7 @@ term_toggle() {
 
 				# Create temporary terminal to facilitate container extraction
 				current_focused=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .id')
-				dfzf-exec -q "exec ${TERMINAL_COMMAND:-kitty -1} sh -c 'sleep 10 && exit 0'"
+				dfzf-exec -q "exec ${TERMINAL_COMMAND:-kitty -1} --app-id dfzf-hidden sh -c 'sleep 10 && exit 0'"
 
 				# Wait for temporary terminal to become active
 				while true; do

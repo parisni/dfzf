@@ -172,10 +172,10 @@ function run-desktop() {
 	if [[ $layout != "tabbed" ]]; then
 		# Get current focused window before creating dummy terminal
 		current_focused=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .id')
-		
+
 		# Create a dummy terminal window that auto-destroys
-		dfzf-exec -q "exec ${TERMINAL_COMMAND} sh -c 'sleep 30 && exit 0'"
-		
+		dfzf-exec -q "exec ${TERMINAL_COMMAND} --app-id dfzf-hidden sh -c 'sleep 30 && exit 0'"
+
 		# Wait until focus changes (new window appears)
 		while true; do
 			new_focused=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .id')
@@ -184,7 +184,7 @@ function run-desktop() {
 			fi
 			sleep 0.05
 		done
-		
+
 		dfzf-exec -q "move left"
 	fi
 	dfzf-exec -q "exec ${CMD}"
