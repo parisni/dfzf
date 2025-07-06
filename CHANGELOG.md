@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.13.1"></a>
+## [v0.13.1] - 2025-07-06
+### CI/CD
+- fix rust build
+
+
 <a name="v0.13.0"></a>
 ## [v0.13.0] - 2025-07-06
 ### Features
@@ -470,7 +476,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.13.1...HEAD
+[v0.13.1]: https://github.com/parisni/dfzf/compare/v0.13.0...v0.13.1
 [v0.13.0]: https://github.com/parisni/dfzf/compare/v0.12.0...v0.13.0
 [v0.12.0]: https://github.com/parisni/dfzf/compare/v0.11.4...v0.12.0
 [v0.11.4]: https://github.com/parisni/dfzf/compare/v0.11.3...v0.11.4
