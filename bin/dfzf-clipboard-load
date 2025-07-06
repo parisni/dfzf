@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export SHELL="$(command -v bash)"
+copyq eval 'tab(config("clipboard_tab")); for (var i = 0; i < size(); ++i) { var item = getItem(i); var mimeTypes = Object.keys(item); var content = null; var selectedMime = null; if ("text/plain" in item) { content = item["text/plain"]; selectedMime = "text/plain"; } else { for (var j = 0; j < mimeTypes.length; ++j) { var mime = mimeTypes[j]; if (mime !== "text/html") { content = item[mime]; selectedMime = mime; break; } } } var output = ""; if (selectedMime === "text/plain") { output = str(content).substring(0, 100).replace(/\\n/g, " "); } else { output = "binary data " + (selectedMime || "unknown"); } print(i + "\t" + output + "\\n"); }'

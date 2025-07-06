@@ -6,14 +6,19 @@ dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 # due to kitty/wl-copy bug we have to kill the kitty window otw it hangs
+# Determine the image viewer based on terminal
 if [ -n "$KITTY_WINDOW_ID" ]; then
-	export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview 'echo {} | (grep -q \"binary data image\" && echo {} | cliphist decode | dfzf-clipboard-icat) || (echo {} | cliphist decode | dfzf-clipboard-cat)'"
+	IMAGE_VIEWER="dfzf-clipboard-icat"
 else
-	export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview 'echo {} | (grep -q \"binary data image\" && echo {} | cliphist decode | chafa) || (echo {} | cliphist decode | dfzf-clipboard-cat)'"
+	IMAGE_VIEWER="chafa"
 fi
 
-cliphist list |
+# Create preview command using the appropriate image viewer
+PREVIEW="echo {} | (grep -q \"binary data image\" && echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'print(toBase64(getItem(@)[\"image/png\"]));' | base64 --decode | $IMAGE_VIEWER) || (echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'print(str(getItem(@)[\"text/plain\"]));')"
+
+dfzf-clipboard-load |
 	fzf --prompt "Clipboard > " \
+		--preview "${PREVIEW}" \
 		--preview-window="up" \
-		--bind="enter:execute-silent(echo {}|cliphist decode| wl-copy && dfzf-exec -q '[app_id=\"^dfzf-popup$\"]' kill)+accept" \
-		--bind="ctrl-k:execute-silent(echo {}|cliphist delete)+reload(cliphist list)"
+		--bind="enter:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'select(@);')+accept" \
+		--bind="ctrl-k:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'remove(@);')+reload(dfzf-clipboard-load)"
