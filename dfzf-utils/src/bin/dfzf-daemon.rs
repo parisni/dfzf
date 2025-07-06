@@ -1,4 +1,3 @@
-#![feature(let_chains)]
 use std::thread;
 use std::time::Duration;
 

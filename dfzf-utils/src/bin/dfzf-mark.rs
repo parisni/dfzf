@@ -1,4 +1,3 @@
-#![feature(let_chains)]
 
 use anyhow::{Context, Result};
 use clap::Parser;
