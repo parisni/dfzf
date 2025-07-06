@@ -57,7 +57,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-launcher`  | Launch desktop apps or cmds in terminal      | ✅ | ✅   |
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   |
 | `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   |
-| `dfzf-clipboard` | Searchable clipboard with image/text preview | ❌ | ✅   |
+| `dfzf-clipboard` | Searchable clipboard with image/text preview | ✅ | ✅   |
 | `dfzf-password`  | Copy and preview entries from pass           | ✅ | ✅   |
 | `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   |
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
@@ -194,7 +194,7 @@ fc-cache -fv
 
 ```bash
 exec --no-startup-id dfzf-daemon # reboot to make the daemon running
-exec wl-paste --watch cliphist -max-items 1000 store # for dfzf-clipboard  
+exec --no-startup-id copyq
 exec mako # for the dfzf-notifs
 
 exec swaymsg workspace 1, layout tabbed
@@ -236,6 +236,7 @@ exec --no-startup-id dfzf-daemon # reboot to make the daemon running
 
 # make sure the workspace is tabbed by default
 exec i3-msg workspace 1, layout tabbed
+exec --no-startup-id copyq
 workspace_auto_back_and_forth no
 
 # FOR FOOT OR ALACRITTY
@@ -511,8 +512,13 @@ Tilling with multi-select (ctrl-t):
 - image preview with kitten
 
   ```bash
-    sudo apt install jq cliphist wl-clipboard batcat
+    sudo apt install jq copyq wl-clipboard batcat 
+    # optional for non kitty term
+    sudo apt install wafa
+
   ```
+
+
 
   ![Image](https://github.com/user-attachments/assets/e339b0d0-d010-43a9-9ce6-9b94f11c02a2)
 </details>
