@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.13.2"></a>
+## [v0.13.2] - 2025-07-10
 ### Features
 - **windows:** add hidden windows toggle with ctrl-h
 
@@ -479,7 +482,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.13.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.13.2...HEAD
+[v0.13.2]: https://github.com/parisni/dfzf/compare/v0.13.1...v0.13.2
 [v0.13.1]: https://github.com/parisni/dfzf/compare/v0.13.0...v0.13.1
 [v0.13.0]: https://github.com/parisni/dfzf/compare/v0.12.0...v0.13.0
 [v0.12.0]: https://github.com/parisni/dfzf/compare/v0.11.4...v0.12.0
