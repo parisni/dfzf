@@ -10,10 +10,32 @@ findcommand=$(command -v fd || command -v fdfind) || {
 	exit 1
 }
 
-# Accept optional input via stdin or first argument
-if [ -n "${1:-}" ]; then
-	input_json="$1"
-else
+# Parse command line options
+show_hidden=false
+input_json=""
+
+while [[ $# -gt 0 ]]; do
+	case $1 in
+	--show-hidden)
+		show_hidden=true
+		shift
+		;;
+	--input-json)
+		input_json="$2"
+		shift 2
+		;;
+	*)
+		# Backward compatibility: first arg is input_json
+		if [ -z "$input_json" ]; then
+			input_json="$1"
+		fi
+		shift
+		;;
+	esac
+done
+
+# Accept optional input via stdin or get tree if no input provided
+if [ -z "$input_json" ]; then
 	input_json="$(dfzf-exec -t get_tree --raw)"
 fi
 
@@ -26,7 +48,8 @@ color_state_file=$($findcommand 'dfzf-windows-color-.+' /tmp -d 1 -t f 2>/dev/nu
 result=$(
 	echo "$input_json" | jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GREEN" --arg reset "$RESET" \
 		--argjson map "$windows_app_id_map_json" \
-		--argjson glyph_rules "$windows_glyph_rules_json" '
+		--argjson glyph_rules "$windows_glyph_rules_json" \
+		--argjson show_hidden "$show_hidden" '
   def format_title(text): "\u2063" + text + "\u2063";
     .. | objects
     | select(.type == "con" or .type == "floating_con")
@@ -34,7 +57,7 @@ result=$(
     | select(.name != null)
     | select((.app_id // .window_properties.class) != null)
     | select((.app_id // .window_properties.class) != "dfzf-popup")
-    | select((.app_id // .window_properties.class) != "dfzf-hidden")
+    | select($show_hidden or ((.app_id // .window_properties.class) != "dfzf-hidden"))
     | select((.app_id // .window_properties.class) != "dfzf-scratchpad")
     | . as $win
     | {

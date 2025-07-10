@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+- **windows:** add hidden windows toggle with ctrl-h
+
 
 <a name="v0.13.1"></a>
 ## [v0.13.1] - 2025-07-06
