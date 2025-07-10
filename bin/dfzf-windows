@@ -35,7 +35,7 @@ toggle_hidden() {
 	else
 		touch "$state_file"
 	fi
-	dfzf-windows-load --input-json "$current_tree" "$([ -f "$state_file" ] && echo "--show-hidden")"
+	dfzf-windows-load
 }
 export -f extract_con_id
 export -f toggle_color
@@ -58,7 +58,7 @@ set_prompt
 PREVIEW='echo {}'
 PREVIEW_WINDOW='up:3,wrap'
 
-result=$(dfzf-windows-load "$current_tree")
+result=$(dfzf-windows-load --input-json "$current_tree")
 
 # Check if result is empty and provide a working fzf with no entries
 if [[ -z $result ]]; then
