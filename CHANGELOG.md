@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.13.3"></a>
+## [v0.13.3] - 2025-07-11
+### Bug Fixes
+- **windows:** keep state for show hidden windows
+
+
 <a name="v0.13.2"></a>
 ## [v0.13.2] - 2025-07-10
 ### Features
@@ -482,7 +488,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.13.2...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.13.3...HEAD
+[v0.13.3]: https://github.com/parisni/dfzf/compare/v0.13.2...v0.13.3
 [v0.13.2]: https://github.com/parisni/dfzf/compare/v0.13.1...v0.13.2
 [v0.13.1]: https://github.com/parisni/dfzf/compare/v0.13.0...v0.13.1
 [v0.13.0]: https://github.com/parisni/dfzf/compare/v0.12.0...v0.13.0
