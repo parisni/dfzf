@@ -1,6 +1,6 @@
 [package]
 name = "dfzf-utils"
-version = "0.13.3"
+version = "0.14.0"
 edition = "2024"
 description = "An i3/Sway utility to keep track of windows visit history."
 repository = "https://github.com/parisni/dfzf"
