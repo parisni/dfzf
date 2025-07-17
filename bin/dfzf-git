@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Default configuration
+term_dir_regex='s/.*\[([^]]+)\].*|^(.+) - NVIM$|(.+) \/..$/\1\2\3/p'
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
+
+# Find git repository root by searching for .git folder
+find_git_root() {
+	local dir="$1"
+
+	# Handle tilde expansion
+	dir="${dir/#\~/$HOME}"
+
+	# Make sure we have an absolute path
+	if [[ ! $dir =~ ^/ ]]; then
+		dir="$PWD/$dir"
+	fi
+
+	# Search upward for .git directory
+	while [[ $dir != "/" ]]; do
+		if [[ -d "$dir/.git" ]]; then
+			echo "$dir"
+			return 0
+		fi
+		dir=$(dirname "$dir")
+	done
+
+	return 1
+}
+
+# Get terminal command from args or use default
+term_cmd="${*:1}"
+term_cmd="${term_cmd:-${TERMINAL_COMMAND:-kitty -1}}"
+
+# Get focused window name to extract directory path
+focused_window_name=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .name // empty')
+
+# Extract directory from focused window name
+extracted_dir=""
+if [[ -n $focused_window_name ]]; then
+	extracted_dir=$(echo "$focused_window_name" | sed -n -E "$term_dir_regex")
+fi
+
+# If no directory extracted from focused window, try other windows in workspace
+if [[ -z $extracted_dir ]]; then
+	while IFS= read -r window_name; do
+		if [[ -n $window_name ]]; then
+			dir=$(echo "$window_name" | sed -n -E "$term_dir_regex")
+			if [[ -n $dir ]]; then
+				extracted_dir="$dir"
+				break
+			fi
+		fi
+	done < <(dfzf-exec -t get_tree | jq -r '.nodes[] | recurse(.nodes[]?) | select(.type == "con") | select(.name) | .name')
+fi
+
+# Detect sway vs i3 and use appropriate selector
+if [[ -n ${SWAYSOCK:-} ]]; then
+	selector='app_id="dfzf-git"'
+	create_args="--app-id dfzf-git"
+elif [[ -n ${I3SOCK:-} ]]; then
+	selector='class="dfzf-git"'
+	create_args="--class dfzf-git"
+else
+	echo "No running instance of Sway or i3 detected."
+	exit 1
+fi
+
+# Check if dfzf-git window exists and get its workspace
+workspace=$(dfzf-exec -t get_tree | jq -r '
+	[.. | objects | select(.type == "workspace")] | 
+	map(select([.. | objects | select((.app_id // .window_properties.class) == "dfzf-git")] | length > 0)) | 
+	.[0].name // empty
+')
+
+if [[ -z $workspace ]]; then
+	# No dfzf-git window exists, create new one
+	# Try to find git root from extracted directory, fallback to current directory
+	git_root=""
+	if [[ -n $extracted_dir ]]; then
+		git_root=$(find_git_root "$extracted_dir")
+	fi
+	if [[ -z $git_root ]]; then
+		git_root=$(git rev-parse --show-toplevel 2>/dev/null)
+	fi
+
+	# Create new terminal window
+	if [[ -n $git_root ]]; then
+		dfzf-exec -q "exec ${TERMINAL_COMMAND:-kitty -1} $create_args -d \"$git_root\" -e lazygit"
+	else
+		dfzf-exec -q "exec ${TERMINAL_COMMAND:-kitty -1} $create_args -e lazygit"
+	fi
+	sleep 0.2
+	dfzf-exec -q "[$selector] move scratchpad, scratchpad show"
+	dfzf-resize 90
+else
+	# Window exists, check workspace
+	if [[ $workspace == "__i3_scratch" ]]; then
+		# Window is in scratchpad, show it
+		dfzf-exec -q "[$selector] scratchpad show"
+		dfzf-resize 90
+	else
+		# Window is visible, move it to scratchpad
+		dfzf-exec -q "[$selector] move scratchpad"
+	fi
+fi

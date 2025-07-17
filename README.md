@@ -64,6 +64,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   |
 | `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   |
 | `dfzf-term`   | Terminal management (kill/new/toggle/scratchpad) | ✅ | ✅   |
+| `dfzf-git`    | Smart git repository lazygit toggle | ✅ | ✅   |
 
 ---
 ## Terminal Support Matrix
@@ -92,6 +93,7 @@ In general, dfzf needs:
 - kitty version >= 0.42.1 OR alacritty OR foot
 - jq version >= 1.7
 - nerdfonts to display the glyphs (see nerdfont section)
+- lazygit (for `dfzf-git`)
 
 Moreover, each tool can have specific dependencies described in the `Features` section.
 
@@ -216,6 +218,7 @@ bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=
 bindsym $mod+n exec dfzf-term scratchpad $term
 bindsym ctrl+slash exec dfzf-term toggle $term
 bindsym shift+ctrl+slash exec dfzf-term kill $term
+bindsym $mod+g exec dfzf-git
 
 for_window [app_id="^dfzf-popup$"] floating enable, sticky enable, border pixel 6, exec dfzf-resize 65
 
@@ -255,6 +258,7 @@ bindsym $mod+l      exec --no-startup-id kitty -1 --instance-group dfzf --class=
 bindsym $mod+n exec dfzf-term scratchpad $term
 bindsym ctrl+slash exec dfzf-term toggle $term
 bindsym shift+ctrl+slash exec dfzf-term kill $term
+bindsym $mod+g exec dfzf-git
 
 for_window [class="^dfzf-popup$"] floating enable, sticky enable, border pixel 6, exec dfzf-resize 65
 
@@ -658,6 +662,32 @@ Password-store
   - Works across sway/i3, independent of companion terminals
 
   ![Image](https://github.com/user-attachments/assets/ca5c3a4d-eff2-490c-871e-ae413acfba08)
+</details>
+
+<details>
+  <summary>
+    Git Repository Management
+  </summary>
+  `dfzf-git` provides intelligent git repository integration with lazygit in a scratchpad terminal.
+  
+  **Smart Repository Detection**:
+  - Automatically detects git repository from focused window context
+  - Extracts directory paths from window titles (JetBrains `[/path/to/project]`, Neovim `- NVIM` suffix, etc.)
+  - Recursively searches upward for `.git` folder from detected directory
+  - Falls back to current working directory if no git repository found from window context
+  
+  **Scratchpad Integration**:
+  - Single floating lazygit terminal shared across workspaces
+  - 90% screen size, centered and floating
+  - `dfzf-git` - Toggle lazygit in detected git repository
+  - Automatically opens lazygit in the root of the detected git repository
+  - Works across sway/i3, uses `dfzf-git` app_id to avoid conflicts with other terminals
+  
+  **Example Usage**:
+  ```bash
+  # Bind to a key (e.g., Alt+g)
+  bindsym $mod+g exec dfzf-git
+  ```
 </details>
 
 ## Related work

@@ -33,7 +33,7 @@ fi
 state_hidden_file="/tmp/dfzf-windows-show-hidden"
 show_hidden=false
 if [[ -f $state_hidden_file ]]; then
-		show_hidden=true
+	show_hidden=true
 fi
 
 RESET=$'\033[0m'
@@ -56,6 +56,7 @@ result=$(
     | select((.app_id // .window_properties.class) != "dfzf-popup")
     | select($show_hidden or ((.app_id // .window_properties.class) != "dfzf-hidden"))
     | select((.app_id // .window_properties.class) != "dfzf-scratchpad")
+    | select((.app_id // .window_properties.class) != "dfzf-git")
     | . as $win
     | {
         id: .id,
