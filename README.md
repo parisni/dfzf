@@ -688,6 +688,8 @@ Password-store
   # Bind to a key (e.g., Alt+g)
   bindsym $mod+g exec dfzf-git
   ```
+
+  ![Image](https://github.com/user-attachments/assets/ca5c3a4d-eff2-490c-871e-ae413acfba08)
 </details>
 
 ## Related work
