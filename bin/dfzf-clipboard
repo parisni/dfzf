@@ -21,4 +21,5 @@ dfzf-clipboard-load |
 		--preview "${PREVIEW}" \
 		--preview-window="up" \
 		--bind="enter:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'select(@);')+accept" \
+		--bind="y:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'select(@);')+reload(dfzf-clipboard-load)" \
 		--bind="ctrl-k:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'remove(@);')+reload(dfzf-clipboard-load)"
