@@ -58,7 +58,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   |
 | `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   |
 | `dfzf-clipboard` | Searchable clipboard with image/text preview | ✅ | ✅   |
-| `dfzf-password`  | Copy and preview entries from pass           | ✅ | ✅   |
+| `dfzf-password`  | Copy and preview entries from a password CLI  | ✅ | ✅   |
 | `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   |
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
 | `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   |
@@ -360,6 +360,14 @@ hub_cmd_t='dfzf-tasks'
 hub_cmd_w='dfzf-tools wifi'
 hub_cmd_i='TERM=xterm sudo /usr/sbin/iotop -o'
 hub_cmd_q="pomatez || dfzf-windows-load|rg pomatez|sed -Ez 's/.*#([0-9]+).*/\1/'|xargs -I@ dfzf-exec '[con_id=@]' focus"
+
+# password backend commands: defaults target pass-compatible `show` commands
+pass_preview_cmd='pass show'
+pass_show_password_cmd='pass show'
+
+# example: use gopass instead
+# pass_preview_cmd='gopass show --nosync'
+# pass_show_password_cmd='gopass show --nosync -o'
 ```
 
 </details>
@@ -550,9 +558,17 @@ Password-store
 
   - `Return`: copy content
   - `ctrl-j`: preview content
- 
+  - works with any password CLI exposing compatible `show` commands
+
   ```bash
     sudo apt install pass wl-clipboard
+  ```
+  Default commands use `pass show`.
+  You can override them for another backend in `~/.config/dfzf/dfzf.conf`.
+  Example with `gopass`:
+  ```bash
+    pass_preview_cmd='gopass show --nosync'
+    pass_show_password_cmd='gopass show --nosync -o'
   ```
   ![Image](https://github.com/user-attachments/assets/2ebeec63-3ee8-4a47-9b8c-988c8cb5ffeb)
 </details>
