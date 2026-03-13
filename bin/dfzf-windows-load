@@ -4,6 +4,7 @@ set -euo pipefail
 windows_app_id_map_json="{}"
 windows_glyph_rules_json='[{"glyph": " "}]'
 windows_title_rm_pattern="— Mozilla Firefox "
+windows_app_filter="${DFZF_WINDOWS_APP_FILTER-}"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 findcommand=$(command -v fd || command -v fdfind) || {
 	echo "Neither fd nor fdfind found"
@@ -17,6 +18,10 @@ while [[ $# -gt 0 ]]; do
 	case $1 in
 	--input-json)
 		input_json="$2"
+		shift 2
+		;;
+	--app)
+		windows_app_filter="$2"
 		shift 2
 		;;
 	*)
@@ -46,10 +51,11 @@ result=$(
 	echo "$input_json" | jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GREEN" --arg reset "$RESET" \
 		--argjson map "$windows_app_id_map_json" \
 		--argjson glyph_rules "$windows_glyph_rules_json" \
-		--argjson show_hidden "$show_hidden" '
-  def format_title(text): "\u2063" + text + "\u2063";
-    .. | objects
-    | select(.type == "con" or .type == "floating_con")
+		--argjson show_hidden "$show_hidden" \
+		--arg app_filter "$windows_app_filter" '
+	  def format_title(text): "\u2063" + text + "\u2063";
+	    .. | objects
+	    | select(.type == "con" or .type == "floating_con")
     | select(.window_type == null or .window_type == "normal")
     | select(.name != null)
     | select((.app_id // .window_properties.class) != null)
@@ -83,11 +89,12 @@ result=$(
             | first
             | .glyph
           )
-        )
-      }
-      
-    | "\(.sort)\(if .urgent then "\u001b[33m" else "" end)\(.glyph) [\(.app_id)]\(if .urgent then "\u001b[0m" else "" end)\t\(.red)\(.blue)\(.green) \(format_title(.name)) #\(.id)"
-  ' | sort -nr |
+	        )
+	      }
+	    | select($app_filter == "" or (.app_id | ascii_downcase) == ($app_filter | ascii_downcase))
+	      
+	    | "\(.sort)\(if .urgent then "\u001b[33m" else "" end)\(.glyph) [\(.app_id)]\(if .urgent then "\u001b[0m" else "" end)\t\(.red)\(.blue)\(.green) \(format_title(.name)) #\(.id)"
+	  ' | sort -nr |
 		sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' |
 		perl -pe '
   use Term::ANSIColor;
