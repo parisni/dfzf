@@ -437,6 +437,7 @@ Install the below extensions:
 - windows ordered by last access
 - cycle previous window
 - terminal scrollback preview (kitty only)
+- optional app filter: `dfzf-windows --app firefox`
 
 keybindings:
 

@@ -5,6 +5,21 @@ export SHELL="$(command -v bash)"
 current_tree=$(dfzf-kill-bro)
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 windows_prompt_pattern="^[>$%] "
+windows_app_filter="${DFZF_WINDOWS_APP_FILTER-}"
+
+while [[ $# -gt 0 ]]; do
+	case $1 in
+	--app)
+		windows_app_filter="$2"
+		shift 2
+		;;
+	*)
+		shift
+		;;
+	esac
+done
+
+export DFZF_WINDOWS_APP_FILTER="$windows_app_filter"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 extract_con_id() {
@@ -42,12 +57,15 @@ export -f toggle_color
 export -f toggle_hidden
 set_prompt() {
 	PROMPT="Windows > "
+	if [[ -n $windows_app_filter ]]; then
+		PROMPT="Windows [$windows_app_filter] > "
+	fi
 	for code in 31 32 34; do
 		if [[ -f "/tmp/dfzf-windows-color-$code" ]]; then
 			case "$code" in
-			31) PROMPT=$'\033[31m Windows > \033[0m' ;; # red prompt
-			32) PROMPT=$'\033[32m Windows > \033[0m' ;; # green prompt
-			34) PROMPT=$'\033[34m Windows > \033[0m' ;; # blue prompt
+			31) PROMPT=$'\033[31m '"$PROMPT"$' \033[0m' ;; # red prompt
+			32) PROMPT=$'\033[32m '"$PROMPT"$' \033[0m' ;; # green prompt
+			34) PROMPT=$'\033[34m '"$PROMPT"$' \033[0m' ;; # blue prompt
 			esac
 			break
 		fi
