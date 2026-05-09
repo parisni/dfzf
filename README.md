@@ -190,6 +190,13 @@ fc-cache -fv
 
 ## Configuration
 
+If some commands are not found when dfzf is launched from a compositor (Sway, i3),
+it may be because tools installed via a version manager (e.g. `mise`, `asdf`) are not
+in the PATH. Add the shims directory at the top of `~/.config/dfzf/dfzf.conf`:
+```bash
+export PATH="$HOME/.local/share/mise/shims:$PATH"
+```
+
 <details>
 
 <summary>Sway configuration</summary>
