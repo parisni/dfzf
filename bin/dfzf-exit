@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 export SHELL="$(command -v bash)"
-[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
@@ -21,6 +20,8 @@ exit_cmd_s='swaylock -e -F -f -k -c 000000 && systemctl suspend'
 exit_cmd_r='sudo reboot'
 exit_cmd_S='shutdown now'
 exit_cmd_h='sudo /bin/systemctl hibernate'
+
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 # Create the list
 choices=$(printf '%s\n' "${exit_options[@]}")
