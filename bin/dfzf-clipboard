@@ -14,12 +14,12 @@ else
 fi
 
 # Create preview command using the appropriate image viewer
-PREVIEW="echo {} | (grep -q \"binary data image\" && echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'print(toBase64(getItem(@)[\"image/png\"]));' | base64 --decode | $IMAGE_VIEWER) || (echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'print(str(getItem(@)[\"text/plain\"]));')"
+PREVIEW="echo {} | (grep -q \"binary data image\" && echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'tab(config(\"clipboard_tab\")); print(toBase64(getItem(@)[\"image/png\"]));' | base64 --decode | $IMAGE_VIEWER) || (echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'tab(config(\"clipboard_tab\")); print(str(getItem(@)[\"text/plain\"]));')"
 
 dfzf-clipboard-load |
 	fzf --prompt "Clipboard > " \
 		--preview "${PREVIEW}" \
 		--preview-window="up" \
-		--bind="enter:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'select(@);')+accept" \
-		--bind="y:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'select(@);')+reload(dfzf-clipboard-load)" \
-		--bind="ctrl-k:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'remove(@);')+reload(dfzf-clipboard-load)"
+		--bind="enter:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'tab(config(\"clipboard_tab\")); select(@);')+accept" \
+		--bind="y:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'tab(config(\"clipboard_tab\")); select(@);')+reload(dfzf-clipboard-load)" \
+		--bind="ctrl-k:execute-silent(echo {} | sed 's/\t.*//' | xargs -I@ copyq eval 'tab(config(\"clipboard_tab\")); remove(@);')+reload(dfzf-clipboard-load)"
