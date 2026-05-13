@@ -11,6 +11,8 @@ set -euo pipefail
 #   pick-folder   open a nested fzf to pick a folder from `himalaya folder
 #                 list`; resets page to 1.
 #   prompt        print the dynamic fzf prompt based on current state.
+#   folder        print the currently selected folder (used by the reply
+#                 binding which needs to pass `-f <folder>` to himalaya).
 
 state_file="${DFZF_MAIL_STATE:-${XDG_RUNTIME_DIR:-/tmp}/dfzf-mail.state}"
 
@@ -55,8 +57,11 @@ case "${1:-}" in
 	prompt)
 		printf 'Mail [%s p%s] > ' "$folder" "$page"
 		;;
+	folder)
+		printf '%s' "$folder"
+		;;
 	*)
-		echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|prompt}" >&2
+		echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|prompt|folder}" >&2
 		exit 2
 		;;
 esac
