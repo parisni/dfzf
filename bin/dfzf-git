@@ -29,9 +29,16 @@ find_git_root() {
 	return 1
 }
 
-# Get terminal command from args or use default
+# Get terminal command from args or use default.
+#
+# NOTE: dfzf-git uses $DFZF_TERM *without* the `-e` flag (unlike dfzf-mail
+# and dfzf-launcher which include it). That's because dfzf-git needs to
+# inject `--app-id`/`--class` and `-d <dir>` before the `-e` flag, which
+# would not be possible if `-e` were already at the tail of the variable.
+# Pragmatic compromise: keep `-e lazygit` hardcoded below; let users
+# override DFZF_TERM with just "kitty -1" / "alacritty" / "foot", etc.
 term_cmd="${*:1}"
-term_cmd="${term_cmd:-${TERMINAL_COMMAND:-kitty -1}}"
+term_cmd="${term_cmd:-${DFZF_TERM:-kitty -1}}"
 
 # Get focused window name to extract directory path
 focused_window_name=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .name // empty')
@@ -87,9 +94,9 @@ if [[ -z $workspace ]]; then
 
 	# Create new terminal window
 	if [[ -n $git_root ]]; then
-		dfzf-exec -q "exec ${TERMINAL_COMMAND:-kitty -1} $create_args -d \"$git_root\" -e lazygit"
+		dfzf-exec -q "exec ${DFZF_TERM:-kitty -1} $create_args -d \"$git_root\" -e lazygit"
 	else
-		dfzf-exec -q "exec ${TERMINAL_COMMAND:-kitty -1} $create_args -e lazygit"
+		dfzf-exec -q "exec ${DFZF_TERM:-kitty -1} $create_args -e lazygit"
 	fi
 	sleep 0.2
 	dfzf-exec -q "[$selector] move scratchpad, scratchpad show"

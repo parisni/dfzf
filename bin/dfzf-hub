@@ -5,13 +5,6 @@ export SHELL="$(command -v bash)"
 dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
-# Terminal command (e.g. "kitty -1", "foot", "alacritty") forwarded by sway,
-# mirroring how `dfzf-term`, `dfzf-git`, etc. receive `$term` as an argument.
-# Currently only consumed by `dfzf-mail` (to spawn the reply editor in a
-# regular tiled window via `dfzf-term-exec`); other entries don't need it
-# yet but are kept consistent for when they do.
-term="${1:-}"
-
 hub_options=(
 	"b: Bluetooth"
 	"c: Clipboard"
@@ -38,7 +31,7 @@ hub_cmd_f='dfzf-tools fetch'
 hub_cmd_g='dfzf-tools top'
 hub_cmd_k='dfzf-tools calendar'
 hub_cmd_l='dfzf-launcher'
-hub_cmd_m="dfzf-mail ${term}"
+hub_cmd_m='dfzf-mail'
 hub_cmd_n='dfzf-notifs'
 hub_cmd_p='dfzf-password'
 hub_cmd_s='dfzf-scrollbacks'

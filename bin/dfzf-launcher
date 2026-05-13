@@ -17,7 +17,11 @@ IFS=$'\n\t'
 DEL=$'\34'
 
 FZF_COMMAND="${FZF_COMMAND:=fzf}"
-TERMINAL_COMMAND="${TERMINAL_COMMAND:="kitty -1 -e"}"
+# Convention shared with dfzf-mail: $DFZF_TERM is the full terminal invocation
+# including the "run a command" flag, so callers can simply append the command
+# to run. Examples: kitty -> "kitty -1 -e"; alacritty -> "alacritty -e";
+# foot -> "foot" (no -e); wezterm -> "wezterm start --"; xterm -> "xterm -e".
+DFZF_TERM="${DFZF_TERM:="kitty -1 -e"}"
 GLYPH_COMMAND="${GLYPH_COMMAND-  }"
 GLYPH_DESKTOP="${GLYPH_DESKTOP-  }"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/dfzf-launcher"
@@ -174,7 +178,7 @@ function run-desktop() {
 		current_focused=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .id')
 
 		# Create a dummy terminal window that auto-destroys
-		dfzf-exec -q "exec ${TERMINAL_COMMAND} --app-id dfzf-hidden sh -c 'sleep 30 && exit 0'"
+		dfzf-exec -q "exec ${DFZF_TERM} --app-id dfzf-hidden sh -c 'sleep 30 && exit 0'"
 
 		# Wait until focus changes (new window appears)
 		while true; do
@@ -201,7 +205,7 @@ function generate-command() {
 	# 3. We see an Exec= line during search: remove field codes and set variable
 	# 3. We see a Path= line during search: set variable
 	# 4. Finally, build command line
-	awk -v pattern="${PATTERN}" -v terminal_cmd="${TERMINAL_COMMAND}" -F= '
+	awk -v pattern="${PATTERN}" -v terminal_cmd="${DFZF_TERM}" -F= '
     BEGIN{a=0;exec=0;path=0}
        /^\[Desktop/{
         if(a){ a=0 }
