@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Helper invoked from `dfzf-mail` fzf bindings to mutate the shared state
+# file (folder/page/page-size) and to compute the dynamic prompt.
+#
+# Subcommands:
+#   next-page     increment current page (clamped on himalaya error is left
+#                 to the user: ctrl-p brings them back).
+#   prev-page     decrement current page, clamped to 1.
+#   pick-folder   open a nested fzf to pick a folder from `himalaya folder
+#                 list`; resets page to 1.
+#   prompt        print the dynamic fzf prompt based on current state.
+
+state_file="${DFZF_MAIL_STATE:-${XDG_RUNTIME_DIR:-/tmp}/dfzf-mail.state}"
+
+folder="INBOX"
+page=1
+page_size=50
+if [[ -r "$state_file" ]]; then
+	# shellcheck disable=SC1090
+	source "$state_file"
+fi
+
+save_state() {
+	cat >"$state_file" <<-EOF
+		folder="${folder}"
+		page=${page}
+		page_size=${page_size}
+	EOF
+}
+
+case "${1:-}" in
+	next-page)
+		page=$((page + 1))
+		save_state
+		;;
+	prev-page)
+		if (( page > 1 )); then
+			page=$((page - 1))
+		fi
+		save_state
+		;;
+	pick-folder)
+		picked="$(
+			RUST_LOG=off himalaya folder list -o json |
+				jq -r '.[] | .name' |
+				fzf --prompt "Folder > " --no-preview --height=40% --reverse
+		)" || exit 0
+		[[ -z "$picked" ]] && exit 0
+		folder="$picked"
+		page=1
+		save_state
+		;;
+	prompt)
+		printf 'Mail [%s p%s] > ' "$folder" "$page"
+		;;
+	*)
+		echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|prompt}" >&2
+		exit 2
+		;;
+esac

@@ -5,9 +5,25 @@ export SHELL="$(command -v bash)"
 dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
+# Shared state file with `dfzf-mail-load`. Stores the currently selected
+# folder + page so that fzf `reload(dfzf-mail-load)` keeps context across
+# reloads (fzf binds cannot pass arguments to the reload command).
+state_file="${DFZF_MAIL_STATE:-${XDG_RUNTIME_DIR:-/tmp}/dfzf-mail.state}"
+export DFZF_MAIL_STATE="$state_file"
+
+# Reset state on each launch: defaults to INBOX, page 1, page-size 50.
+cat >"$state_file" <<-EOF
+	folder="INBOX"
+	page=1
+	page_size=50
+EOF
+
 dfzf-mail-load |
-	fzf --prompt "Mail > " \
+	fzf --prompt "Mail [INBOX p1] > " \
 		--preview-window="up:wrap" \
 		--preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message read" \
 		--bind="ctrl-k:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message delete)+reload(dfzf-mail-load)" \
-		--bind="ctrl-j:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message export -O)+accept"
+		--bind="ctrl-j:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message export -O)+accept" \
+		--bind="ctrl-n:execute-silent(dfzf-mail-state next-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
+		--bind="ctrl-p:execute-silent(dfzf-mail-state prev-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
+		--bind="ctrl-f:execute(dfzf-mail-state pick-folder </dev/tty >/dev/tty)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)"

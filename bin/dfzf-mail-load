@@ -1,4 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RUST_LOG=off himalaya -o json | jq -r '.[] | "\(.date | split(" ")[0])T\(.date | split(" ")[1] | split(":")[0]) \(.subject) \(.from.addr) #\(.id)"'
+# State file shared with dfzf-mail so that fzf `reload(dfzf-mail-load)` keeps
+# track of the currently selected folder and page across reloads.
+state_file="${DFZF_MAIL_STATE:-${XDG_RUNTIME_DIR:-/tmp}/dfzf-mail.state}"
+
+folder="INBOX"
+page=1
+page_size=50
+if [[ -r "$state_file" ]]; then
+	# shellcheck disable=SC1090
+	source "$state_file"
+fi
+
+RUST_LOG=off himalaya envelope list \
+	-f "$folder" \
+	-p "$page" \
+	-s "$page_size" \
+	-o json |
+	jq -r '.[] | "\(.date | split(" ")[0])T\(.date | split(" ")[1] | split(":")[0]) \(.subject) \(.from.addr) #\(.id)"'
