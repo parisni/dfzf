@@ -4,10 +4,13 @@ set -euo pipefail
 HIST_FLAG="/tmp/dfzf-notif_history_mode"
 
 # Check if the history mode is enabled (file exists)
+# mako >= 1.11 requires the explicit -j flag for JSON output (commit 322dece
+# "makoctl: add JSON output for list and history"); previously busctl's typed
+# JSON was emitted by default.
 if [ -f "$HIST_FLAG" ]; then
-	cmd="makoctl history"
+	cmd="makoctl history -j"
 else
-	cmd="makoctl list"
+	cmd="makoctl list -j"
 fi
 
 # Run the selected command
