@@ -23,7 +23,7 @@ dfzf-mail-load |
 		--preview-window="up:wrap" \
 		--preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message read" \
 		--bind="ctrl-k:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message delete)+reload(dfzf-mail-load)" \
-		--bind="ctrl-j:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs himalaya message export -O)+accept" \
+		--bind="ctrl-j:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); dir=\$(mktemp -d -t dfzf-mail-XXXXXX); himalaya message export -O -d \"\$dir\" \"\$id\")+accept" \
 		--bind="ctrl-n:execute-silent(dfzf-mail-state next-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-p:execute-silent(dfzf-mail-state prev-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-f:execute(dfzf-mail-state pick-folder </dev/tty >/dev/tty)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)"
