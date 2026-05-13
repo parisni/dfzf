@@ -5,6 +5,29 @@ export SHELL="$(command -v bash)"
 dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
+# Terminal command used by `ctrl-r` / `ctrl-alt-r` to spawn a separate
+# window for editing a reply. Resolution order:
+#   1. argv[1] (passed by dfzf-hub / sway, mirroring `dfzf-term $term`)
+#   2. $DFZF_TERM env var
+#   3. $TERMINAL env var (freedesktop convention)
+#   4. first available among kitty / foot / alacritty / wezterm / xterm
+# `dfzf-term-exec` knows the per-terminal flag to actually run a command.
+if [[ -n "${1:-}" ]]; then
+	DFZF_TERM="$1"
+elif [[ -z "${DFZF_TERM:-}" ]]; then
+	if [[ -n "${TERMINAL:-}" ]]; then
+		DFZF_TERM="$TERMINAL"
+	else
+		for candidate in kitty foot alacritty wezterm xterm; do
+			if command -v "$candidate" >/dev/null 2>&1; then
+				DFZF_TERM="$candidate"
+				break
+			fi
+		done
+	fi
+fi
+export DFZF_TERM="${DFZF_TERM:-kitty}"
+
 # Shared state file with `dfzf-mail-load`. Stores the currently selected
 # folder + page so that fzf `reload(dfzf-mail-load)` keeps context across
 # reloads (fzf binds cannot pass arguments to the reload command).
@@ -27,5 +50,5 @@ dfzf-mail-load |
 		--bind="ctrl-n:execute-silent(dfzf-mail-state next-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-p:execute-silent(dfzf-mail-state prev-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-f:execute(dfzf-mail-state pick-folder </dev/tty >/dev/tty)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
-		--bind="ctrl-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f kitty -1 -e dfzf-mail-reply \"\$folder\" \"\$id\")+abort" \
-		--bind="ctrl-alt-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f kitty -1 -e dfzf-mail-reply \"\$folder\" \"\$id\" --all)+abort"
+		--bind="ctrl-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f dfzf-term-exec \"\$DFZF_TERM\" -- dfzf-mail-reply \"\$folder\" \"\$id\")+abort" \
+		--bind="ctrl-alt-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f dfzf-term-exec \"\$DFZF_TERM\" -- dfzf-mail-reply \"\$folder\" \"\$id\" --all)+abort"

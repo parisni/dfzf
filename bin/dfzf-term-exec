@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Spawn a new window of <terminal-cmd> running <cmd> [args...]
+#
+# Usage:
+#   dfzf-term-exec "<terminal-cmd>" -- <cmd> [args...]
+#
+# Different terminals use different flags to "run a command in a new window".
+# This helper centralizes that mapping so callers (e.g. dfzf-mail) only have
+# to know "I want to run X in a terminal", not "kitty uses -e but foot
+# doesn't".
+#
+# Supported terminals (match on basename of the first word of <terminal-cmd>):
+#   kitty | alacritty | xterm   →  $term -e CMD
+#   foot                        →  $term CMD              (no -e flag)
+#   wezterm                     →  $term start -- CMD
+#   anything else               →  $term -e CMD           (best-effort default)
+
+term_cmd="${1:?usage: dfzf-term-exec <terminal-cmd> -- <cmd> [args...]}"
+shift
+[[ "${1:-}" == "--" ]] || {
+	echo "dfzf-term-exec: expected '--' separator after terminal command" >&2
+	exit 2
+}
+shift
+
+# Extract the bare binary name to pick the right invocation form.
+read -r -a term_arr <<<"$term_cmd"
+bin="$(basename "${term_arr[0]}")"
+
+case "$bin" in
+	foot)
+		exec "${term_arr[@]}" "$@"
+		;;
+	wezterm)
+		exec "${term_arr[@]}" start -- "$@"
+		;;
+	kitty|alacritty|xterm|*)
+		exec "${term_arr[@]}" -e "$@"
+		;;
+esac
