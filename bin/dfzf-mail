@@ -24,8 +24,8 @@ dfzf-mail-load |
 		--preview="id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya message read -f \"\$(dfzf-mail-state folder)\" \"\$id\"" \
 		--bind="ctrl-k:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya message delete -f \"\$(dfzf-mail-state folder)\" \"\$id\")+reload(dfzf-mail-load)" \
 		--bind="ctrl-j:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); dir=\$(mktemp -d -t dfzf-mail-XXXXXX); himalaya message export -f \"\$(dfzf-mail-state folder)\" -O -d \"\$dir\" \"\$id\")+accept" \
-		--bind="ctrl-n:execute-silent(dfzf-mail-state next-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
-		--bind="ctrl-p:execute-silent(dfzf-mail-state prev-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
+		--bind=">:execute-silent(dfzf-mail-state next-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
+		--bind="<:execute-silent(dfzf-mail-state prev-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-f:execute(dfzf-mail-state pick-folder </dev/tty >/dev/tty)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-reply \"\$folder\" \"\$id\")+abort" \
 		--bind="ctrl-alt-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-reply \"\$folder\" \"\$id\" --all)+abort"
