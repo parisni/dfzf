@@ -716,6 +716,16 @@ Password-store
   ![Image](https://github.com/user-attachments/assets/ca5c3a4d-eff2-490c-871e-ae413acfba08)
 </details>
 
+## Contributing
+
+Install [mise](https://mise.jdx.dev/) then run:
+
+```bash
+mise install
+```
+
+This sets up `pre-commit` hooks and `bump2version` automatically — no manual `pip install` or venv needed.
+
 ## Related work
 
 - `dfzf` is the combination of `d`menu and `fzf` 

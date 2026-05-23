@@ -10,6 +10,7 @@ tools_clock_cmd="tty-clock -c -C 4 -s"
 tools_wifi_cmd="nmtui connect"
 tools_bluetooth_cmd="bluetuith --no-warning"
 tools_fetch_cmd="fastfetch && sleep infinity"
+tools_network_cmd="bandwhich"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 # Check the first argument and run the corresponding command
@@ -32,8 +33,11 @@ bluetooth)
 fetch)
 	eval "$tools_fetch_cmd"
 	;;
+network)
+	eval "$tools_network_cmd"
+	;;
 *)
-	echo "Usage: $0 {clock|top|calendar|wifi|bluetooth|fetch}"
+	echo "Usage: $0 {clock|top|calendar|wifi|bluetooth|fetch|network}"
 	exit 1
 	;;
 esac

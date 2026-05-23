@@ -1,0 +1,10 @@
+[settings]
+experimental = true
+
+[tools]
+pipx                = "latest"
+pre-commit          = "4.3.0"
+"pipx:bump2version" = "1.0.1"
+
+[hooks]
+postinstall = ["mise exec -- pre-commit install"]

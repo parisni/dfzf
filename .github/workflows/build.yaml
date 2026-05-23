@@ -4,9 +4,18 @@ on:
   push:
     tags:
       - 'v*'
+  pull_request:
 
 jobs:
+  pre-commit:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: mise exec -- pre-commit run --all-files
+
   build:
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-22.04
     strategy:
       matrix:
