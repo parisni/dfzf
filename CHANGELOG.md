@@ -2,6 +2,35 @@
 ## [Unreleased]
 
 
+<a name="v0.15.0"></a>
+## [v0.15.0] - 2026-06-04
+### Bug Fixes
+- **clipboard:** use explicit tab to avoid index mismatch
+- **exit:** allow override default config
+- **mail:** paginate envelope history with </>
+- **mail:** pass current folder to preview/delete/export
+- **mail:** export each message to a unique tmpdir on ctrl-j
+- **mail:** hide himalaya warnings
+- **notifs:** adapt to mako 1.11 JSON output
+- **password:** use copyq for both x11 and wayland
+
+### Code Refactoring
+- unify terminal config on $DFZF_TERM, drop dfzf-term-exec
+
+### Features
+- **clipboard:** y key to pick an entry in the history
+- **focus:** add dfzf-focus-toggle to bounce back to the origin window
+- **mail:** make reply terminal-agnostic
+- **mail:** reply to message via ctrl-r / ctrl-alt-r
+- **mail:** switch folder and paginate history
+- **password:** support other password cli tools, eg: gopass ([#11](https://github.com/parisni/dfzf/issues/11))
+- **windows:** args to pre-filter by app ([#10](https://github.com/parisni/dfzf/issues/10))
+
+### Maintenance
+- migrate release automation from makefile to mise tasks
+- replace requirements.txt with mise for pre-commit and bump2version
+
+
 <a name="v0.14.0"></a>
 ## [v0.14.0] - 2025-07-17
 ### Features
@@ -494,7 +523,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.15.0...HEAD
+[v0.15.0]: https://github.com/parisni/dfzf/compare/v0.14.0...v0.15.0
 [v0.14.0]: https://github.com/parisni/dfzf/compare/v0.13.3...v0.14.0
 [v0.13.3]: https://github.com/parisni/dfzf/compare/v0.13.2...v0.13.3
 [v0.13.2]: https://github.com/parisni/dfzf/compare/v0.13.1...v0.13.2
