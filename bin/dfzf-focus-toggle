@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Toggle focus between a "target" window (matched by a sway/i3 criteria) and the
+# window that was focused right before jumping to it.
+#
+# Motivation: bindings like `$mod+s` focus a fixed window (e.g. Slack). Pressing
+# the binding again should bring us back to where we came from, instead of being
+# a no-op once we already are on the target. The origin is remembered as a sway
+# mark on the origin window itself: this mirrors how dfzf already tracks recency
+# via marks, it self-clears when that window closes, and it does not survive a
+# sway/i3 restart (no stale /tmp state to reason about).
+#
+# Usage:
+#   dfzf-focus-toggle <key> <criteria> [fallback-cmd ...]
+#
+#   <key>          stable identifier, used to namespace the origin mark
+#                  (e.g. "slack" -> mark "_dfzf-origin-slack")
+#   <criteria>     sway/i3 criteria selecting the target, e.g.
+#                  '[app_id="firefox" title="app.slack.com"]'
+#   fallback-cmd   optional command run when the target window does not exist
+#                  (e.g. open it). Everything after <criteria> is the command.
+#
+# Behaviour:
+#   - target missing            -> run fallback-cmd (if any)
+#   - not on target             -> mark current window as origin, focus target
+#   - already on target         -> focus the origin window (back), clear mark
+#   - origin lost/absent        -> stay put (nothing sensible to go back to)
+
+if [[ $# -lt 2 ]]; then
+	echo "usage: dfzf-focus-toggle <key> <criteria> [fallback-cmd ...]" >&2
+	exit 2
+fi
+
+key="$1"
+criteria="$2"
+shift 2
+fallback=("$@")
+
+origin_mark="_dfzf-origin-${key}"
+probe_mark="_dfzf-focus-toggle-probe-${key}"
+
+# Probe the target: tag every window matching <criteria> with a transient mark,
+# read it back from the tree, then remove it. This lets us use sway's own
+# criteria matching instead of re-implementing it in jq.
+dfzf-exec -q "${criteria} mark --add ${probe_mark}" >/dev/null 2>&1 || true
+
+tree="$(dfzf-exec -t get_tree)"
+current_id="$(echo "$tree" | jq -r 'first(.. | objects | select(.focused == true) | .id) // empty')"
+matched_ids="$(echo "$tree" | jq -r --arg m "$probe_mark" \
+	'.. | objects | select((.marks // []) | index($m)) | .id')"
+target_focused="$(echo "$tree" | jq -r --arg m "$probe_mark" \
+	'[.. | objects | select((.marks // []) | index($m)) | .focused] | any')"
+
+while IFS= read -r mid; do
+	if [[ -n $mid ]]; then
+		dfzf-exec -q "[con_id=${mid}] unmark ${probe_mark}" >/dev/null 2>&1 || true
+	fi
+done <<<"$matched_ids"
+
+if [[ -z $matched_ids ]]; then
+	# Target does not exist: drop any stale origin and run the fallback.
+	dfzf-exec -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
+	if [[ ${#fallback[@]} -gt 0 ]]; then
+		exec "${fallback[@]}"
+	fi
+	exit 0
+fi
+
+if [[ $target_focused == "true" ]]; then
+	# Already on the target: jump back to the origin window if it still exists.
+	origin_id="$(echo "$tree" | jq -r --arg m "$origin_mark" \
+		'first(.. | objects | select((.marks // []) | index($m)) | .id) // empty')"
+	dfzf-exec -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
+
+	if [[ -n $origin_id && $origin_id != "$current_id" ]]; then
+		dfzf-exec -q "[con_id=${origin_id}] focus" >/dev/null
+	fi
+	exit 0
+fi
+
+# Not on the target yet: mark the current window as origin, then jump to target.
+# Clear any previous origin first so only one window ever carries the mark.
+dfzf-exec -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
+if [[ -n $current_id ]]; then
+	dfzf-exec -q "[con_id=${current_id}] mark --add ${origin_mark}" >/dev/null 2>&1 || true
+fi
+dfzf-exec -q "${criteria} focus" >/dev/null
