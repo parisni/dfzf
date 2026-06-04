@@ -8,3 +8,47 @@ pre-commit          = "4.3.0"
 
 [hooks]
 postinstall = ["mise exec -- pre-commit install"]
+
+# Release automation, migrated from the previous makefile so everything runs
+# through `mise run`. git-chglog and bump2version are declared per-task (not in
+# the global [tools]) so a plain `mise install` for development never needs to
+# download release-only tooling. The bump/changelog ordering is kept identical
+# to the old makefile on purpose: bump2version creates the commit + tag, then
+# `changelog` amends that commit, so the tag keeps pointing at the pre-amend
+# commit (matching historical release behaviour).
+[tasks.changelog]
+description = "Regenerate CHANGELOG.md and fold it into the last commit"
+tools = { "aqua:git-chglog/git-chglog" = "0.15.4" }
+run = [
+  "git-chglog --output CHANGELOG.md",
+  "git add CHANGELOG.md",
+  "git commit --amend --no-edit",
+]
+
+[tasks.release-patch]
+description = "Release a patch version (x.y.Z)"
+run = "mise run release patch"
+
+[tasks.release-minor]
+description = "Release a minor version (x.Y.0)"
+run = "mise run release minor"
+
+[tasks.release-major]
+description = "Release a major version (X.0.0)"
+run = "mise run release major"
+
+[tasks.release]
+description = "Bump version, regenerate changelog and push main + tags"
+tools = { "pipx:bump2version" = "1.0.1" }
+usage = '''
+arg "part" help="Version part to bump" {
+  choices "patch" "minor" "major"
+}
+'''
+run = [
+  "git checkout main",
+  "git fetch --force --tags",
+  "bump2version --allow-dirty \"$usage_part\"",
+  "mise run changelog",
+  "git push origin main --tags",
+]
