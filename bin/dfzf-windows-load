@@ -63,6 +63,7 @@ result=$(
     | select($show_hidden or ((.app_id // .window_properties.class) != "dfzf-hidden"))
     | select((.app_id // .window_properties.class) != "dfzf-scratchpad")
     | select((.app_id // .window_properties.class) != "dfzf-git")
+    | select((.app_id // .window_properties.class) != "dfzf-term")
     | . as $win
     | {
         id: .id,
