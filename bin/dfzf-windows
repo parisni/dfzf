@@ -6,12 +6,20 @@ current_tree=$(dfzf-kill-bro)
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 windows_prompt_pattern="^[>$%] "
 windows_app_filter="${DFZF_WINDOWS_APP_FILTER-}"
+# When set, skip the "start:up" bind that preselects the most recently focused
+# window (the Alt-Tab back-and-forth behaviour); the cursor then stays on the
+# first listed item instead.
+no_first_item=false
 
 while [[ $# -gt 0 ]]; do
 	case $1 in
 	--app)
 		windows_app_filter="$2"
 		shift 2
+		;;
+	--no-first-item)
+		no_first_item=true
+		shift
 		;;
 	*)
 		shift
@@ -90,8 +98,13 @@ fi
 
 dfzf-exec -q '[con_id='"$(head -n1 <<<"$result" | extract_con_id)"']' floating disable
 
+start_binds=(--bind "change:first")
+if [[ $no_first_item == false ]]; then
+	start_binds=(--bind "start:up" "${start_binds[@]}")
+fi
+
 fzf --sync --multi --prompt "$PROMPT" \
-	--bind "start:up" --bind "change:first" \
+	"${start_binds[@]}" \
 	--preview="$PREVIEW" \
 	--preview-window="$PREVIEW_WINDOW" \
 	--bind "ctrl-t:execute-silent(echo {+} |rg -o '#\d+\b' | rg -o '\d+' | paste -sd ' ' - | xargs dfzf-windows-till)+abort" \

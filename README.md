@@ -453,6 +453,7 @@ Install the below extensions:
 - cycle previous window
 - terminal scrollback preview (kitty only)
 - optional app filter: `dfzf-windows --app firefox`
+- optional `--no-first-item`: keep the cursor on the first listed window instead of preselecting the previously focused one (useful for filtered launchers like `dfzf-windows --app terminal --no-first-item`)
 
 keybindings:
 
