@@ -2,6 +2,9 @@
 ## [Unreleased]
 
 
+<a name="v0.15.2"></a>
+## [v0.15.2] - 2026-06-14
+
 <a name="v0.15.1"></a>
 ## [v0.15.1] - 2026-06-11
 ### Features
@@ -530,7 +533,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.15.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.15.2...HEAD
+[v0.15.2]: https://github.com/parisni/dfzf/compare/v0.15.1...v0.15.2
 [v0.15.1]: https://github.com/parisni/dfzf/compare/v0.15.0...v0.15.1
 [v0.15.0]: https://github.com/parisni/dfzf/compare/v0.14.0...v0.15.0
 [v0.14.0]: https://github.com/parisni/dfzf/compare/v0.13.3...v0.14.0
