@@ -2,14 +2,17 @@
 set -euo pipefail
 
 # Helper invoked from `dfzf-mail` fzf bindings to mutate the shared state
-# file (folder/page/page-size) and to compute the dynamic prompt.
+# file (folder/page/page-size/query) and to compute the dynamic prompt.
 #
 # Subcommands:
 #   next-page     increment current page (clamped on himalaya error is left
 #                 to the user: ctrl-p brings them back).
 #   prev-page     decrement current page, clamped to 1.
 #   pick-folder   open a nested fzf to pick a folder from `himalaya folder
-#                 list`; resets page to 1.
+#                 list`; resets page to 1 and clears the search query (a
+#                 search is mentally tied to a folder).
+#   search        prompt for a himalaya search query, store it and reset to
+#                 page 1; an empty query clears the filter.
 #   prompt        print the dynamic fzf prompt based on current state.
 #   folder        print the currently selected folder (used by the reply
 #                 binding which needs to pass `-f <folder>` to himalaya).
@@ -19,7 +22,8 @@ state_file="${DFZF_MAIL_STATE:-${XDG_RUNTIME_DIR:-/tmp}/dfzf-mail.state}"
 folder="INBOX"
 page=1
 page_size=50
-if [[ -r "$state_file" ]]; then
+query=""
+if [[ -r $state_file ]]; then
 	# shellcheck disable=SC1090
 	source "$state_file"
 fi
@@ -29,39 +33,58 @@ save_state() {
 		folder="${folder}"
 		page=${page}
 		page_size=${page_size}
+		query="${query}"
 	EOF
 }
 
 case "${1:-}" in
-	next-page)
-		page=$((page + 1))
-		save_state
-		;;
-	prev-page)
-		if (( page > 1 )); then
-			page=$((page - 1))
-		fi
-		save_state
-		;;
-	pick-folder)
-		picked="$(
-			RUST_LOG=off himalaya folder list -o json |
-				jq -r '.[] | .name' |
-				fzf --prompt "Folder > " --no-preview --height=40% --reverse
-		)" || exit 0
-		[[ -z "$picked" ]] && exit 0
-		folder="$picked"
-		page=1
-		save_state
-		;;
-	prompt)
+next-page)
+	page=$((page + 1))
+	save_state
+	;;
+prev-page)
+	if ((page > 1)); then
+		page=$((page - 1))
+	fi
+	save_state
+	;;
+pick-folder)
+	picked="$(
+		RUST_LOG=off himalaya folder list -o json |
+			jq -r '.[] | .name' |
+			fzf --prompt "Folder > " --no-preview --height=40% --reverse
+	)" || exit 0
+	[[ -z $picked ]] && exit 0
+	folder="$picked"
+	page=1
+	query=""
+	save_state
+	;;
+search)
+	# fzf with an empty list acts as a free-text input; --print-query
+	# echoes whatever was typed. The header documents himalaya's query
+	# syntax so the user does not have to remember it.
+	header=$'Query: subject|body|from|to <txt> · before|after <yyyy-mm-dd> · flag <f> · and/or/not · order by date desc\nEx: from enedis and subject facture    |    body rdv after 2026-01-01 order by date desc\nEmpty query clears the search.'
+	typed="$(
+		: | fzf --prompt "Search > " --print-query --no-preview \
+			--height=40% --reverse --header="$header" --query="$query"
+	)" || exit 0
+	query="$(printf '%s' "$typed" | head -n1)"
+	page=1
+	save_state
+	;;
+prompt)
+	if [[ -n $query ]]; then
+		printf 'Mail [%s 🔍 p%s] > ' "$folder" "$page"
+	else
 		printf 'Mail [%s p%s] > ' "$folder" "$page"
-		;;
-	folder)
-		printf '%s' "$folder"
-		;;
-	*)
-		echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|prompt|folder}" >&2
-		exit 2
-		;;
+	fi
+	;;
+folder)
+	printf '%s' "$folder"
+	;;
+*)
+	echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|search|prompt|folder}" >&2
+	exit 2
+	;;
 esac

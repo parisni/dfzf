@@ -2,20 +2,28 @@
 set -euo pipefail
 
 # State file shared with dfzf-mail so that fzf `reload(dfzf-mail-load)` keeps
-# track of the currently selected folder and page across reloads.
+# track of the currently selected folder, page and search query across reloads.
 state_file="${DFZF_MAIL_STATE:-${XDG_RUNTIME_DIR:-/tmp}/dfzf-mail.state}"
 
 folder="INBOX"
 page=1
 page_size=50
+query=""
 if [[ -r $state_file ]]; then
 	# shellcheck disable=SC1090
 	source "$state_file"
 fi
 
+# A non-empty query is passed as himalaya's positional search filter (server
+# side, across the whole folder). An empty query MUST NOT be passed: himalaya
+# panics on an empty query string, so we fall back to the plain paginated list.
+query_args=()
+[[ -n $query ]] && query_args=("$query")
+
 RUST_LOG=off himalaya envelope list \
 	-f "$folder" \
 	-p "$page" \
 	-s "$page_size" \
-	-o json |
+	-o json \
+	"${query_args[@]}" |
 	jq -r '.[] | "\(.date | split(" ")[0])T\(.date | split(" ")[1] | split(":")[0]) \(if .has_attachment then "📎" else "  " end) \(.subject) \(.from.addr) #\(.id)"'

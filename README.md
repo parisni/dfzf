@@ -554,6 +554,9 @@ Mail
   - `ctrl-j`: preview html mails in the browser
   - `ctrl-d`: download attachments to himalaya's `downloads-dir` (default `~/Downloads`)
   - `ctrl-w`: compose a new mail
+  - `ctrl-s`: server-side search across the whole folder (himalaya query). The prompt shows `🔍`; an empty query clears it. Changing folder (`ctrl-f`) resets the search. fzf still fuzzy-filters the results locally.
+    - syntax: `subject|body|from|to <txt>` · `before|after <yyyy-mm-dd>` · `flag <f>` · combine with `and`/`or`/`not` · sort with `order by date desc`
+    - examples: `from enedis and subject facture` — `body rdv after 2026-01-01 order by date desc`
   
   ```bash
     sudo apt install jq himalaya
