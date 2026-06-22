@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.17.0"></a>
+## [v0.17.0] - 2026-06-22
+### Features
+- **dfzf-mail:** add ctrl-s server-side search via himalaya query
+
+
 <a name="v0.16.3"></a>
 ## [v0.16.3] - 2026-06-22
 ### Code Refactoring
@@ -557,7 +563,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.16.3...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.17.0...HEAD
+[v0.17.0]: https://github.com/parisni/dfzf/compare/v0.16.3...v0.17.0
 [v0.16.3]: https://github.com/parisni/dfzf/compare/v0.16.2...v0.16.3
 [v0.16.2]: https://github.com/parisni/dfzf/compare/v0.16.1...v0.16.2
 [v0.16.1]: https://github.com/parisni/dfzf/compare/v0.16.0...v0.16.1
