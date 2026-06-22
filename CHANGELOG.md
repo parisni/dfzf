@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.16.1"></a>
+## [v0.16.1] - 2026-06-22
+### Features
+- **dfzf-mail:** add ctrl-n to compose a new mail
+
+
 <a name="v0.16.0"></a>
 ## [v0.16.0] - 2026-06-22
 ### Features
@@ -539,7 +545,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.16.1...HEAD
+[v0.16.1]: https://github.com/parisni/dfzf/compare/v0.16.0...v0.16.1
 [v0.16.0]: https://github.com/parisni/dfzf/compare/v0.15.2...v0.16.0
 [v0.15.2]: https://github.com/parisni/dfzf/compare/v0.15.1...v0.15.2
 [v0.15.1]: https://github.com/parisni/dfzf/compare/v0.15.0...v0.15.1
