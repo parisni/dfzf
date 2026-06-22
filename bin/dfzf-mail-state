@@ -65,10 +65,15 @@ search)
 	# echoes whatever was typed. The header documents himalaya's query
 	# syntax so the user does not have to remember it.
 	header=$'Query: subject|body|from|to <txt> · before|after <yyyy-mm-dd> · flag <f> · and/or/not · order by date desc\nEx: from enedis and subject facture    |    body rdv after 2026-01-01 order by date desc\nEmpty query clears the search.'
-	typed="$(
-		: | fzf --prompt "Search > " --print-query --no-preview \
-			--height=40% --reverse --header="$header" --query="$query"
-	)" || exit 0
+	# `set -e` aborts the whole script when a command substitution exits
+	# non-zero, and fzf exits 1 when Enter is pressed on an empty list. Run
+	# fzf on its own line guarded by `|| rc=$?` so the typed query survives;
+	# only esc/ctrl-c (130) is treated as a real abort.
+	rc=0
+	typed="$(: | fzf --prompt "Search > " --print-query --no-preview \
+		--height=40% --reverse --header="$header" --query="$query" \
+		--bind="enter:print-query+accept")" || rc=$?
+	[[ $rc -eq 130 ]] && exit 0
 	query="$(printf '%s' "$typed" | head -n1)"
 	page=1
 	save_state
