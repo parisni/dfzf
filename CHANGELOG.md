@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.18.0"></a>
+## [v0.18.0] - 2026-06-22
+### Features
+- **dfzf:** add ? cheatsheet toggle across tools via dfzf-help
+
+
 <a name="v0.17.4"></a>
 ## [v0.17.4] - 2026-06-22
 ### Features
@@ -587,7 +593,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.17.4...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.18.0...HEAD
+[v0.18.0]: https://github.com/parisni/dfzf/compare/v0.17.4...v0.18.0
 [v0.17.4]: https://github.com/parisni/dfzf/compare/v0.17.3...v0.17.4
 [v0.17.3]: https://github.com/parisni/dfzf/compare/v0.17.2...v0.17.3
 [v0.17.2]: https://github.com/parisni/dfzf/compare/v0.17.1...v0.17.2
