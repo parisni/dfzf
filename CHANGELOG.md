@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.16.0"></a>
+## [v0.16.0] - 2026-06-22
+### Features
+- **dfzf-mail:** add ctrl-d to download attachments to himalaya downloads-dir
+
+
 <a name="v0.15.2"></a>
 ## [v0.15.2] - 2026-06-14
 
@@ -533,7 +539,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.15.2...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.16.0...HEAD
+[v0.16.0]: https://github.com/parisni/dfzf/compare/v0.15.2...v0.16.0
 [v0.15.2]: https://github.com/parisni/dfzf/compare/v0.15.1...v0.15.2
 [v0.15.1]: https://github.com/parisni/dfzf/compare/v0.15.0...v0.15.1
 [v0.15.0]: https://github.com/parisni/dfzf/compare/v0.14.0...v0.15.0
