@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Spawned in its own kitty window by `dfzf-mail` (ctrl-n) so that $EDITOR runs
+# Spawned in its own kitty window by `dfzf-mail` (ctrl-w) so that $EDITOR runs
 # in a regular tiled terminal, not in the dfzf-popup floating kitty (which has
 # `map escape close_window` and a 65% size, both unsuitable for composing).
 #

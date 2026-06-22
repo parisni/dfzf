@@ -553,7 +553,7 @@ Mail
   - preview text mails
   - `ctrl-j`: preview html mails in the browser
   - `ctrl-d`: download attachments to himalaya's `downloads-dir` (default `~/Downloads`)
-  - `ctrl-n`: compose a new mail
+  - `ctrl-w`: compose a new mail
   
   ```bash
     sudo apt install jq himalaya
