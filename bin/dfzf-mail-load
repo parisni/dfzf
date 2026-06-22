@@ -8,7 +8,7 @@ state_file="${DFZF_MAIL_STATE:-${XDG_RUNTIME_DIR:-/tmp}/dfzf-mail.state}"
 folder="INBOX"
 page=1
 page_size=50
-if [[ -r "$state_file" ]]; then
+if [[ -r $state_file ]]; then
 	# shellcheck disable=SC1090
 	source "$state_file"
 fi
@@ -18,4 +18,4 @@ RUST_LOG=off himalaya envelope list \
 	-p "$page" \
 	-s "$page_size" \
 	-o json |
-	jq -r '.[] | "\(.date | split(" ")[0])T\(.date | split(" ")[1] | split(":")[0]) \(.subject) \(.from.addr) #\(.id)"'
+	jq -r '.[] | "\(.date | split(" ")[0])T\(.date | split(" ")[1] | split(":")[0]) \(if .has_attachment then "📎" else "  " end) \(.subject) \(.from.addr) #\(.id)"'

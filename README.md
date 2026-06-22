@@ -549,7 +549,7 @@ Tilling with multi-select (ctrl-t):
 Mail
   </summary>
 
-  - list latest mails
+  - list latest mails (📎 marks mails with attachments)
   - preview text mails
   - `ctrl-j`: preview html mails in the browser
   - `ctrl-d`: download attachments to himalaya's `downloads-dir` (default `~/Downloads`)
