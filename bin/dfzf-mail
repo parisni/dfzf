@@ -29,7 +29,7 @@ dfzf-mail-load |
 		--bind=">:execute-silent(dfzf-mail-state next-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="<:execute-silent(dfzf-mail-state prev-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-f:execute(dfzf-mail-state pick-folder </dev/tty >/dev/tty)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
-		--bind="ctrl-o:execute(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); target=\$(dfzf-mail-state pick-move-folder </dev/tty >/dev/tty); [[ -n \$target ]] && RUST_LOG=off himalaya message move -f \"\$folder\" \"\$target\" \"\$id\")+reload(dfzf-mail-load)" \
+		--bind="ctrl-o:execute(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); dfzf-mail-state move \"\$id\" </dev/tty >/dev/tty)+reload(dfzf-mail-load)" \
 		--bind="ctrl-s:execute(dfzf-mail-state search </dev/tty >/dev/tty)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-reply \"\$folder\" \"\$id\")+abort" \
 		--bind="ctrl-w:execute-silent(setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-write)+abort" \

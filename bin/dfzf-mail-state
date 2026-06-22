@@ -11,10 +11,12 @@ set -euo pipefail
 #   pick-folder   open a nested fzf to pick a folder from `himalaya folder
 #                 list`; resets page to 1 and clears the search query (a
 #                 search is mentally tied to a folder).
-#   pick-move-folder
-#                 same nested fzf picker as `pick-folder`, but only prints the
-#                 chosen folder name to stdout without touching the view state
-#                 (used by `dfzf-mail`'s ctrl-o to pick a move target).
+#   move <id>     open the same nested fzf folder picker as `pick-folder`,
+#                 then move envelope <id> from the current folder to the
+#                 chosen target. Self-contained (picker + himalaya move) so
+#                 it can run under fzf's `execute(... </dev/tty >/dev/tty)`,
+#                 where the binding redirects stdout to the tty and a
+#                 command-substitution capture would therefore be empty.
 #   search        prompt for a himalaya search query, store it and reset to
 #                 page 1; an empty query clears the filter.
 #   prompt        print the dynamic fzf prompt based on current state.
@@ -69,10 +71,11 @@ pick-folder)
 	query=""
 	save_state
 	;;
-pick-move-folder)
-	# Stateless variant: print the chosen folder so the caller can pass it as
-	# `himalaya message move`'s target. Does not mutate the current view.
-	pick_folder "Move to > " || exit 0
+move)
+	id="${2:?missing envelope id}"
+	target="$(pick_folder "Move to > ")" || exit 0
+	[[ -z $target ]] && exit 0
+	RUST_LOG=off himalaya message move -f "$folder" "$target" "$id"
 	;;
 search)
 	# fzf with an empty list acts as a free-text input; --print-query
@@ -103,7 +106,7 @@ folder)
 	printf '%s' "$folder"
 	;;
 *)
-	echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|pick-move-folder|search|prompt|folder}" >&2
+	echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|move <id>|search|prompt|folder}" >&2
 	exit 2
 	;;
 esac
