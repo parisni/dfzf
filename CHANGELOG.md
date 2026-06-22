@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.16.3"></a>
+## [v0.16.3] - 2026-06-22
+### Code Refactoring
+- **dfzf-mail:** rebind compose from ctrl-n to ctrl-w
+
+
 <a name="v0.16.2"></a>
 ## [v0.16.2] - 2026-06-22
 ### Features
@@ -551,7 +557,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.16.2...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.16.3...HEAD
+[v0.16.3]: https://github.com/parisni/dfzf/compare/v0.16.2...v0.16.3
 [v0.16.2]: https://github.com/parisni/dfzf/compare/v0.16.1...v0.16.2
 [v0.16.1]: https://github.com/parisni/dfzf/compare/v0.16.0...v0.16.1
 [v0.16.0]: https://github.com/parisni/dfzf/compare/v0.15.2...v0.16.0
