@@ -551,6 +551,7 @@ Mail
 
   - list latest mails (📎 marks mails with attachments)
   - preview text mails
+  - `?`: toggle a keybinding cheatsheet in the header
   - `ctrl-j`: preview html mails in the browser
   - `ctrl-d`: download attachments to himalaya's `downloads-dir` (default `~/Downloads`)
   - `ctrl-o`: move the selected mail to another folder (nested folder picker, same as `ctrl-f`; pick e.g. `Junk` or any mailbox). Aborting the picker cancels the move.

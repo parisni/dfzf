@@ -17,10 +17,12 @@ cat >"$state_file" <<-EOF
 	page=1
 	page_size=50
 	query=""
+	help=0
 EOF
 
 dfzf-mail-load |
 	fzf --prompt "Mail [INBOX p1] > " \
+		--bind="?:transform-header(dfzf-mail-state help-toggle)" \
 		--preview-window="up:wrap" \
 		--preview="id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya message read -f \"\$(dfzf-mail-state folder)\" \"\$id\"" \
 		--bind="ctrl-k:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya message delete -f \"\$(dfzf-mail-state folder)\" \"\$id\")+reload(dfzf-mail-load)" \
