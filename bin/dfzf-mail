@@ -17,12 +17,14 @@ cat >"$state_file" <<-EOF
 	page=1
 	page_size=50
 	query=""
-	help=0
 EOF
+
+# Start with the keybinding cheatsheet hidden each session (`?` toggles it).
+dfzf-help reset mail
 
 dfzf-mail-load |
 	fzf --prompt "Mail [INBOX p1] > " \
-		--bind="?:transform-header(dfzf-mail-state help-toggle)" \
+		--bind="?:transform-header(dfzf-help toggle mail)" \
 		--preview-window="up:wrap" \
 		--preview="id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya message read -f \"\$(dfzf-mail-state folder)\" \"\$id\"" \
 		--bind="ctrl-k:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya message delete -f \"\$(dfzf-mail-state folder)\" \"\$id\")+reload(dfzf-mail-load)" \

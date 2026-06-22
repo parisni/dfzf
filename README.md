@@ -457,6 +457,7 @@ Install the below extensions:
 
 keybindings:
 
+- `?`: toggle a keybinding cheatsheet in the header
 - `Return`: focus window
 - `ctrl-b`: toggle color blue
 - `ctrl-g`: toggle color green
@@ -531,6 +532,8 @@ Tilling with multi-select (ctrl-t):
 
 - content preview with bat
 - image preview with kitten
+- `?`: toggle a keybinding cheatsheet in the header
+- `Return`: paste · `y`: copy (keep open) · `ctrl-k`: delete entry
 
   ```bash
     sudo apt install jq copyq wl-clipboard batcat 
@@ -571,6 +574,7 @@ Password-store
   </summary>
 
 
+  - `?`: toggle a keybinding cheatsheet in the header
   - `Return`: copy content
   - `ctrl-j`: preview content
   - works with any password CLI exposing compatible `show` commands
@@ -612,6 +616,7 @@ Password-store
 
   Manage caldav tasks:
 
+  - `?`: toggle a keybinding cheatsheet in the header
   - `ctrl-t`: new task
   - `ctrl-e`: edit task
   - `ctrl-k`: delete task

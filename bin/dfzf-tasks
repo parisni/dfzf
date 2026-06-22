@@ -19,7 +19,11 @@ elif [[ -e "/tmp/dfzf-tasks" ]]; then
 	$tasks_cmd new
 fi
 
+# Start with the keybinding cheatsheet hidden each session (`?` toggles it).
+dfzf-help reset tasks
+
 result=$(dfzf-tasks-load | fzf --sync --prompt "Tasks > " \
+	--bind="?:transform-header(dfzf-help toggle tasks)" \
 	--preview-window="up:wrap" \
 	--preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I@ $tasks_cmd show @" \
 	--bind="ctrl-t:execute-silent(touch /tmp/dfzf-tasks)+abort" \

@@ -98,6 +98,9 @@ fi
 
 dfzf-exec -q '[con_id='"$(head -n1 <<<"$result" | extract_con_id)"']' floating disable
 
+# Start with the keybinding cheatsheet hidden each session (`?` toggles it).
+dfzf-help reset windows
+
 start_binds=(--bind "change:first")
 if [[ $no_first_item == false ]]; then
 	start_binds=(--bind "start:up" "${start_binds[@]}")
@@ -105,6 +108,7 @@ fi
 
 fzf --sync --multi --prompt "$PROMPT" \
 	"${start_binds[@]}" \
+	--bind="?:transform-header(dfzf-help toggle windows)" \
 	--preview="$PREVIEW" \
 	--preview-window="$PREVIEW_WINDOW" \
 	--bind "ctrl-t:execute-silent(echo {+} |rg -o '#\d+\b' | rg -o '\d+' | paste -sd ' ' - | xargs dfzf-windows-till)+abort" \

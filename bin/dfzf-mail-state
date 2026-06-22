@@ -22,10 +22,6 @@ set -euo pipefail
 #   prompt        print the dynamic fzf prompt based on current state.
 #   folder        print the currently selected folder (used by the reply
 #                 binding which needs to pass `-f <folder>` to himalaya).
-#   help-toggle   toggle a persisted `help` flag and print the keybinding
-#                 cheatsheet (or an empty header when toggled off). Bound to
-#                 `?` in `dfzf-mail` via `transform-header`, since fzf has no
-#                 built-in keybinding listing.
 
 state_file="${DFZF_MAIL_STATE:-${XDG_RUNTIME_DIR:-/tmp}/dfzf-mail.state}"
 
@@ -33,7 +29,6 @@ folder="INBOX"
 page=1
 page_size=50
 query=""
-help=0
 if [[ -r $state_file ]]; then
 	# shellcheck disable=SC1090
 	source "$state_file"
@@ -45,7 +40,6 @@ save_state() {
 		page=${page}
 		page_size=${page_size}
 		query="${query}"
-		help=${help}
 	EOF
 }
 
@@ -57,10 +51,6 @@ pick_folder() {
 		jq -r '.[] | .name' |
 		fzf --prompt "${1:-Folder > }" --no-preview --height=40% --reverse
 }
-
-# Keybinding cheatsheet shown by `?` (help-toggle). Kept here as the single
-# source of truth; mirror any binding change in `dfzf-mail` here.
-help_header=$'? help · ◂ ▸ prev/next page\nenter export · ctrl-j read html · ctrl-d download attachments\nctrl-f folder · ctrl-s search · ctrl-o move\nctrl-w write · ctrl-r reply · ctrl-alt-r reply all · ctrl-k delete'
 
 case "${1:-}" in
 next-page)
@@ -115,20 +105,8 @@ prompt)
 folder)
 	printf '%s' "$folder"
 	;;
-help-toggle)
-	# fzf has no built-in keybinding listing, so we keep the cheatsheet text
-	# here (single source of truth) and flip a persisted flag so `?` works as
-	# a show/hide toggle across reloads.
-	if ((help)); then
-		help=0
-	else
-		help=1
-	fi
-	save_state
-	((help)) && printf '%s' "$help_header"
-	;;
 *)
-	echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|move <id>|search|prompt|folder|help-toggle}" >&2
+	echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|move <id>|search|prompt|folder}" >&2
 	exit 2
 	;;
 esac
