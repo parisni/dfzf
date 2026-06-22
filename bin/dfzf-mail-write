@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Spawned in its own kitty window by `dfzf-mail` (ctrl-n) so that $EDITOR runs
+# in a regular tiled terminal, not in the dfzf-popup floating kitty (which has
+# `map escape close_window` and a 65% size, both unsuitable for composing).
+#
+# Usage: dfzf-mail-write
+#
+# `himalaya message write` opens $EDITOR on a blank template and, on editor
+# exit, prompts to save / send / discard. Quitting the editor without saving
+# makes himalaya treat the draft as empty and abort, matching the user's "quit
+# without saving = cancel" expectation.
+#
+# $EDITOR is expected to be provided by ~/.config/environment.d/ so that the
+# kitty instance launched by sway at boot inherits it (interactive shell
+# rcfiles are not sourced for that instance).
+
+# Defensive default: if the environment.d propagation didn't happen (fresh
+# install, no relog yet, non-systemd session…), fall back to nano so the
+# compose flow still works instead of bailing with "cannot get editor from
+# env var".
+: "${EDITOR:=nano}"
+export EDITOR
+
+RUST_LOG=off himalaya message write

@@ -29,4 +29,5 @@ dfzf-mail-load |
 		--bind="<:execute-silent(dfzf-mail-state prev-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-f:execute(dfzf-mail-state pick-folder </dev/tty >/dev/tty)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-reply \"\$folder\" \"\$id\")+abort" \
+		--bind="ctrl-n:execute-silent(setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-write)+abort" \
 		--bind="ctrl-alt-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-reply \"\$folder\" \"\$id\" --all)+abort"
