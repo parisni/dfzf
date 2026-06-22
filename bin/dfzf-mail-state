@@ -11,6 +11,10 @@ set -euo pipefail
 #   pick-folder   open a nested fzf to pick a folder from `himalaya folder
 #                 list`; resets page to 1 and clears the search query (a
 #                 search is mentally tied to a folder).
+#   pick-move-folder
+#                 same nested fzf picker as `pick-folder`, but only prints the
+#                 chosen folder name to stdout without touching the view state
+#                 (used by `dfzf-mail`'s ctrl-o to pick a move target).
 #   search        prompt for a himalaya search query, store it and reset to
 #                 page 1; an empty query clears the filter.
 #   prompt        print the dynamic fzf prompt based on current state.
@@ -37,6 +41,15 @@ save_state() {
 	EOF
 }
 
+# Shared nested fzf folder picker. Prints the selected folder name (empty if
+# the user aborts). Reused by `pick-folder` (changes the view) and
+# `pick-move-folder` (move target), so the listing/UI stays in one place.
+pick_folder() {
+	RUST_LOG=off himalaya folder list -o json |
+		jq -r '.[] | .name' |
+		fzf --prompt "${1:-Folder > }" --no-preview --height=40% --reverse
+}
+
 case "${1:-}" in
 next-page)
 	page=$((page + 1))
@@ -49,16 +62,17 @@ prev-page)
 	save_state
 	;;
 pick-folder)
-	picked="$(
-		RUST_LOG=off himalaya folder list -o json |
-			jq -r '.[] | .name' |
-			fzf --prompt "Folder > " --no-preview --height=40% --reverse
-	)" || exit 0
+	picked="$(pick_folder "Folder > ")" || exit 0
 	[[ -z $picked ]] && exit 0
 	folder="$picked"
 	page=1
 	query=""
 	save_state
+	;;
+pick-move-folder)
+	# Stateless variant: print the chosen folder so the caller can pass it as
+	# `himalaya message move`'s target. Does not mutate the current view.
+	pick_folder "Move to > " || exit 0
 	;;
 search)
 	# fzf with an empty list acts as a free-text input; --print-query
@@ -89,7 +103,7 @@ folder)
 	printf '%s' "$folder"
 	;;
 *)
-	echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|search|prompt|folder}" >&2
+	echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|pick-move-folder|search|prompt|folder}" >&2
 	exit 2
 	;;
 esac
