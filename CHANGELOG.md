@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.17.4"></a>
+## [v0.17.4] - 2026-06-22
+### Features
+- **dfzf-mail:** add ? to toggle a keybinding cheatsheet
+
+
 <a name="v0.17.3"></a>
 ## [v0.17.3] - 2026-06-22
 ### Bug Fixes
@@ -581,7 +587,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.17.3...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.17.4...HEAD
+[v0.17.4]: https://github.com/parisni/dfzf/compare/v0.17.3...v0.17.4
 [v0.17.3]: https://github.com/parisni/dfzf/compare/v0.17.2...v0.17.3
 [v0.17.2]: https://github.com/parisni/dfzf/compare/v0.17.1...v0.17.2
 [v0.17.1]: https://github.com/parisni/dfzf/compare/v0.17.0...v0.17.1
