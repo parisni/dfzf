@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.17.1"></a>
+## [v0.17.1] - 2026-06-22
+### Bug Fixes
+- **dfzf-mail:** persist search query when accepting on empty fzf list
+
+
 <a name="v0.17.0"></a>
 ## [v0.17.0] - 2026-06-22
 ### Features
@@ -563,7 +569,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.17.1...HEAD
+[v0.17.1]: https://github.com/parisni/dfzf/compare/v0.17.0...v0.17.1
 [v0.17.0]: https://github.com/parisni/dfzf/compare/v0.16.3...v0.17.0
 [v0.16.3]: https://github.com/parisni/dfzf/compare/v0.16.2...v0.16.3
 [v0.16.2]: https://github.com/parisni/dfzf/compare/v0.16.1...v0.16.2
