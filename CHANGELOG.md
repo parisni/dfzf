@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.18.1"></a>
+## [v0.18.1] - 2026-06-23
+### Features
+- **dfzf-mail:** add ctrl-f forward, move folder switch to ctrl-l
+
+
 <a name="v0.18.0"></a>
 ## [v0.18.0] - 2026-06-22
 ### Features
@@ -593,7 +599,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.18.1...HEAD
+[v0.18.1]: https://github.com/parisni/dfzf/compare/v0.18.0...v0.18.1
 [v0.18.0]: https://github.com/parisni/dfzf/compare/v0.17.4...v0.18.0
 [v0.17.4]: https://github.com/parisni/dfzf/compare/v0.17.3...v0.17.4
 [v0.17.3]: https://github.com/parisni/dfzf/compare/v0.17.2...v0.17.3
