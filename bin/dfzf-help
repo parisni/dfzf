@@ -20,7 +20,7 @@ state_dir="${XDG_RUNTIME_DIR:-/tmp}"
 cheatsheet() {
 	case "$1" in
 	mail)
-		printf '%s' $'? help · ◂ ▸ prev/next page\nenter export · ctrl-j read html · ctrl-d download attachments\nctrl-f folder · ctrl-s search · ctrl-o move\nctrl-w write · ctrl-r reply · ctrl-alt-r reply all · ctrl-k delete'
+		printf '%s' $'? help · ◂ ▸ prev/next page\nenter export · ctrl-j read html · ctrl-d download attachments\nctrl-l folder · ctrl-s search · ctrl-o move\nctrl-w write · ctrl-r reply · ctrl-alt-r reply all · ctrl-f forward · ctrl-k delete'
 		;;
 	windows)
 		printf '%s' $'? help · enter focus · esc cancel · ctrl-t tile together\nctrl-r/b/g/o mark red/blue/green/orange · R/G/B filter by color\nctrl-k kill · ctrl-u toggle urgent · ctrl-h toggle hidden · ctrl-j preview'

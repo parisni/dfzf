@@ -557,9 +557,11 @@ Mail
   - `?`: toggle a keybinding cheatsheet in the header
   - `ctrl-j`: preview html mails in the browser
   - `ctrl-d`: download attachments to himalaya's `downloads-dir` (default `~/Downloads`)
-  - `ctrl-o`: move the selected mail to another folder (nested folder picker, same as `ctrl-f`; pick e.g. `Junk` or any mailbox). Aborting the picker cancels the move.
+  - `ctrl-o`: move the selected mail to another folder (nested folder picker, same as `ctrl-l`; pick e.g. `Junk` or any mailbox). Aborting the picker cancels the move.
+  - `ctrl-l`: switch the displayed folder (nested folder picker)
   - `ctrl-w`: compose a new mail
-  - `ctrl-s`: server-side search across the whole folder (himalaya query). The prompt shows `🔍`; an empty query clears it. Changing folder (`ctrl-f`) resets the search. fzf still fuzzy-filters the results locally.
+  - `ctrl-r`: reply · `ctrl-alt-r`: reply all · `ctrl-f`: forward (each opens `$EDITOR` in a tiled terminal)
+  - `ctrl-s`: server-side search across the whole folder (himalaya query). The prompt shows `🔍`; an empty query clears it. Changing folder (`ctrl-l`) resets the search. fzf still fuzzy-filters the results locally.
     - syntax: `subject|body|from|to <txt>` · `before|after <yyyy-mm-dd>` · `flag <f>` · combine with `and`/`or`/`not` · sort with `order by date desc`
     - examples: `from enedis and subject facture` — `body rdv after 2026-01-01 order by date desc`
   
