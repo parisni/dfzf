@@ -14,6 +14,10 @@ findcommand=$(command -v fd || command -v fdfind) || {
 # Parse command line options
 input_json=""
 
+# --show-hidden forces including dfzf-hidden windows for this invocation only,
+# without touching the persistent /tmp/dfzf-windows-show-hidden state file.
+force_show_hidden="${DFZF_WINDOWS_SHOW_HIDDEN-false}"
+
 while [[ $# -gt 0 ]]; do
 	case $1 in
 	--input-json)
@@ -23,6 +27,10 @@ while [[ $# -gt 0 ]]; do
 	--app)
 		windows_app_filter="$2"
 		shift 2
+		;;
+	--show-hidden)
+		force_show_hidden=true
+		shift
 		;;
 	*)
 		shift
@@ -37,7 +45,7 @@ fi
 
 state_hidden_file="/tmp/dfzf-windows-show-hidden"
 show_hidden=false
-if [[ -f $state_hidden_file ]]; then
+if [[ -f $state_hidden_file ]] || [[ $force_show_hidden == true ]]; then
 	show_hidden=true
 fi
 

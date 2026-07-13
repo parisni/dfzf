@@ -454,6 +454,7 @@ Install the below extensions:
 - terminal scrollback preview (kitty only)
 - optional app filter: `dfzf-windows --app firefox`
 - optional `--no-first-item`: keep the cursor on the first listed window instead of preselecting the previously focused one (useful for filtered launchers like `dfzf-windows --app terminal --no-first-item`)
+- optional `--show-hidden`: include `dfzf-hidden` windows for this invocation only (session-local, does not touch the persistent `ctrl-h` state); pairs well with an app filter, e.g. `dfzf-windows --app dfzf-hidden --show-hidden --no-first-item`
 
 keybindings:
 
@@ -469,6 +470,7 @@ keybindings:
 - `R`: filter color red
 - `ctrl-k`: kill window
 - `ctrl-u`: toggle urgent  (yellow color)
+- `ctrl-h`: toggle hidden (show/hide `dfzf-hidden` windows)
 - `ctrl-i`: toggle important (red color)
 - `ctrl-j`: preview windows
 - `escape`: return to current windows (works after previews)

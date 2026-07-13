@@ -10,6 +10,9 @@ windows_app_filter="${DFZF_WINDOWS_APP_FILTER-}"
 # window (the Alt-Tab back-and-forth behaviour); the cursor then stays on the
 # first listed item instead.
 no_first_item=false
+# --show-hidden includes dfzf-hidden windows for this session only. Exported so
+# the in-fzf reload(dfzf-windows-load) binds inherit it (no /tmp state change).
+show_hidden=false
 
 while [[ $# -gt 0 ]]; do
 	case $1 in
@@ -21,6 +24,10 @@ while [[ $# -gt 0 ]]; do
 		no_first_item=true
 		shift
 		;;
+	--show-hidden)
+		show_hidden=true
+		shift
+		;;
 	*)
 		shift
 		;;
@@ -28,6 +35,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 export DFZF_WINDOWS_APP_FILTER="$windows_app_filter"
+export DFZF_WINDOWS_SHOW_HIDDEN="$show_hidden"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 extract_con_id() {
