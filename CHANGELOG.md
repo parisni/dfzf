@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.18.3"></a>
+## [v0.18.3] - 2026-07-28
+### Bug Fixes
+- **dfzf-windows:** pipe tree via stdin to avoid argv size limit
+
+
 <a name="v0.18.2"></a>
 ## [v0.18.2] - 2026-07-13
 ### Features
@@ -605,7 +611,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.18.2...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.18.3...HEAD
+[v0.18.3]: https://github.com/parisni/dfzf/compare/v0.18.2...v0.18.3
 [v0.18.2]: https://github.com/parisni/dfzf/compare/v0.18.1...v0.18.2
 [v0.18.1]: https://github.com/parisni/dfzf/compare/v0.18.0...v0.18.1
 [v0.18.0]: https://github.com/parisni/dfzf/compare/v0.17.4...v0.18.0
