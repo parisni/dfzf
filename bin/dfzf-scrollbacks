@@ -22,7 +22,6 @@ dfzf_map=$(dfzf-exec -t get_tree --raw | jq -rc '
   | {title: (.name | gsub(" "; ".")), id}
 ')
 
-
 findcommand=$(command -v fd || command -v fdfind) || {
 	echo "Neither fd nor fdfind found"
 	exit 1
@@ -30,7 +29,7 @@ findcommand=$(command -v fd || command -v fdfind) || {
 kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1 | head -n1)
 PREVIEW="
 id=\$(echo {} | sed -Ez 's/.*#([0-9]+).*/\1/')
-kitty_title=\$(dfzf-exec -t get_tree --raw | jq -r --arg id "\$id" '.. | objects | select(.id == (\$id | tonumber)) | .name' | sed 's/ /./g')
+kitty_title=\$(dfzf-exec -t get_tree --raw | jq -r --arg id \"\$id\" '.. | objects | select(.id == (\$id | tonumber)) | .name' | sed 's/ /./g')
 prompt_content=\$(kitten @ get-text --to unix:$kitty_sock --match \"title:^\$kitty_title$\" --extent all  2>/dev/null | rg -U '$windows_prompt_pattern(.+)' -o --replace '$> \$1'|tail -n 100)
 if [[ -n \"\$prompt_content\" ]]; then
   printf '%s\n' \"\$prompt_content\" 

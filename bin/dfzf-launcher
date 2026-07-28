@@ -109,7 +109,7 @@ function list-entries() {
 		if [[ ! -d ${DIRS[i]} ]]; then
 			unset -v 'DIRS[$i]'
 		else
-			DIRS[$i]="${DIRS[i]}/applications/**/*.desktop"
+			DIRS[i]="${DIRS[i]}/applications/**/*.desktop"
 		fi
 	done
 
@@ -183,7 +183,7 @@ function run-desktop() {
 		# Wait until focus changes (new window appears)
 		while true; do
 			new_focused=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .id')
-			if [[ $new_focused != $current_focused ]]; then
+			if [[ $new_focused != "$current_focused" ]]; then
 				break
 			fi
 			sleep 0.05
@@ -265,7 +265,7 @@ function list-autostart() {
 		if [[ ! -d ${DIRS[i]} ]]; then
 			unset -v 'DIRS[$i]'
 		else
-			DIRS[$i]="${DIRS[i]}/autostart/*.desktop"
+			DIRS[i]="${DIRS[i]}/autostart/*.desktop"
 		fi
 	done
 
@@ -306,7 +306,7 @@ purge() {
 	>"${HIST_FILE}"
 	declare -A PURGE_CMDS
 	for PROVIDER_NAME in "${!PROVIDERS[@]}"; do
-		readarray -td "${DEL}" PROVIDER_ARGS <<<${PROVIDERS[${PROVIDER_NAME}]}
+		readarray -td "${DEL}" PROVIDER_ARGS <<<"${PROVIDERS[${PROVIDER_NAME}]}"
 		PURGE_CMD=${PROVIDER_ARGS[3]}
 		[ -z "${PURGE_CMD}" ] && PURGE_CMD='test -f "{1}" || exit 43'
 		PURGE_CMDS[$PROVIDER_NAME]="${PURGE_CMD%$'\n'}"
@@ -314,8 +314,8 @@ purge() {
 	for HIST_LINE in "${HIST_LINES[@]#*' '}"; do
 		readarray -td $'\034' HIST_ENTRY <<<"${HIST_LINE}"
 		ENTRY=${HIST_ENTRY[1]}
-		readarray -td ' ' FILTER <<<"${PURGE_CMDS[$ENTRY]//\{1\}/${HIST_ENTRY[0]}}"
-		(eval "${FILTER[@]}" 1>/dev/null) # Run filter command discarding output. We only want the exit status
+		FILTER="${PURGE_CMDS[$ENTRY]//\{1\}/${HIST_ENTRY[0]}}"
+		(eval "$FILTER" 1>/dev/null) # Run filter command discarding output. We only want the exit status
 		if [[ $? -ne 43 ]]; then
 			echo "1 ${HIST_LINE[@]%$'\n'}" >>"${HIST_FILE}"
 		fi
@@ -368,7 +368,7 @@ if [[ -n ${HIST_FILE} && ! $SKIP_HIST ]]; then
 	for i in "${!HIST_LINES[@]}"; do
 		if [[ ${HIST_LINES[i]} == *" $COMMAND_STR"$'\n' ]]; then
 			HIST_COUNT=${HIST_LINES[i]%% *}
-			HIST_LINES[$i]="$((HIST_COUNT + 1)) $COMMAND_STR"$'\n'
+			HIST_LINES[i]="$((HIST_COUNT + 1)) $COMMAND_STR"$'\n'
 			match=1
 			break
 		fi
