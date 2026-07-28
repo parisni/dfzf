@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Spawned by `dfzf-mail` (ctrl-j) to read an HTML mail in the browser.
+#
+# Usage: dfzf-mail-html <mailbox> <id>
+#
+# himalaya v2 removed `message export -O`, which used to split a message into
+# per-MIME-part files and open the HTML one. The equivalent now chains
+# `message read --raw` into `mml read`, which decodes the quoted-printable /
+# base64 HTML part; a raw .eml handed to the browser would render as the
+# literal MIME source instead.
+#
+# `mml read` prefixes the rendered part with the headers it kept, so everything
+# up to (and including) the first blank line is dropped to leave valid HTML.
+#
+# The tempfile is deliberately NOT cleaned up: xdg-open returns before the
+# browser has read the file, so removing it on exit would race with the page
+# load. It lands in $TMPDIR and is reaped by the usual tmp cleanup.
+
+mailbox="${1:?missing mailbox}"
+id="${2:?missing id}"
+
+html="$(mktemp -t dfzf-mail-XXXXXX.html)"
+
+himalaya --log off message read -m "$mailbox" --raw "$id" |
+	mml read --include-part text/html --hide-attachments |
+	sed '1,/^$/d' >"$html"
+
+xdg-open "$html" >/dev/null 2>&1

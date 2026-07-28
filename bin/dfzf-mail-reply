@@ -6,18 +6,22 @@ set -euo pipefail
 # kitty (which has `map escape close_window` and a 65% size, both unsuitable
 # for composing a reply).
 #
-# Usage: dfzf-mail-reply <folder> <id> [--all]
+# Usage: dfzf-mail-reply <mailbox> <id> [--all]
 #
-# `himalaya message reply` opens $EDITOR and, on editor exit, prompts to
-# save / send / discard. Quitting the editor without saving makes himalaya
-# treat the draft as empty and abort, which matches the user's "quit
-# without saving = cancel" expectation.
+# himalaya v2 dropped the editor-driven composer: himalaya fetches the source
+# message, `mml reply` owns the template + $EDITOR + compile step, and
+# himalaya sends the result. Quitting the editor without saving leaves the
+# draft empty and mml aborts, which matches the user's "quit without saving =
+# cancel" expectation.
+#
+# The draft goes through a tempfile rather than `mml reply | himalaya`: a bare
+# pipe would make the editor inherit the pipe as its stdout and hang it.
 #
 # $EDITOR is expected to be provided by ~/.config/environment.d/ so that the
 # kitty instance launched by sway at boot inherits it (interactive shell
 # rcfiles are not sourced for that instance).
 
-folder="${1:?missing folder}"
+mailbox="${1:?missing mailbox}"
 id="${2:?missing id}"
 shift 2
 
@@ -28,4 +32,10 @@ shift 2
 : "${EDITOR:=nano}"
 export EDITOR
 
-RUST_LOG=off himalaya message reply -f "$folder" "$@" "$id"
+draft="$(mktemp -t dfzf-mail-draft-XXXXXX.eml)"
+source_eml="$(mktemp -t dfzf-mail-source-XXXXXX.eml)"
+trap 'rm -f "$draft" "$source_eml"' EXIT
+
+himalaya --log off message read -m "$mailbox" --raw "$id" >"$source_eml"
+mml reply "$@" "$draft" -- "$source_eml"
+himalaya --log off message send "$draft"

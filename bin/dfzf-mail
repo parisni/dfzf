@@ -26,10 +26,10 @@ dfzf-mail-load |
 	fzf --prompt "Mail [INBOX p1] > " \
 		--bind="?:transform-header(dfzf-help toggle mail)" \
 		--preview-window="up:wrap" \
-		--preview="id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya message read -f \"\$(dfzf-mail-state folder)\" \"\$id\"" \
-		--bind="ctrl-k:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya message delete -f \"\$(dfzf-mail-state folder)\" \"\$id\")+reload(dfzf-mail-load)" \
-		--bind="ctrl-j:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); dir=\$(mktemp -d -t dfzf-mail-XXXXXX); himalaya message export -f \"\$(dfzf-mail-state folder)\" -O -d \"\$dir\" \"\$id\")+accept" \
-		--bind="ctrl-d:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya attachment download -f \"\$(dfzf-mail-state folder)\" \"\$id\" >/dev/null 2>&1)" \
+		--preview="id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya --log off message read -m \"\$(dfzf-mail-state folder)\" \"\$id\"" \
+		--bind="ctrl-k:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya --log off message move --from \"\$(dfzf-mail-state folder)\" --to Trash \"\$id\")+reload(dfzf-mail-load)" \
+		--bind="ctrl-j:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); dfzf-mail-html \"\$(dfzf-mail-state folder)\" \"\$id\")+accept" \
+		--bind="ctrl-d:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya --log off attachment download -m \"\$(dfzf-mail-state folder)\" \"\$id\" >/dev/null 2>&1)" \
 		--bind=">:execute-silent(dfzf-mail-state next-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="<:execute-silent(dfzf-mail-state prev-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-l:execute(dfzf-mail-state pick-folder </dev/tty >/dev/tty)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \

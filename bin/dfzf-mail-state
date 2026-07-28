@@ -8,7 +8,7 @@ set -euo pipefail
 #   next-page     increment current page (clamped on himalaya error is left
 #                 to the user: ctrl-p brings them back).
 #   prev-page     decrement current page, clamped to 1.
-#   pick-folder   open a nested fzf to pick a folder from `himalaya folder
+#   pick-folder   open a nested fzf to pick a folder from `himalaya mailbox
 #                 list`; resets page to 1 and clears the search query (a
 #                 search is mentally tied to a folder).
 #   move <id>     open the same nested fzf folder picker as `pick-folder`,
@@ -21,7 +21,7 @@ set -euo pipefail
 #                 page 1; an empty query clears the filter.
 #   prompt        print the dynamic fzf prompt based on current state.
 #   folder        print the currently selected folder (used by the reply
-#                 binding which needs to pass `-f <folder>` to himalaya).
+#                 binding which needs to pass `-m <mailbox>` to himalaya).
 
 state_file="${DFZF_MAIL_STATE:-${XDG_RUNTIME_DIR:-/tmp}/dfzf-mail.state}"
 
@@ -47,8 +47,8 @@ save_state() {
 # the user aborts). Reused by `pick-folder` (changes the view) and
 # `pick-move-folder` (move target), so the listing/UI stays in one place.
 pick_folder() {
-	RUST_LOG=off himalaya folder list -o json |
-		jq -r '.[] | .name' |
+	himalaya --log off mailbox list --json |
+		jq -r '.mailboxes[] | .name' |
 		fzf --prompt "${1:-Folder > }" --no-preview --height=40% --reverse
 }
 
@@ -75,13 +75,14 @@ move)
 	id="${2:?missing envelope id}"
 	target="$(pick_folder "Move to > ")" || exit 0
 	[[ -z $target ]] && exit 0
-	RUST_LOG=off himalaya message move -f "$folder" "$target" "$id"
+	himalaya --log off message move --from "$folder" --to "$target" "$id"
 	;;
 search)
 	# fzf with an empty list acts as a free-text input; --print-query
 	# echoes whatever was typed. The header documents himalaya's query
-	# syntax so the user does not have to remember it.
-	header=$'Query: subject|body|from|to <txt> · before|after <yyyy-mm-dd> · flag <f> · and/or/not · order by date desc\nEx: from enedis and subject facture    |    body rdv after 2026-01-01 order by date desc\nEmpty query clears the search.'
+	# syntax so the user does not have to remember it (v2 dropped the
+	# `before <date>` clause; `date` and `after` remain).
+	header=$'Query: subject|body|from|to <txt> · date|after <yyyy-mm-dd> · flag <f> · and/or/not · order by date desc\nEx: from enedis and subject facture    |    body rdv after 2026-01-01 order by date desc\nEmpty query clears the search.'
 	# `set -e` aborts the whole script when a command substitution exits
 	# non-zero, and fzf exits 1 when Enter is pressed on an empty list. Run
 	# fzf on its own line guarded by `|| rc=$?` so the typed query survives;

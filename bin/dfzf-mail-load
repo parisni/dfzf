@@ -14,16 +14,39 @@ if [[ -r $state_file ]]; then
 	source "$state_file"
 fi
 
-# A non-empty query is passed as himalaya's positional search filter (server
-# side, across the whole folder). An empty query MUST NOT be passed: himalaya
-# panics on an empty query string, so we fall back to the plain paginated list.
+# himalaya v2 splits listing and searching into two commands: `envelope list`
+# is the plain paginated view, `envelope search` takes the query as a trailing
+# positional. That also removes the v1 workaround for the empty-query panic.
+#
+# The query is variadic (`[QUERY]...`), so it must come last: anything after it
+# on the command line gets swallowed into the query grammar and fails to parse.
+subcmd=(envelope list)
 query_args=()
-[[ -n $query ]] && query_args=("$query")
+if [[ -n $query ]]; then
+	subcmd=(envelope search)
+	query_args=(-- "$query")
+fi
 
-RUST_LOG=off himalaya envelope list \
-	-f "$folder" \
+# `--has-attachment` is opt-in in v2: without it the field stays null and the
+# 📎 column would never light up.
+#
+# v2 emits RFC 3339 dates keeping the *sender's* offset (v1 pre-localized them),
+# so a naive `split("T")` would show a wrong hour for foreign senders. jq's
+# fromdateiso8601 only accepts the `Z` form, hence the explicit offset
+# arithmetic before strflocaltime renders in this machine's timezone.
+himalaya --log off "${subcmd[@]}" \
+	-m "$folder" \
 	-p "$page" \
 	-s "$page_size" \
-	-o json \
+	--has-attachment \
+	--json \
 	"${query_args[@]}" |
-	jq -r '.[] | "\(.date | split(" ")[0])T\(.date | split(" ")[1] | split(":")[0]) \(if .has_attachment then "📎" else "  " end) \(.subject) \(.from.addr) #\(.id)"'
+	jq -r 'def localhour:
+		sub("Z$"; "+00:00")
+		| (.[0:19] + "Z" | fromdateiso8601) as $naive
+		| (if .[19:20] == "-" then 1 else -1 end) as $sign
+		| ((.[20:22] | tonumber) * 3600 + (.[23:25] | tonumber) * 60) as $offset
+		| $naive + $sign * $offset
+		| strflocaltime("%Y-%m-%dT%H");
+	.envelopes[]
+		| "\(.date | localhour) \(if ."has-attachment" then "📎" else "  " end) \(.subject) \(.from[0].email // "") #\(.id)"'
