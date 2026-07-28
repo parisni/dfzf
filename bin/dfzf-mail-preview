@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Renders a mail for the `dfzf-mail` fzf preview pane.
+#
+# Usage: dfzf-mail-preview <mailbox> <id>
+#
+# himalaya v2 dropped `message.read.headers`, so its own `message read` dumps
+# every header (Received, DKIM-Signature, ARC-*…) and the body scrolls out of
+# sight. Header filtering moved to mml, so the raw message is piped through
+# `mml read`, which honours `read.include-headers` from ~/.config/mml/config.toml
+# and decodes the body.
+#
+# stderr is muted: a fetch/parse error would otherwise garble the preview pane.
+
+mailbox="${1:?missing mailbox}"
+id="${2:?missing id}"
+
+himalaya --log off message read -m "$mailbox" --raw "$id" 2>/dev/null |
+	mml read 2>/dev/null

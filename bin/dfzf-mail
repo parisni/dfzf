@@ -26,7 +26,7 @@ dfzf-mail-load |
 	fzf --prompt "Mail [INBOX p1] > " \
 		--bind="?:transform-header(dfzf-help toggle mail)" \
 		--preview-window="up:wrap" \
-		--preview="id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya --log off message read -m \"\$(dfzf-mail-state folder)\" \"\$id\"" \
+		--preview="id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); dfzf-mail-preview \"\$(dfzf-mail-state folder)\" \"\$id\"" \
 		--bind="ctrl-k:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya --log off message move --from \"\$(dfzf-mail-state folder)\" --to Trash \"\$id\")+reload(dfzf-mail-load)" \
 		--bind="ctrl-j:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); dfzf-mail-html \"\$(dfzf-mail-state folder)\" \"\$id\")+accept" \
 		--bind="ctrl-d:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya --log off attachment download -m \"\$(dfzf-mail-state folder)\" \"\$id\" >/dev/null 2>&1)" \

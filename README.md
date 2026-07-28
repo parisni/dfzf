@@ -555,7 +555,7 @@ Mail
   </summary>
 
   - list latest mails (📎 marks mails with attachments)
-  - preview text mails
+  - preview mails (headers filtered + body decoded through `mml read`)
   - `?`: toggle a keybinding cheatsheet in the header
   - `ctrl-j`: preview html mails in the browser
   - `ctrl-d`: download attachments to himalaya's `downloads-dir` (default `~/Downloads`)
