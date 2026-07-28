@@ -2,6 +2,16 @@
 ## [Unreleased]
 
 
+<a name="v0.19.0"></a>
+## [v0.19.0] - 2026-07-28
+### Bug Fixes
+- **ci:** block build and release on a failing pre-commit job
+- **mail:** filter preview headers through mml read
+
+### Features
+- **mail:** port dfzf-mail to himalaya v2 + mml
+
+
 <a name="v0.18.4"></a>
 ## [v0.18.4] - 2026-07-28
 ### Bug Fixes
@@ -617,7 +627,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.18.4...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.19.0...HEAD
+[v0.19.0]: https://github.com/parisni/dfzf/compare/v0.18.4...v0.19.0
 [v0.18.4]: https://github.com/parisni/dfzf/compare/v0.18.3...v0.18.4
 [v0.18.3]: https://github.com/parisni/dfzf/compare/v0.18.2...v0.18.3
 [v0.18.2]: https://github.com/parisni/dfzf/compare/v0.18.1...v0.18.2
