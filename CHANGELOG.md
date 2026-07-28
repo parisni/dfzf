@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.18.4"></a>
+## [v0.18.4] - 2026-07-28
+### Bug Fixes
+- **ci:** resolve shellcheck warnings in dfzf-launcher and dfzf-scrollbacks
+
+
 <a name="v0.18.3"></a>
 ## [v0.18.3] - 2026-07-28
 ### Bug Fixes
@@ -611,7 +617,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.18.3...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.18.4...HEAD
+[v0.18.4]: https://github.com/parisni/dfzf/compare/v0.18.3...v0.18.4
 [v0.18.3]: https://github.com/parisni/dfzf/compare/v0.18.2...v0.18.3
 [v0.18.2]: https://github.com/parisni/dfzf/compare/v0.18.1...v0.18.2
 [v0.18.1]: https://github.com/parisni/dfzf/compare/v0.18.0...v0.18.1
