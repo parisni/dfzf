@@ -567,6 +567,9 @@ Mail
   - `ctrl-s`: server-side search across the whole folder (himalaya query). The prompt shows `🔍`; an empty query clears it. Changing folder (`ctrl-l`) resets the search. fzf still fuzzy-filters the results locally.
     - syntax: `subject|body|from|to <txt>` · `date|after <yyyy-mm-dd>` · `flag <f>` · combine with `and`/`or`/`not` · sort with `order by date desc`
     - examples: `from enedis and subject facture` — `body rdv after 2026-01-01 order by date desc`
+    - quote multi-word patterns: `subject "en cours"` (unquoted is a parse error)
+  - `alt-a`: show only mails with attachments. The prompt shows `📎`; press again to clear. Combines with `ctrl-s`, and `ctrl-l` resets it.
+    - himalaya's query language has no attachment clause (and `--has-attachment` only fills the 📎 column, it does not filter), so this one is applied locally: `dfzf-mail-load` fetches a window of up to 500 envelopes and paginates the matches itself.
 
   Requires **himalaya v2** and **mml**: v2 moved composition out of himalaya, so
   `ctrl-w` / `ctrl-r` / `ctrl-f` drive `mml compose` / `reply` / `forward` and pipe

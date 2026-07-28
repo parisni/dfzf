@@ -19,6 +19,7 @@ set -euo pipefail
 #                 command-substitution capture would therefore be empty.
 #   search        prompt for a himalaya search query, store it and reset to
 #                 page 1; an empty query clears the filter.
+#   toggle-att    flip the attachment-only filter and reset to page 1.
 #   prompt        print the dynamic fzf prompt based on current state.
 #   folder        print the currently selected folder (used by the reply
 #                 binding which needs to pass `-m <mailbox>` to himalaya).
@@ -29,18 +30,25 @@ folder="INBOX"
 page=1
 page_size=50
 query=""
+att=0
 if [[ -r $state_file ]]; then
 	# shellcheck disable=SC1090
 	source "$state_file"
 fi
 
 save_state() {
-	cat >"$state_file" <<-EOF
-		folder="${folder}"
-		page=${page}
-		page_size=${page_size}
-		query="${query}"
-	EOF
+	# The state file is `source`d back, and himalaya's query DSL requires
+	# quotes around multi-word patterns (`subject "en cours"`); a raw
+	# "query=${query}" interpolation would then break the file at re-source
+	# time. `%q` emits a shell-reusable form, so any quote/space/glob in the
+	# query survives the round-trip.
+	{
+		printf 'folder=%q\n' "$folder"
+		printf 'page=%s\n' "$page"
+		printf 'page_size=%s\n' "$page_size"
+		printf 'query=%q\n' "$query"
+		printf 'att=%s\n' "$att"
+	} >"$state_file"
 }
 
 # Shared nested fzf folder picker. Prints the selected folder name (empty if
@@ -69,6 +77,7 @@ pick-folder)
 	folder="$picked"
 	page=1
 	query=""
+	att=0
 	save_state
 	;;
 move)
@@ -81,8 +90,11 @@ search)
 	# fzf with an empty list acts as a free-text input; --print-query
 	# echoes whatever was typed. The header documents himalaya's query
 	# syntax so the user does not have to remember it (v2 dropped the
-	# `before <date>` clause; `date` and `after` remain).
-	header=$'Query: subject|body|from|to <txt> · date|after <yyyy-mm-dd> · flag <f> · and/or/not · order by date desc\nEx: from enedis and subject facture    |    body rdv after 2026-01-01 order by date desc\nEmpty query clears the search.'
+	# `before <date>` clause; `date` and `after` remain). Multi-word
+	# patterns must be quoted: `subject en cours` is a parse error. The DSL
+	# has no attachment clause, so point at `alt-a` here: this prompt is
+	# where one looks for it.
+	header=$'Query: subject|body|from|to <txt> · date|after <yyyy-mm-dd> · flag <f> · and/or/not · order by date desc\nEx: from enedis and subject facture    |    body rdv after 2026-01-01 order by date desc\nQuote multi-word patterns: subject "en cours"    ·    Empty query clears the search.\nNo attachment clause: use alt-a to show only mails with attachments.'
 	# `set -e` aborts the whole script when a command substitution exits
 	# non-zero, and fzf exits 1 when Enter is pressed on an empty list. Run
 	# fzf on its own line guarded by `|| rc=$?` so the typed query survives;
@@ -96,18 +108,23 @@ search)
 	page=1
 	save_state
 	;;
+toggle-att)
+	att=$((1 - att))
+	page=1
+	save_state
+	;;
 prompt)
-	if [[ -n $query ]]; then
-		printf 'Mail [%s 🔍 p%s] > ' "$folder" "$page"
-	else
-		printf 'Mail [%s p%s] > ' "$folder" "$page"
-	fi
+	# Flags are independent: a search can be narrowed to attachments.
+	flags=""
+	[[ -n $query ]] && flags=" 🔍"
+	((att)) && flags="$flags 📎"
+	printf 'Mail [%s%s p%s] > ' "$folder" "$flags" "$page"
 	;;
 folder)
 	printf '%s' "$folder"
 	;;
 *)
-	echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|move <id>|search|prompt|folder}" >&2
+	echo "usage: dfzf-mail-state {next-page|prev-page|pick-folder|move <id>|search|toggle-att|prompt|folder}" >&2
 	exit 2
 	;;
 esac

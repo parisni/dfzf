@@ -2,13 +2,15 @@
 set -euo pipefail
 
 # State file shared with dfzf-mail so that fzf `reload(dfzf-mail-load)` keeps
-# track of the currently selected folder, page and search query across reloads.
+# track of the currently selected folder, page, search query and attachment
+# filter across reloads.
 state_file="${DFZF_MAIL_STATE:-${XDG_RUNTIME_DIR:-/tmp}/dfzf-mail.state}"
 
 folder="INBOX"
 page=1
 page_size=50
 query=""
+att=0
 if [[ -r $state_file ]]; then
 	# shellcheck disable=SC1090
 	source "$state_file"
@@ -27,6 +29,23 @@ if [[ -n $query ]]; then
 	query_args=(-- "$query")
 fi
 
+# Attachment filtering has no server-side equivalent: himalaya v2's query DSL
+# only knows date/from/to/subject/body/flag, and `--has-attachment` merely
+# populates the ATT column instead of filtering (verified: with and without it
+# a page returns the exact same ids). So the filter runs locally on the
+# `has-attachment` field, which forces pagination to move locally too —
+# otherwise page 1 of 50 would show only the ~10% that carry an attachment.
+#
+# Over-fetch a bounded window and slice it here. The cap matters: fetching all
+# hits of a broad query (`not flag draft`, 5000+) takes >10s, while 500 stays
+# around 1.2s.
+fetch_size="$page_size"
+fetch_page="$page"
+if ((att)); then
+	fetch_size=500
+	fetch_page=1
+fi
+
 # `--has-attachment` is opt-in in v2: without it the field stays null and the
 # 📎 column would never light up.
 #
@@ -34,19 +53,42 @@ fi
 # so a naive `split("T")` would show a wrong hour for foreign senders. jq's
 # fromdateiso8601 only accepts the `Z` form, hence the explicit offset
 # arithmetic before strflocaltime renders in this machine's timezone.
-himalaya --log off "${subcmd[@]}" \
+# A malformed query makes himalaya exit non-zero and print `{"error": …}`
+# instead of `{"envelopes": …}`; piping that straight into jq only yields
+# "Cannot iterate over null" on stderr, which fzf swallows (empty list, no
+# hint). Capture first, surface the error as a list entry instead.
+raw="$(himalaya --log off "${subcmd[@]}" \
 	-m "$folder" \
-	-p "$page" \
-	-s "$page_size" \
+	-p "$fetch_page" \
+	-s "$fetch_size" \
 	--has-attachment \
 	--json \
-	"${query_args[@]}" |
-	jq -r 'def localhour:
+	"${query_args[@]}" 2>/dev/null || true)"
+
+if [[ -z $raw ]]; then
+	echo "⚠️  himalaya returned no output"
+	exit 0
+fi
+
+err="$(jq -r '.error // empty' <<<"$raw" 2>/dev/null)" || err="himalaya: unparsable JSON output"
+# Keep the first line only: the parse error carries a multi-line ASCII diagram.
+err="${err%%$'\n'*}"
+if [[ -n $err ]]; then
+	printf '⚠️  %s\n' "$err"
+	exit 0
+fi
+
+jq -r --argjson att "$att" \
+	--argjson page "$page" \
+	--argjson page_size "$page_size" \
+	'def localhour:
 		sub("Z$"; "+00:00")
 		| (.[0:19] + "Z" | fromdateiso8601) as $naive
 		| (if .[19:20] == "-" then 1 else -1 end) as $sign
 		| ((.[20:22] | tonumber) * 3600 + (.[23:25] | tonumber) * 60) as $offset
 		| $naive + $sign * $offset
 		| strflocaltime("%Y-%m-%dT%H");
-	.envelopes[]
-		| "\(.date | localhour) \(if ."has-attachment" then "📎" else "  " end) \(.subject) \(.from[0].email // "") #\(.id)"'
+	.envelopes
+		| if $att == 1 then map(select(."has-attachment")) | .[($page - 1) * $page_size:$page * $page_size] else . end
+		| .[]
+		| "\(.date | localhour) \(if ."has-attachment" then "📎" else "  " end) \(.subject) \(.from[0].email // "") #\(.id)"' <<<"$raw"
