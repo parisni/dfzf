@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.19.1"></a>
+## [v0.19.1] - 2026-07-28
+### Features
+- **mail:** add alt-a attachment filter, surface search errors
+
+
 <a name="v0.19.0"></a>
 ## [v0.19.0] - 2026-07-28
 ### Bug Fixes
@@ -627,7 +633,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.19.1...HEAD
+[v0.19.1]: https://github.com/parisni/dfzf/compare/v0.19.0...v0.19.1
 [v0.19.0]: https://github.com/parisni/dfzf/compare/v0.18.4...v0.19.0
 [v0.18.4]: https://github.com/parisni/dfzf/compare/v0.18.3...v0.18.4
 [v0.18.3]: https://github.com/parisni/dfzf/compare/v0.18.2...v0.18.3
