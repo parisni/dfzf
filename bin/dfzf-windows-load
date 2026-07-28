@@ -43,6 +43,13 @@ if [ -z "$input_json" ]; then
 	input_json="$(dfzf-exec -t get_tree --raw)"
 fi
 
+# `--input-json -` reads the tree from stdin. The tree can exceed the per-argument
+# kernel limit (MAX_ARG_STRLEN, 128KiB), which made callers fail with
+# "Argument list too long" once enough windows were open.
+if [ "$input_json" = "-" ]; then
+	input_json="$(cat)"
+fi
+
 state_hidden_file="/tmp/dfzf-windows-show-hidden"
 show_hidden=false
 if [[ -f $state_hidden_file ]] || [[ $force_show_hidden == true ]]; then

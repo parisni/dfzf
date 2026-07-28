@@ -92,7 +92,9 @@ set_prompt
 PREVIEW='echo {}'
 PREVIEW_WINDOW='up:3,wrap'
 
-result=$(dfzf-windows-load --input-json "$current_tree")
+# Pipe the tree instead of passing it as an argument: a large tree (many windows
+# with long titles) overflows MAX_ARG_STRLEN and aborts with "Argument list too long".
+result=$(printf '%s' "$current_tree" | dfzf-windows-load --input-json -)
 
 # Check if result is empty and provide a working fzf with no entries
 if [[ -z $result ]]; then
