@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.19.2"></a>
+## [v0.19.2] - 2026-07-30
+### Bug Fixes
+- **mail:** send replies instead of dropping them in mml's menu
+
+
 <a name="v0.19.1"></a>
 ## [v0.19.1] - 2026-07-28
 ### Features
@@ -633,7 +639,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.19.2...HEAD
+[v0.19.2]: https://github.com/parisni/dfzf/compare/v0.19.1...v0.19.2
 [v0.19.1]: https://github.com/parisni/dfzf/compare/v0.19.0...v0.19.1
 [v0.19.0]: https://github.com/parisni/dfzf/compare/v0.18.4...v0.19.0
 [v0.18.4]: https://github.com/parisni/dfzf/compare/v0.18.3...v0.18.4
