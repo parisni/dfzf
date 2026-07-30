@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Shared composer used by `dfzf-mail-write` / `-reply` / `-forward`.
+#
+# Usage: dfzf-mail-compose <mml templates args...>
+#   dfzf-mail-compose compose
+#   dfzf-mail-compose reply --all -- <source.eml>
+#   dfzf-mail-compose forward -- <source.eml>
+#
+# We drive template -> $EDITOR -> compile -> send ourselves instead of calling
+# `mml compose|reply|forward`: those own the editor loop, but their post-edit
+# menu only offers save/preview/edit/abort. Sending belongs to himalaya, so the
+# single action the user wants after saving the draft is missing from it.
+#
+# The template goes through a tempfile rather than a pipe: a piped stdin/stdout
+# would hang or corrupt the editor's TUI.
+#
+# $EDITOR is expected to be provided by ~/.config/environment.d/ so that the
+# kitty instance launched by sway at boot inherits it (interactive shell
+# rcfiles are not sourced for that instance).
+
+# Defensive default: if the environment.d propagation didn't happen (fresh
+# install, no relog yet, non-systemd session…), fall back to nano so the
+# compose flow still works instead of bailing with "cannot get editor".
+: "${EDITOR:=nano}"
+
+# $EDITOR may carry flags (e.g. `code -w`), so split it into a command array.
+read -r -a editor_cmd <<<"$EDITOR"
+
+draft="$(mktemp -t dfzf-mail-draft-XXXXXX.eml)"
+pristine="$(mktemp -t dfzf-mail-pristine-XXXXXX.eml)"
+mime="$(mktemp -t dfzf-mail-mime-XXXXXX.eml)"
+trap 'rm -f "$draft" "$pristine" "$mime"' EXIT
+
+mml templates "$@" >"$draft"
+cp "$draft" "$pristine"
+"${editor_cmd[@]}" "$draft"
+
+# Quitting the editor without touching the template = cancel, which preserves
+# the previous "quit without saving = cancel" behaviour.
+if cmp -s "$draft" "$pristine"; then
+	echo "draft unchanged, nothing sent." >&2
+	exit 0
+fi
+
+while :; do
+	printf 'enter/s send · e edit again · a abort: ' >&2
+	read -rsn1 answer </dev/tty || answer=a
+	printf '\n' >&2
+	case "$answer" in
+	s | '')
+		# Compile inside the loop so an MML syntax error sends the user back to
+		# the editor instead of discarding the draft.
+		mml compile -- "$draft" >"$mime"
+		# `mml compile` exits 0 and prints its diagnostic on stdout even when the
+		# MML fails to parse, so rc is useless: detect success by the MIME
+		# preamble it always emits first.
+		if [[ $(head -c 17 "$mime") != "MIME-Version: 1.0" ]]; then
+			cat "$mime" >&2
+			continue
+		fi
+		# `--` is mandatory: the MESSAGE argument is declared as `[-- <MESSAGE>...]`,
+		# so a bare path is rejected as an unexpected argument.
+		if ! himalaya --log off message send -- "$mime"; then
+			# Keep the draft: most send failures are transient or fixable in the
+			# headers (unroutable recipient, SMTP 4xx), so looping back to the
+			# prompt beats losing what was just written.
+			# Retrying as-is would just replay the same rejection, so point at
+			# the only two useful moves.
+			echo "send failed: fix the draft with 'e' (often the To: header) or abort with 'a'." >&2
+			continue
+		fi
+		echo "sent." >&2
+		exit 0
+		;;
+	e)
+		"${editor_cmd[@]}" "$draft"
+		;;
+	a)
+		# Aborting an edited draft still keeps a copy: the alternative is
+		# silently destroying a written mail on a single keypress.
+		kept="${XDG_STATE_HOME:-$HOME/.local/state}/dfzf/mail-draft-$(date +%Y%m%d-%H%M%S).eml"
+		mkdir -p "${kept%/*}"
+		cp "$draft" "$kept"
+		echo "aborted, draft kept at $kept" >&2
+		exit 0
+		;;
+	esac
+done

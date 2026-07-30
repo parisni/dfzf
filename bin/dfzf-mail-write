@@ -7,27 +7,7 @@ set -euo pipefail
 #
 # Usage: dfzf-mail-write
 #
-# himalaya v2 dropped the editor-driven composer: `mml compose` owns the
-# template + $EDITOR + compile step, himalaya only sends the resulting MIME.
-# Quitting the editor without saving leaves the draft empty and mml aborts,
-# matching the user's "quit without saving = cancel" expectation.
-#
-# The draft goes through a tempfile rather than `mml compose | himalaya`: a
-# bare pipe would make the editor inherit the pipe as its stdout and hang it.
-#
-# $EDITOR is expected to be provided by ~/.config/environment.d/ so that the
-# kitty instance launched by sway at boot inherits it (interactive shell
-# rcfiles are not sourced for that instance).
+# himalaya v2 dropped the editor-driven composer: `dfzf-mail-compose` owns the
+# template + $EDITOR + send loop.
 
-# Defensive default: if the environment.d propagation didn't happen (fresh
-# install, no relog yet, non-systemd session…), fall back to nano so the
-# compose flow still works instead of bailing with "cannot get editor from
-# env var".
-: "${EDITOR:=nano}"
-export EDITOR
-
-draft="$(mktemp -t dfzf-mail-draft-XXXXXX.eml)"
-trap 'rm -f "$draft"' EXIT
-
-mml compose "$draft"
-himalaya --log off message send "$draft"
+dfzf-mail-compose compose

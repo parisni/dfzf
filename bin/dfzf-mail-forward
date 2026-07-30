@@ -8,33 +8,14 @@ set -euo pipefail
 #
 # Usage: dfzf-mail-forward <mailbox> <id>
 #
-# himalaya v2 dropped the editor-driven composer: himalaya fetches the source
-# message, `mml forward` owns the template + $EDITOR + compile step, and
-# himalaya sends the result. Quitting the editor without saving leaves the
-# draft empty and mml aborts, which matches the user's "quit without saving =
-# cancel" expectation.
-#
-# The draft goes through a tempfile rather than `mml forward | himalaya`: a
-# bare pipe would make the editor inherit the pipe as its stdout and hang it.
-#
-# $EDITOR is expected to be provided by ~/.config/environment.d/ so that the
-# kitty instance launched by sway at boot inherits it (interactive shell
-# rcfiles are not sourced for that instance).
+# himalaya v2 dropped the editor-driven composer: himalaya only fetches the
+# source message, `dfzf-mail-compose` owns the template + $EDITOR + send loop.
 
 mailbox="${1:?missing mailbox}"
 id="${2:?missing id}"
 
-# Defensive default: if the environment.d propagation didn't happen (fresh
-# install, no relog yet, non-systemd session…), fall back to nano so the
-# forward flow still works instead of bailing with "cannot get editor from
-# env var".
-: "${EDITOR:=nano}"
-export EDITOR
-
-draft="$(mktemp -t dfzf-mail-draft-XXXXXX.eml)"
 source_eml="$(mktemp -t dfzf-mail-source-XXXXXX.eml)"
-trap 'rm -f "$draft" "$source_eml"' EXIT
+trap 'rm -f "$source_eml"' EXIT
 
 himalaya --log off message read -m "$mailbox" --raw "$id" >"$source_eml"
-mml forward "$draft" -- "$source_eml"
-himalaya --log off message send "$draft"
+dfzf-mail-compose forward -- "$source_eml"
