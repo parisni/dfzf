@@ -62,7 +62,9 @@ while :; do
 		fi
 		# `--` is mandatory: the MESSAGE argument is declared as `[-- <MESSAGE>...]`,
 		# so a bare path is rejected as an unexpected argument.
-		if ! himalaya --log off message send -- "$mime"; then
+		# `--save` is required for the Sent copy: himalaya v2 turned the v1
+		# `message.send.save-copy` config into an explicit per-call flag.
+		if ! himalaya --log off message send --save Sent -- "$mime"; then
 			# Keep the draft: most send failures are transient or fixable in the
 			# headers (unroutable recipient, SMTP 4xx), so looping back to the
 			# prompt beats losing what was just written.
