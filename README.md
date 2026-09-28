@@ -727,6 +727,7 @@ Password-store
   `dfzf-git` provides intelligent git repository integration with lazygit in a scratchpad terminal.
   
   **Smart Repository Detection**:
+  - Asks kitty (remote control) for the active tab's cwd when the focused window is kitty, so titles rewritten by TUIs don't matter
   - Automatically detects git repository from focused window context
   - Extracts directory paths from window titles (JetBrains `[/path/to/project]`, Neovim `- NVIM` suffix, etc.)
   - Recursively searches upward for `.git` folder from detected directory
@@ -743,6 +744,18 @@ Password-store
   ```bash
   # Bind to a key (e.g., Alt+g)
   bindsym $mod+g exec dfzf-git
+  ```
+
+  **Lazygit Options**: pass extra lazygit CLI args (e.g. start view, screen mode):
+  ```bash
+  # ~/.config/dfzf/dfzf.conf
+  lazygit_args='status --screen-mode=full'
+  ```
+
+  **kitty Integration**: requires `allow_remote_control yes` and `listen_on unix:/tmp/kitty` in `kitty.conf`; otherwise window titles are used. Override the socket path if needed (`{pid}` is the kitty instance pid):
+  ```bash
+  # ~/.config/dfzf/dfzf.conf
+  kitty_socket='/tmp/kitty-{pid}'
   ```
 
   ![Image](https://github.com/user-attachments/assets/ca5c3a4d-eff2-490c-871e-ae413acfba08)

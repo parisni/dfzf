@@ -3,6 +3,10 @@ set -euo pipefail
 
 # Default configuration
 term_dir_regex='s/.*\[([^]]+)\].*|^(.+) - NVIM$|(.+) \/..$/\1\2\3/p'
+# Extra lazygit CLI args (e.g. "status --screen-mode=full"); empty keeps lazygit's own default view.
+lazygit_args=''
+# kitty remote-control socket; kitty suffixes `listen_on` with its pid, hence the {pid} placeholder.
+kitty_socket='/tmp/kitty-{pid}'
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 # Find git repository root by searching for .git folder
@@ -29,6 +33,18 @@ find_git_root() {
 	return 1
 }
 
+# Ask kitty for the active tab's cwd, since TUIs running inside it may overwrite the window title.
+kitty_cwd() {
+	local pid="$1" class="$2"
+	local socket="${kitty_socket//\{pid\}/$pid}"
+	[[ -n $pid && -S $socket ]] && command -v kitty >/dev/null || return 1
+	kitty @ --to "unix:$socket" ls 2>/dev/null | jq -r --arg class "$class" '
+		[.[] | select($class == "" or .wm_class == $class)]
+		| (map(select(.is_focused)) + map(select(.last_focused)) + .)[0] // empty
+		| .tabs[] | select(.is_active) | .windows[] | select(.is_active) | .cwd // empty
+	'
+}
+
 # Get terminal command from args or use default.
 #
 # NOTE: dfzf-git uses $DFZF_TERM *without* the `-e` flag (unlike dfzf-mail
@@ -40,12 +56,15 @@ find_git_root() {
 term_cmd="${*:1}"
 term_cmd="${term_cmd:-${DFZF_TERM:-kitty -1}}"
 
-# Get focused window name to extract directory path
-focused_window_name=$(dfzf-exec -t get_tree | jq -r '.. | objects | select(.focused == true) | .name // empty')
+focused_window=$(dfzf-exec -t get_tree | jq -c '[.. | objects | select(.focused == true)][0] // {}')
+focused_window_name=$(jq -r '.name // empty' <<<"$focused_window")
+focused_window_pid=$(jq -r '.pid // empty' <<<"$focused_window")
+focused_window_class=$(jq -r '.app_id // .window_properties.class // empty' <<<"$focused_window")
 
-# Extract directory from focused window name
-extracted_dir=""
-if [[ -n $focused_window_name ]]; then
+extracted_dir=$(kitty_cwd "$focused_window_pid" "$focused_window_class" || true)
+
+# Fall back to extracting the directory from the focused window name
+if [[ -z $extracted_dir && -n $focused_window_name ]]; then
 	extracted_dir=$(echo "$focused_window_name" | sed -n -E "$term_dir_regex")
 fi
 
@@ -94,9 +113,9 @@ if [[ -z $workspace ]]; then
 
 	# Create new terminal window
 	if [[ -n $git_root ]]; then
-		dfzf-exec -q "exec ${DFZF_TERM:-kitty -1} $create_args -d \"$git_root\" -e lazygit"
+		dfzf-exec -q "exec ${DFZF_TERM:-kitty -1} $create_args -d \"$git_root\" -e lazygit $lazygit_args"
 	else
-		dfzf-exec -q "exec ${DFZF_TERM:-kitty -1} $create_args -e lazygit"
+		dfzf-exec -q "exec ${DFZF_TERM:-kitty -1} $create_args -e lazygit $lazygit_args"
 	fi
 	sleep 0.2
 	dfzf-exec -q "[$selector] move scratchpad, scratchpad show"
