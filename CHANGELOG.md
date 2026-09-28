@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.19.3"></a>
+## [v0.19.3] - 2026-09-28
+### Bug Fixes
+- **mail:** save a copy of sent messages to Sent
+
+### Features
+- **git:** resolve repo from kitty cwd and add lazygit_args option
+
+
 <a name="v0.19.2"></a>
 ## [v0.19.2] - 2026-07-30
 ### Bug Fixes
@@ -639,7 +648,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.19.2...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v0.19.3...HEAD
+[v0.19.3]: https://github.com/parisni/dfzf/compare/v0.19.2...v0.19.3
 [v0.19.2]: https://github.com/parisni/dfzf/compare/v0.19.1...v0.19.2
 [v0.19.1]: https://github.com/parisni/dfzf/compare/v0.19.0...v0.19.1
 [v0.19.0]: https://github.com/parisni/dfzf/compare/v0.18.4...v0.19.0
