@@ -50,21 +50,28 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 
 `dfzf` is more than a window switcher — it's a full toolkit for your desktop, built with speed, consistency, and minimalism in mind:
 
-| Tool             | Description                                  | i3 | Sway |
-|------------------|----------------------------------------------|:--:|:----:|
-| `dfzf-windows`   | Navigate windows by title or time            | ✅ | ✅   |
-| `dfzf-scrollbacks`   | Fuzzy-search within all your terminals at once            | ✅ | ✅   |
-| `dfzf-launcher`  | Launch desktop apps or cmds in terminal      | ✅ | ✅   |
-| `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   |
-| `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   |
-| `dfzf-clipboard` | Searchable clipboard with image/text preview | ✅ | ✅   |
-| `dfzf-password`  | Copy and preview entries from a password CLI  | ✅ | ✅   |
-| `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   |
-| `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   |
-| `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   |
-| `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   |
-| `dfzf-term`   | Terminal management (kill/new/toggle/scratchpad) | ✅ | ✅   |
-| `dfzf-git`    | Smart git repository lazygit toggle | ✅ | ✅   |
+| Tool             | Description                                  | i3 | Sway | macOS |
+|------------------|----------------------------------------------|:--:|:----:|:-----:|
+| `dfzf-windows`   | Navigate windows by title or time            | ✅ | ✅   | ✅ (no `ctrl-t` tiling) |
+| `dfzf-focus-toggle` | Jump to a given window and back           | ✅ | ✅   | ✅ |
+| `dfzf-scrollbacks`   | Fuzzy-search within all your terminals at once            | ✅ | ✅   | ⚠️¹ |
+| `dfzf-launcher`  | Launch desktop apps or cmds in terminal      | ✅ | ✅   | ❌ `.desktop` entries, layouts |
+| `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   | ❌ mako only |
+| `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   | ⚠️¹ |
+| `dfzf-clipboard` | Searchable clipboard with image/text preview | ✅ | ✅   | ⚠️ CopyQ |
+| `dfzf-password`  | Copy and preview entries from a password CLI  | ✅ | ✅   | ⚠️ CopyQ (no `pbcopy` fallback) |
+| `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   | ⚠️¹ reply/forward need `setsid` |
+| `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   | ⚠️¹ override the Linux `exit_cmd_*` |
+| `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   | ⚠️ wifi/bluetooth defaults are Linux-only |
+| `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   | ✅ |
+| `dfzf-term`   | Terminal management (kill/new/toggle/scratchpad) | ✅ | ✅   | ❌ scratchpad, layouts |
+| `dfzf-git`    | Smart git repository lazygit toggle | ✅ | ✅   | ❌ layouts, resize |
+
+macOS ([Hammerspoon backend](#installation), experimental): ✅ covered by tests
+against a mocked Hammerspoon, not yet run on a real Mac · ⚠️ expected to work,
+untested · ¹ needs GNU sed (`sed -z`), e.g. `brew install gnu-sed` with its
+`gnubin` directory first in `PATH` · ❌ not supported, fails with an explicit
+error when it goes through the window manager.
 
 ---
 ## Terminal Support Matrix
@@ -126,6 +133,50 @@ rustup update nightly
 cargo +nightly build --release
 find  dfzf-utils  -type f  -executable -name "dfzf-*" |xargs -I@ sudo cp @ /usr/local/bin/
 ```
+</details>
+
+<details>
+<summary>macOS (Hammerspoon backend, experimental)</summary>
+
+On macOS there is no sway/i3: a [Hammerspoon](https://www.hammerspoon.org/) spoon
+tracks windows and recency, and `dfzf-hs-msg` emulates the small part of the
+i3 IPC that the window switcher needs. There is no tiling: windows are
+maximized, dfzf popups are centered.
+
+See the macOS column of [What's Included?](#whats-included) for the feature
+parity: anything relying on workspaces, scratchpad or layouts fails with an
+explicit "unsupported on macOS" error.
+
+```bash
+brew install --cask hammerspoon kitty
+# GNU bash: macOS ships bash 3.2
+brew install bash fzf jq fd ripgrep
+# bin/ and macos/bin/ in your PATH (macos/bin/dfzf-mark replaces the Rust one)
+cp bin/* macos/bin/* /opt/homebrew/bin/
+cp -R macos/Dfzf.spoon ~/.hammerspoon/Spoons/
+```
+
+```lua
+-- ~/.hammerspoon/init.lua
+require("hs.ipc")
+hs.ipc.cliInstall("/opt/homebrew") -- provides the `hs` CLI used by dfzf
+hs.loadSpoon("Dfzf")
+spoon.Dfzf:start()
+local hyper = { "cmd", "alt", "ctrl", "shift" }
+spoon.Dfzf:bindHotkeys({
+  windows = { hyper, "tab" },
+  hub = { hyper, "l" },
+  term = { hyper, "n" },
+})
+```
+
+Differences with sway/i3:
+- macOS has no per-window `app_id`: dfzf windows are identified by their title
+  (`kitty --title dfzf-popup`), see `Dfzf.identityTitles` / `Dfzf.commands`.
+- marks (recency, colors) and urgency live in the spoon and are lost when
+  Hammerspoon reloads.
+- `dfzf-focus-toggle` criteria match the lowercased app name as `app_id`, e.g.
+  `'[app_id="firefox" title="mail.google.com"]'`.
 </details>
 
 
@@ -770,6 +821,10 @@ mise install
 ```
 
 This sets up `pre-commit` hooks and `bump2version` automatically — no manual `pip install` or venv needed.
+
+Run the test suite with `mise run test` (needs `jq`, `fd`, `perl`; mise
+provides Lua). Tests live in `tests/<area>/test_*.sh|lua`, picked up by
+`tests/run.sh`.
 
 ## Related work
 

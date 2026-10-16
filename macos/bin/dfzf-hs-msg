@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# swaymsg/i3-msg stand-in for macOS covering only the IPC subset dfzf uses (see
+# README); anything else fails loudly instead of silently doing the wrong thing.
+
+die() {
+	echo "dfzf-hs-msg: $*" >&2
+	exit 2
+}
+unsupported() { die "unsupported on macOS: $*"; }
+
+msg_type="command"
+words=()
+while [[ $# -gt 0 ]]; do
+	case $1 in
+	-t | --type)
+		msg_type="$2"
+		shift 2
+		;;
+	# Output-format flags of swaymsg/i3-msg: irrelevant here, output is
+	# always the raw JSON for get_tree and nothing for commands.
+	-q | --quiet | -r | --raw | -p | --pretty)
+		shift
+		;;
+	*)
+		words+=("$1")
+		shift
+		;;
+	esac
+done
+
+# Hammerspoon may encode an empty Lua table as an object: normalize the list
+# fields so jq filters like `.marks | index(...)` behave as with sway.
+get_tree() {
+	dfzf-hs '{"op":"tree"}' | jq '
+	  (.. | objects | select(has("marks") and (.marks | type) != "array") | .marks) |= []
+	  | (.. | objects | select(has("nodes") and (.nodes | type) != "array") | .nodes) |= []
+	  | (.. | objects | select(has("floating_nodes") and (.floating_nodes | type) != "array") | .floating_nodes) |= []'
+}
+
+case "$msg_type" in
+get_tree)
+	get_tree
+	exit 0
+	;;
+command) ;;
+*) unsupported "-t $msg_type" ;;
+esac
+
+command_str="${words[*]:-}"
+
+criteria='[]'
+has_criteria=false
+action="$command_str"
+re_command='^[[:space:]]*\[([^]]*)\][[:space:]]*(.*)$'
+if [[ $command_str =~ $re_command ]]; then
+	has_criteria=true
+	criteria_str="${BASH_REMATCH[1]}"
+	action="${BASH_REMATCH[2]}"
+	# key="value with \"escapes\"" | key=bareword
+	re_pair='^[[:space:]]*([a-z_]+)=("(([^"\\]|\\.)*)"|([^[:space:]]+))(.*)$'
+	while [[ -n ${criteria_str//[[:space:]]/} ]]; do
+		[[ $criteria_str =~ $re_pair ]] || die "cannot parse criteria: [$criteria_str]"
+		key="${BASH_REMATCH[1]}"
+		if [[ ${BASH_REMATCH[2]} == \"* ]]; then
+			value="${BASH_REMATCH[3]//\\\"/\"}"
+		else
+			value="${BASH_REMATCH[5]}"
+		fi
+		criteria_str="${BASH_REMATCH[6]}"
+		case "$key" in
+		con_id | app_id | class | title | con_mark) ;;
+		*) unsupported "criteria key '$key'" ;;
+		esac
+		criteria=$(jq -cn --argjson c "$criteria" --arg k "$key" --arg v "$value" '$c + [[$k, $v]]')
+	done
+fi
+
+# Trim surrounding whitespace.
+action="${action#"${action%%[![:space:]]*}"}"
+action="${action%"${action##*[![:space:]]}"}"
+
+if [[ $action == exec\ * ]]; then
+	cmd="${action#exec }"
+	cmd="${cmd#--no-startup-id }"
+	# Detach like sway's exec: the caller (often a short-lived popup) must not
+	# take the launched program down with it.
+	nohup /bin/sh -c "$cmd" >/dev/null 2>&1 &
+	exit 0
+fi
+
+# Command chains ("a, b") are only used by features out of the macOS scope.
+[[ $action == *,* ]] && unsupported "command chain '$action'"
+
+# Without criteria, sway applies the command to the focused window; the one
+# exception is a bare `unmark`, which targets every window.
+read -r verb rest <<<"$action"
+if [[ $has_criteria == false && $verb != unmark ]]; then
+	criteria='[["con_id","__focused__"]]'
+	has_criteria=true
+fi
+
+select_ids() {
+	get_tree | jq -c --argjson crit "$criteria" '
+	  [ .. | objects | select(.type == "con") | . as $w
+	    | select(all($crit[]; . as [$k, $v]
+	        | if $k == "con_id" then
+	            (if $v == "__focused__" then $w.focused == true else ($w.id | tostring) == $v end)
+	          elif $k == "app_id" or $k == "class" then ($w.app_id // "") | test($v)
+	          elif $k == "title" then ($w.name // "") | test($v)
+	          elif $k == "con_mark" then any(($w.marks // [])[]; test($v))
+	          else false end))
+	    | .id ]'
+}
+
+ids='null'
+if [[ $has_criteria == true ]]; then
+	ids=$(select_ids)
+	# Mirror sway: a command whose criteria match nothing is an error, which
+	# callers use for fallbacks (`... focus || ...`).
+	[[ $ids == '[]' ]] && die "No matching node"
+fi
+
+call() { dfzf-hs "$1" >/dev/null; }
+
+case "$verb" in
+focus)
+	[[ -z $rest ]] || unsupported "focus $rest"
+	# sway applies the command to each match in turn: the last one ends up focused.
+	call "$(jq -cn --argjson ids "$ids" '{op: "focus", id: $ids[-1]}')"
+	;;
+kill)
+	call "$(jq -cn --argjson ids "$ids" '{op: "close", ids: $ids}')"
+	;;
+floating)
+	# No-op: windows are either maximized or dfzf popups sized by the spoon.
+	;;
+urgent)
+	case "$rest" in
+	enable | disable | toggle) ;;
+	*) unsupported "urgent $rest" ;;
+	esac
+	call "$(jq -cn --argjson ids "$ids" --arg mode "$rest" '{op: "urgent", ids: $ids, mode: $mode}')"
+	;;
+mark)
+	add=false
+	if [[ $rest == --add\ * ]]; then
+		add=true
+		rest="${rest#--add }"
+	fi
+	[[ -n $rest && $rest != -* && $rest != *\ * ]] || unsupported "mark $rest"
+	call "$(jq -cn --argjson ids "$ids" --arg mark "$rest" --argjson add "$add" \
+		'{op: "mark", id: $ids[-1], mark: $mark, add: $add}')"
+	;;
+unmark)
+	[[ $rest != *\ * ]] || unsupported "unmark $rest"
+	call "$(jq -cn --argjson ids "$ids" --arg mark "$rest" \
+		'{op: "unmark", mark: $mark} + (if $ids == null then {} else {ids: $ids} end)')"
+	;;
+*)
+	unsupported "'$action'"
+	;;
+esac

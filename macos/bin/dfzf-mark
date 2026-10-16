@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# macOS replacement for the Rust dfzf-mark (i3ipc-only), same CLI and toggle
+# semantics: drop marks starting with --mark, or add it when none is present.
+
+mark=""
+con_id=""
+append_ts=false
+while [[ $# -gt 0 ]]; do
+	case $1 in
+	-m | --mark)
+		mark="$2"
+		shift 2
+		;;
+	-c | --con-id)
+		con_id="$2"
+		shift 2
+		;;
+	-a | --append-ts)
+		append_ts=true
+		shift
+		;;
+	-d | --debug)
+		shift
+		;;
+	*)
+		echo "usage: dfzf-mark --mark <mark> --con-id <id> [--append-ts]" >&2
+		exit 2
+		;;
+	esac
+done
+
+[[ -n $mark && $con_id =~ ^[0-9]+$ ]] || {
+	echo "usage: dfzf-mark --mark <mark> --con-id <id> [--append-ts]" >&2
+	exit 2
+}
+
+dfzf-hs "$(jq -cn --argjson id "$con_id" --arg mark "$mark" --argjson ts "$append_ts" \
+	'{op: "markToggle", id: $id, prefix: $mark, appendTs: $ts}')" >/dev/null

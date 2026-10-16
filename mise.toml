@@ -9,6 +9,13 @@ pre-commit          = "4.3.0"
 [hooks]
 postinstall = ["mise exec -- pre-commit install"]
 
+# Lua is only needed by the spoon tests, hence a task-level tool like the
+# release tooling below.
+[tasks.test]
+description = "Run the test suite (tests/run.sh)"
+tools = { lua = "5.4" }
+run = "tests/run.sh"
+
 # Release automation, migrated from the previous makefile so everything runs
 # through `mise run`. git-chglog and bump2version are declared per-task (not in
 # the global [tools]) so a plain `mise install` for development never needs to
