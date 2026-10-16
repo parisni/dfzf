@@ -10,6 +10,9 @@ windows_app_filter="${DFZF_WINDOWS_APP_FILTER-}"
 # window (the Alt-Tab back-and-forth behaviour); the cursor then stays on the
 # first listed item instead.
 no_first_item=false
+# --kitty-companions lists kittyx companion shells too; opt-in because each
+# listing then queries kitty (~0.1s), exported so fzf reloads inherit it.
+kitty_companions=false
 # --show-hidden includes dfzf-hidden windows for this session only. Exported so
 # the in-fzf reload(dfzf-windows-load) binds inherit it (no /tmp state change).
 show_hidden=false
@@ -28,6 +31,10 @@ while [[ $# -gt 0 ]]; do
 		show_hidden=true
 		shift
 		;;
+	--kitty-companions)
+		kitty_companions=true
+		shift
+		;;
 	*)
 		shift
 		;;
@@ -36,6 +43,7 @@ done
 
 export DFZF_WINDOWS_APP_FILTER="$windows_app_filter"
 export DFZF_WINDOWS_SHOW_HIDDEN="$show_hidden"
+export DFZF_WINDOWS_KITTY_COMPANIONS="$kitty_companions"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 extract_con_id() {
@@ -130,9 +138,9 @@ fzf --sync --multi --prompt "$PROMPT" \
 	--bind $'B:reload(toggle_color 34)+change-prompt(\033[34m Windows > \033[0m)' \
 	--bind $'R:reload(toggle_color 31)+change-prompt(\033[31m Windows > \033[0m)' \
 	--bind $'G:reload(toggle_color 32)+change-prompt(\033[32m Windows > \033[0m)' \
-	--bind="ctrl-k:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-windows-kill @)+reload(dfzf-windows-load)" \
+	--bind="ctrl-k:execute-silent(dfzf-windows-line kill {})+reload(dfzf-windows-load)" \
 	--bind="ctrl-u:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-exec -q '[con_id=@] urgent toggle')+reload(dfzf-windows-load)" \
 	--bind="ctrl-h:reload(toggle_hidden)" \
 	--bind="ctrl-j:execute-silent(echo {} |extract_con_id| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec -q '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec -q '[app_id=\"^dfzf-popup$\"]' focus || dfzf-exec -q '[class=\"^dfzf-popup$\"]' focus \")" \
-	--bind="enter:execute-silent(echo {}  |extract_con_id| xargs -I @ dfzf-exec -q '[con_id=@]' focus)+accept" \
-	--bind="esc:execute-silent(dfzf-windows-load | head -n1 | extract_con_id| xargs -I @ dfzf-exec -q '[con_id=@]' focus)+abort" <<<"$result"
+	--bind="enter:execute-silent(dfzf-windows-line focus {})+accept" \
+	--bind="esc:execute-silent(dfzf-windows-line focus \"\$(dfzf-windows-load | head -n1)\")+abort" <<<"$result"

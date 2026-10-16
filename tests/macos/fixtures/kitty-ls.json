@@ -1,0 +1,13 @@
+[
+ {"id": 1, "is_focused": true, "tabs": [
+  {"id": 1, "is_active": true, "windows": [
+   {"id": 7, "title": "hx main.go", "is_active": true, "user_vars": {}},
+   {"id": 8, "title": "zsh", "is_active": false, "user_vars": {"kittyx_companion": "7"}}
+  ]}
+ ]},
+ {"id": 2, "is_focused": false, "tabs": [
+  {"id": 2, "is_active": true, "windows": [
+   {"id": 9, "title": "no host in the WM", "is_active": true, "user_vars": {"kittyx_companion": "3"}}
+  ]}
+ ]}
+]

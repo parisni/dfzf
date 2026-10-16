@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Acts on one dfzf-windows line. Kitty companion lines (`~k<pid>.<window id>`)
+# target that kitty window inside the host OS window given by `#<con_id>`.
+
+kitty_socket='/tmp/kitty-{pid}'
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
+
+usage="usage: dfzf-windows-line focus|kill <line>"
+action="${1:?$usage}"
+line="${2-}"
+con_id=$(perl -0777 -ne 'print $1 if /.*#([0-9]+)/s' <<<"$line")
+[[ -n $con_id ]] || exit 0
+
+kitty_args=()
+re_kitty='~k([0-9]+)\.([0-9]+)'
+if [[ $line =~ $re_kitty ]]; then
+	kitty_args=(--to "unix:${kitty_socket//\{pid\}/${BASH_REMATCH[1]}}")
+	kitty_match="id:${BASH_REMATCH[2]}"
+fi
+
+case "$action" in
+focus)
+	# Switch kitty to the companion first so the host OS window shows it.
+	if [[ ${#kitty_args[@]} -gt 0 ]]; then
+		kitten @ "${kitty_args[@]}" focus-window --match "$kitty_match"
+	fi
+	dfzf-exec -q "[con_id=$con_id] focus"
+	;;
+kill)
+	if [[ ${#kitty_args[@]} -gt 0 ]]; then
+		kitten @ "${kitty_args[@]}" close-window --match "$kitty_match"
+	else
+		dfzf-windows-kill "$con_id"
+	fi
+	;;
+*)
+	echo "$usage" >&2
+	exit 2
+	;;
+esac

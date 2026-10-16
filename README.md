@@ -506,6 +506,7 @@ Install the below extensions:
 - optional app filter: `dfzf-windows --app firefox`
 - optional `--no-first-item`: keep the cursor on the first listed window instead of preselecting the previously focused one (useful for filtered launchers like `dfzf-windows --app terminal --no-first-item`)
 - optional `--show-hidden`: include `dfzf-hidden` windows for this invocation only (session-local, does not touch the persistent `ctrl-h` state); pairs well with an app filter, e.g. `dfzf-windows --app dfzf-hidden --show-hidden --no-first-item`
+- optional `--kitty-companions`: also list [kittyx](https://github.com/parisni/kittyx) companion shells (kitty windows hidden behind their parent in a tab), shown as `↳ <title>` right after the window hosting them; `enter` jumps to the companion, `ctrl-k` closes it. Opt-in since each listing then queries kitty's remote control (`kitty_socket`, ~0.1s), e.g. `dfzf-windows --app terminal --no-first-item --kitty-companions`
 
 keybindings:
 

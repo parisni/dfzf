@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Fake kitty remote control: `ls` serves a fixture, other commands are logged.
+if [[ " $* " == *" ls "* ]]; then
+	cat "$DFZF_TEST_KITTY_LS"
+else
+	echo "kitten $*" >>"$DFZF_TEST_LOG"
+fi
