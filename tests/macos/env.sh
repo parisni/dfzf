@@ -13,3 +13,5 @@ export PATH="$macos_tests_dir/fake-hs:$repo_dir/macos/bin:$repo_dir/bin:$PATH"
 export HOME="$scratch_dir"
 export DFZF_TEST_TREE="$macos_tests_dir/fixtures/tree.json"
 export DFZF_TEST_LOG="$scratch_dir/requests.log"
+# dfzf-exec prefers a live sway/i3: never let a test reach the user's session.
+unset SWAYSOCK I3SOCK

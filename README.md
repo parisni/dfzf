@@ -55,7 +55,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-windows`   | Navigate windows by title or time            | ✅ | ✅   | ✅ (no `ctrl-t` tiling) |
 | `dfzf-focus-toggle` | Jump to a given window and back           | ✅ | ✅   | ✅ |
 | `dfzf-scrollbacks`   | Fuzzy-search within all your terminals at once            | ✅ | ✅   | ⚠️ kitty remote control |
-| `dfzf-launcher`  | Launch desktop apps or cmds in terminal      | ✅ | ✅   | ❌ `.desktop` entries, layouts |
+| `dfzf-launcher`  | Launch desktop apps or cmds in terminal      | ✅ | ✅   | ✅ GUI apps only (`.app` bundles, `launcher_app_dirs`) |
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   | ❌ mako only |
 | `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   | ⚠️ |
 | `dfzf-clipboard` | Searchable clipboard with image/text preview | ✅ | ✅   | ⚠️ CopyQ |
