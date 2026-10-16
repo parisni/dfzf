@@ -25,13 +25,13 @@ dfzf-help reset tasks
 result=$(dfzf-tasks-load | fzf --sync --prompt "Tasks > " \
 	--bind="?:transform-header(dfzf-help toggle tasks)" \
 	--preview-window="up:wrap" \
-	--preview="echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'| xargs -I@ $tasks_cmd show @" \
+	--preview="echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s'| xargs -I@ $tasks_cmd show @" \
 	--bind="ctrl-t:execute-silent(touch /tmp/dfzf-tasks)+abort" \
 	--bind="ctrl-e:accept" \
-	--bind="ctrl-k:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/' | xargs -I@ $tasks_cmd delete --yes @)+reload(dfzf-tasks-load)" \
+	--bind="ctrl-k:execute-silent(echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s' | xargs -I@ $tasks_cmd delete --yes @)+reload(dfzf-tasks-load)" \
 	--bind="ctrl-l:execute-silent($tasks_cmd lists --porcelain > /tmp/dfzf-tasks-lists)+abort" \
 	--bind="ctrl-r:execute($tasks_vdirsyncer_cmd sync)+reload(dfzf-tasks-load)" \
-	--bind="ctrl-d:execute-silent(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/' | xargs -I@ $tasks_cmd done @)+reload(dfzf-tasks-load)")
+	--bind="ctrl-d:execute-silent(echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s' | xargs -I@ $tasks_cmd done @)+reload(dfzf-tasks-load)")
 
 if [[ -e /tmp/dfzf-tasks-lists || -e /tmp/dfzf-tasks ]]; then
 	dfzf-tasks
