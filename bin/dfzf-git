@@ -60,6 +60,8 @@ focused_window=$(dfzf-exec -t get_tree | jq -c '[.. | objects | select(.focused 
 focused_window_name=$(jq -r '.name // empty' <<<"$focused_window")
 focused_window_pid=$(jq -r '.pid // empty' <<<"$focused_window")
 focused_window_class=$(jq -r '.app_id // .window_properties.class // empty' <<<"$focused_window")
+# On macOS app_id is the app name, unrelated to kitty's wm_class: match any OS window.
+[[ $(uname -s) == Darwin ]] && focused_window_class=""
 
 extracted_dir=$(kitty_cwd "$focused_window_pid" "$focused_window_class" || true)
 
@@ -88,6 +90,10 @@ if [[ -n ${SWAYSOCK:-} ]]; then
 elif [[ -n ${I3SOCK:-} ]]; then
 	selector='class="dfzf-git"'
 	create_args="--class dfzf-git"
+elif [[ $(uname -s) == Darwin ]]; then
+	# No app_id on macOS: the Hammerspoon backend reports the title as app_id.
+	selector='app_id="dfzf-git"'
+	create_args="--title dfzf-git"
 else
 	echo "No running instance of Sway or i3 detected."
 	exit 1

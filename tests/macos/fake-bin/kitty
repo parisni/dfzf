@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Records the terminal launch instead of opening a window; the window then
+# "appears" in the fake tree when DFZF_TEST_TREE_ON_LAUNCH is set.
+echo "kitty $*" >>"$DFZF_TEST_LOG"
+if [[ -n ${DFZF_TEST_TREE_ON_LAUNCH:-} ]]; then
+	cp "$DFZF_TEST_TREE_ON_LAUNCH" "$DFZF_TEST_TREE_OVERRIDE"
+fi

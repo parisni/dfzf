@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
-# Stand-in for macos/bin/dfzf-hs: serves a fixture tree and logs every other
-# request, so the shell layer can be tested without Hammerspoon.
+# Stand-in for macos/bin/dfzf-hs: serves fixture data and logs every other
+# request. DFZF_TEST_TREE_ON_SHOW swaps the tree once a window is shown.
 request="$1"
-if [[ $(jq -r .op <<<"$request") == tree ]]; then
-	cat "$DFZF_TEST_TREE"
-else
+tree="$DFZF_TEST_TREE"
+[[ -f ${DFZF_TEST_TREE_OVERRIDE:-} ]] && tree="$DFZF_TEST_TREE_OVERRIDE"
+case "$(jq -r .op <<<"$request")" in
+tree) cat "$tree" ;;
+outputs) echo '[{"name":"screen","focused":true,"rect":{"x":0,"y":25,"width":1000,"height":800}}]' ;;
+*)
 	echo "$request" >>"$DFZF_TEST_LOG"
-fi
+	if [[ $(jq -r .op <<<"$request") == show && -n ${DFZF_TEST_TREE_ON_SHOW:-} ]]; then
+		cp "$DFZF_TEST_TREE_ON_SHOW" "$DFZF_TEST_TREE_OVERRIDE"
+	fi
+	;;
+esac

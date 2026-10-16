@@ -65,7 +65,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   | ⚠️ wifi/bluetooth defaults are Linux-only |
 | `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   | ✅ |
 | `dfzf-term`   | Terminal management (kill/new/toggle/scratchpad) | ✅ | ✅   | ❌ scratchpad, layouts |
-| `dfzf-git`    | Smart git repository lazygit toggle | ✅ | ✅   | ❌ layouts, resize |
+| `dfzf-git`    | Smart git repository lazygit toggle | ✅ | ✅   | ✅ hidden = minimized |
 
 macOS ([Hammerspoon backend](#installation), experimental): ✅ covered by tests
 against a mocked Hammerspoon, not yet run on a real Mac · ⚠️ expected to work,
@@ -166,6 +166,7 @@ spoon.Dfzf:bindHotkeys({
   windows = { hyper, "tab" },
   hub = { hyper, "l" },
   term = { hyper, "n" },
+  git = { hyper, "g" },
 })
 ```
 

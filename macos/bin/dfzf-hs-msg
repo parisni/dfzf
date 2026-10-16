@@ -44,6 +44,10 @@ get_tree)
 	get_tree
 	exit 0
 	;;
+get_outputs)
+	dfzf-hs '{"op":"outputs"}'
+	exit 0
+	;;
 command) ;;
 *) unsupported "-t $msg_type" ;;
 esac
@@ -90,7 +94,9 @@ if [[ $action == exec\ * ]]; then
 	exit 0
 fi
 
-# Command chains ("a, b") are only used by features out of the macOS scope.
+# The one chain in scope (scratchpad creation) collapses to its visible end
+# state; other chains belong to features out of the macOS scope.
+[[ $action == "move scratchpad, scratchpad show" ]] && action="scratchpad show"
 [[ $action == *,* ]] && unsupported "command chain '$action'"
 
 # Without criteria, sway applies the command to the focused window; the one
@@ -135,6 +141,27 @@ kill)
 	;;
 floating)
 	# No-op: windows are either maximized or dfzf popups sized by the spoon.
+	;;
+scratchpad)
+	[[ $rest == show ]] || unsupported "scratchpad $rest"
+	call "$(jq -cn --argjson ids "$ids" '{op: "show", id: $ids[-1]}')"
+	;;
+move)
+	re_position='^position ([0-9]+)(px)? ([0-9]+)(px)?$'
+	if [[ $rest == scratchpad ]]; then
+		call "$(jq -cn --argjson ids "$ids" '{op: "hide", ids: $ids}')"
+	elif [[ $rest =~ $re_position ]]; then
+		call "$(jq -cn --argjson ids "$ids" --argjson x "${BASH_REMATCH[1]}" --argjson y "${BASH_REMATCH[3]}" \
+			'{op: "move", id: $ids[-1], x: $x, y: $y}')"
+	else
+		unsupported "move $rest"
+	fi
+	;;
+resize)
+	re_size='^set ([0-9]+)(px)? ([0-9]+)(px)?$'
+	[[ $rest =~ $re_size ]] || unsupported "resize $rest"
+	call "$(jq -cn --argjson ids "$ids" --argjson w "${BASH_REMATCH[1]}" --argjson h "${BASH_REMATCH[3]}" \
+		'{op: "resize", id: $ids[-1], w: $w, h: $h}')"
 	;;
 urgent)
 	case "$rest" in

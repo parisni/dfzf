@@ -26,18 +26,33 @@ local function encode(value)
   end
 end
 
+local screen = {
+  frame = function() return { x = 0, y = 25, w = 1000, h = 800 } end,
+  name = function() return "Built-in" end,
+}
+
 local function newWindow(id, title, app, standard)
-  local w = { _id = id, _title = title, _app = app, _standard = standard ~= false, frames = {}, maximized = 0 }
+  local w = {
+    _id = id, _title = title, _app = app, _standard = standard ~= false,
+    frames = {}, maximized = 0, minimized = false, _frame = { x = 0, y = 0, w = 10, h = 10 },
+  }
   function w:id() return self._id end
   function w:title() return self._title end
-  function w:application() return { name = function() return self._app end } end
+  function w:application()
+    return { name = function() return self._app end, pid = function() return 4242 end }
+  end
   function w:isStandard() return self._standard end
-  function w:isMinimized() return false end
-  function w:unminimize() end
+  function w:isMinimized() return self.minimized end
+  function w:minimize() self.minimized = true end
+  function w:unminimize() self.minimized = false end
   function w:focus() focusedId = self._id end
   function w:close() for i, x in ipairs(windows) do if x == self then table.remove(windows, i) end end end
-  function w:screen() return { frame = function() return { x = 0, y = 0, w = 1000, h = 800 } end } end
-  function w:setFrame(rect) table.insert(self.frames, rect) end
+  function w:screen() return screen end
+  function w:frame() return { x = self._frame.x, y = self._frame.y, w = self._frame.w, h = self._frame.h } end
+  function w:setFrame(rect)
+    self._frame = rect
+    table.insert(self.frames, rect)
+  end
   function w:maximize() self.maximized = self.maximized + 1 end
   table.insert(windows, w)
   return w
@@ -67,7 +82,7 @@ hs = {
       end,
     },
   },
-  screen = { mainScreen = function() end },
+  screen = { mainScreen = function() return screen end },
   spoons = { bindHotkeysToSpec = function() end },
 }
 package.preload["hs.ipc"] = function() return {} end
@@ -132,9 +147,28 @@ local treeFile = os.tmpname()
 local out = io.open(treeFile, "w")
 out:write(ipc({ op = "tree" }))
 out:close()
-local summary = io.popen("jq -c '[.nodes[] | [.id, .app_id, .focused]]' " .. treeFile):read("a")
+local function jq(filter)
+  return io.popen("jq -c '" .. filter .. "' " .. treeFile):read("a")
+end
+check("tree lists standard windows only",
+  jq('[.. | objects | select(.type == "con") | [.id, .app_id, .focused, .pid]]')
+    == '[[1,"firefox",false,4242],[2,"kitty",true,4242]]\n')
+
+ipc({ op = "hide", ids = { 1 } })
+out = io.open(treeFile, "w")
+out:write(ipc({ op = "tree" }))
+out:close()
+check("hidden window moves to the scratchpad workspace",
+  jq('[.nodes[] | [.name, [.nodes[] | .id]]]') == '[["1",[2]],["__i3_scratch",[1]]]\n')
 os.remove(treeFile)
-check("tree lists standard windows only", summary == '[[1,"firefox",false],[2,"kitty",true]]\n')
+ipc({ op = "show", id = 1 })
+check("show unminimizes and focuses", not windows[1].minimized and focusedId == 1)
+
+ipc({ op = "resize", id = 1, w = 900, h = 720 })
+ipc({ op = "move", id = 1, x = 50, y = 40 })
+local f = windows[1]._frame
+check("resize then move relative to the screen origin", f.w == 900 and f.h == 720 and f.x == 50 and f.y == 65)
+check("outputs report the screen frame", ipc({ op = "outputs" }):find('"width":1000', 1, true) ~= nil)
 
 local popup = newWindow(4, "dfzf-popup", "kitty")
 callbacks.created(popup)
@@ -143,6 +177,9 @@ check("popup centered at 65%", frame and frame.w == 650 and frame.x == 175 and f
 local term = newWindow(5, "dfzf-term", "kitty")
 callbacks.created(term)
 check("regular window maximized", term.maximized == 1 and #term.frames == 0)
+local git = newWindow(6, "dfzf-git", "kitty")
+callbacks.created(git)
+check("floating title left unmaximized", git.maximized == 0)
 callbacks.title(windows[2])
 check("title change ignored for regular window", windows[2].maximized == 0)
 
