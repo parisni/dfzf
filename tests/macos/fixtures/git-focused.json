@@ -1,0 +1,7 @@
+{"id":0,"type":"root","name":"root","layout":"tabbed","focused":false,"marks":[],"floating_nodes":[],"nodes":[
+ {"id":-1,"type":"workspace","name":"1","layout":"tabbed","focused":false,"marks":[],"floating_nodes":[],"nodes":[
+  {"id":22,"type":"con","name":"hx main.go","app_id":"kitty","pid":500,"marks":[],"urgent":false,"focused":false,"layout":"none","nodes":[],"floating_nodes":[]},
+  {"id":55,"type":"con","name":"dfzf-git","app_id":"dfzf-git","pid":500,"marks":[],"urgent":false,"focused":true,"layout":"none","nodes":[],"floating_nodes":[]}
+ ]},
+ {"id":-2,"type":"workspace","name":"__i3_scratch","layout":"tabbed","focused":false,"marks":[],"floating_nodes":[],"nodes":[]}
+],"floating_nodes":[]}

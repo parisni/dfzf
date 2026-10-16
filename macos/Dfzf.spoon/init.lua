@@ -20,6 +20,8 @@ obj.identityTitles = {
   ["dfzf-scratchpad"] = true,
 }
 obj.popupTitles = { ["dfzf-popup"] = true }
+-- Scratchpad-like windows sized by their own scripts (dfzf-resize): never maximized.
+obj.floatingTitles = { ["dfzf-git"] = true, ["dfzf-scratchpad"] = true }
 obj.popupRatio = 0.65
 obj.maximize = true
 -- Hammerspoon inherits launchd's minimal PATH: prepend where dfzf, kitty and
@@ -29,6 +31,7 @@ obj.commands = {
   windows = "kitty -1 --title dfzf-popup -e dfzf-windows",
   hub = "kitty -1 --title dfzf-popup -e dfzf-hub",
   term = [[dfzf-focus-toggle term '[app_id="^dfzf-term$"]' kitty -1 --title dfzf-term]],
+  git = "dfzf-git",
 }
 
 local PREVIEW_MARK = "_dfzf-preview"
@@ -117,21 +120,25 @@ function obj:_window(id)
   return win
 end
 
+-- Mirrors sway: visible windows live in workspace "1", minimized ones play
+-- the scratchpad ("__i3_scratch"), which dfzf scripts detect by name.
 function obj:_tree()
   local focused = hs.window.focusedWindow()
   local focusedId = focused and focused:id()
-  local nodes, alive = {}, {}
+  local visible, hidden, alive = {}, {}, {}
   for _, win in ipairs(self._filter:getWindows()) do
     local id = win:id()
     if id then
       alive[id] = true
       if win:isStandard() then
         local entry = self._state[id] or { marks = {}, urgent = false }
-        table.insert(nodes, {
+        local app = win:application()
+        table.insert(win:isMinimized() and hidden or visible, {
           id = id,
           type = "con",
           name = win:title() or "",
           app_id = self:_appId(win),
+          pid = app and app:pid() or nil,
           marks = entry.marks,
           urgent = entry.urgent,
           focused = id == focusedId,
@@ -149,6 +156,19 @@ function obj:_tree()
       self._state[id] = nil
     end
   end
+  local function workspace(id, name, nodes)
+    return {
+      id = id,
+      type = "workspace",
+      name = name,
+      layout = "tabbed",
+      focused = false,
+      marks = {},
+      nodes = nodes,
+      floating_nodes = {},
+    }
+  end
+  -- Negative ids cannot collide with macOS window ids.
   return hs.json.encode({
     id = 0,
     type = "root",
@@ -156,7 +176,7 @@ function obj:_tree()
     layout = "tabbed",
     focused = false,
     marks = {},
-    nodes = nodes,
+    nodes = { workspace(-1, "1", visible), workspace(-2, "__i3_scratch", hidden) },
     floating_nodes = {},
   })
 end
@@ -190,7 +210,9 @@ function obj:_place(win)
     }, 0)
     win:focus()
   elseif self.maximize then
-    win:maximize(0)
+    if not self.floatingTitles[win:title() or ""] then
+      win:maximize(0)
+    end
   end
 end
 
@@ -215,6 +237,44 @@ function handlers.close(self, req)
       win:close()
     end
   end
+end
+
+function handlers.hide(self, req)
+  for _, id in ipairs(req.ids) do
+    self:_window(id):minimize()
+  end
+end
+
+function handlers.show(self, req)
+  handlers.focus(self, req)
+end
+
+function handlers.outputs()
+  local focused = hs.window.focusedWindow()
+  local screen = focused and focused:screen() or hs.screen.mainScreen()
+  local frame = screen:frame()
+  return hs.json.encode({ {
+    name = screen:name() or "screen",
+    focused = true,
+    rect = { x = frame.x, y = frame.y, width = frame.w, height = frame.h },
+  } })
+end
+
+function handlers.resize(self, req)
+  local win = self:_window(req.id)
+  local frame = win:frame()
+  frame.w, frame.h = req.w, req.h
+  win:setFrame(frame, 0)
+end
+
+-- sway positions are relative to the output: offset by the screen origin.
+function handlers.move(self, req)
+  local win = self:_window(req.id)
+  local screen = win:screen() or hs.screen.mainScreen()
+  local origin = screen:frame()
+  local frame = win:frame()
+  frame.x, frame.y = origin.x + req.x, origin.y + req.y
+  win:setFrame(frame, 0)
 end
 
 -- macOS exposes no window urgency to read: urgency is a dfzf-only flag here.

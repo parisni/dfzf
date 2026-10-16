@@ -30,8 +30,10 @@ expect_error() {
 	fi
 }
 
-assert_eq "get_tree normalizes empty lists" '[[],[],[]]' \
-	"$(dfzf-hs-msg -t get_tree --raw | jq -c '[.marks, .nodes[1].marks, .nodes[0].nodes]')"
+assert_eq "get_tree normalizes empty lists" '[[],[],[],[]]' \
+	"$(dfzf-hs-msg -t get_tree --raw | jq -c '[.marks, (.. | objects | select(.id == 22) | .marks, .nodes),
+	  (.. | objects | select(.name == "__i3_scratch") | .nodes)]')"
+assert_eq "get_outputs" '1000' "$(dfzf-hs-msg -t get_outputs | jq '.[0].rect.width')"
 
 expect_request "focus, criteria and action split" '{"op":"focus","id":22}' -q '[con_id=22]' focus
 expect_request "focus, single string" '{"op":"focus","id":22}' -q '[con_id=22] focus'
@@ -49,6 +51,12 @@ expect_request "unmark by con_mark" '{"op":"unmark","mark":"_dfzf-origin-term","
 expect_request "bare unmark targets every window" '{"op":"unmark","mark":"_dfzf-origin-term"}' \
 	-q 'unmark _dfzf-origin-term'
 expect_request "urgent toggle" '{"op":"urgent","ids":[11],"mode":"toggle"}' -q '[con_id=11] urgent toggle'
+expect_request "move scratchpad hides" '{"op":"hide","ids":[44]}' -q '[app_id="dfzf-term"] move scratchpad'
+expect_request "scratchpad show" '{"op":"show","id":44}' -q '[app_id="dfzf-term"] scratchpad show'
+expect_request "scratchpad creation chain shows" '{"op":"show","id":44}' \
+	-q '[app_id="dfzf-term"] move scratchpad, scratchpad show'
+expect_request "resize set" '{"op":"resize","id":22,"w":900,"h":720}' -q '[con_id=22] resize set 900px 720px'
+expect_request "move position" '{"op":"move","id":22,"x":50,"y":40}' -q '[con_id=22] move position 50 40'
 
 : >"$DFZF_TEST_LOG"
 dfzf-hs-msg -q '[con_id=11] floating disable'
@@ -57,6 +65,7 @@ assert_eq "floating is a no-op" "" "$(cat "$DFZF_TEST_LOG")"
 expect_error "no match is an error (fallback chains)" "No matching node" -q '[con_id=99] focus'
 expect_error "workspaces unsupported" "unsupported on macOS" -q 'workspace 2'
 expect_error "command chains unsupported" "unsupported on macOS" -q '[con_id=11] move to workspace 2, focus'
+expect_error "other moves unsupported" "unsupported on macOS" -q 'move left'
 expect_error "other message types unsupported" "unsupported on macOS" -t get_workspaces
 expect_error "unknown criteria key" "criteria key 'foo'" -q '[foo=bar] focus'
 
