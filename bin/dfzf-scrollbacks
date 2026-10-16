@@ -28,7 +28,7 @@ findcommand=$(command -v fd || command -v fdfind) || {
 }
 kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1 | head -n1)
 PREVIEW="
-id=\$(echo {} | sed -Ez 's/.*#([0-9]+).*/\1/')
+id=\$(echo {} | perl -0777 -pe 's/.*#([0-9]+).*/\$1/s')
 kitty_title=\$(dfzf-exec -t get_tree --raw | jq -r --arg id \"\$id\" '.. | objects | select(.id == (\$id | tonumber)) | .name' | sed 's/ /./g')
 prompt_content=\$(kitten @ get-text --to unix:$kitty_sock --match \"title:^\$kitty_title$\" --extent all  2>/dev/null | rg -U '$windows_prompt_pattern(.+)' -o --replace '$> \$1'|tail -n 100)
 if [[ -n \"\$prompt_content\" ]]; then
@@ -65,8 +65,8 @@ result=$(
 			--preview-window="up,follow"
 )
 
-con_id=$(echo "$result" | sed -Ez 's/.*#([0-9]+).*/\1/')
-scroll_line=$(echo "$result" | sed -Ez 's/^([0-9]+).*/\1/')
+con_id=$(echo "$result" | perl -0777 -pe 's/.*#([0-9]+).*/$1/s')
+scroll_line=$(echo "$result" | perl -0777 -pe 's/^([0-9]+).*/$1/s')
 # arbitrary increase scroll by 2 to make the bottom terimal match the selected row
 scroll_line=$((scroll_line - 2))
 dfzf-exec -q "[con_id=$con_id]" focus

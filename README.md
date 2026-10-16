@@ -54,14 +54,14 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 |------------------|----------------------------------------------|:--:|:----:|:-----:|
 | `dfzf-windows`   | Navigate windows by title or time            | ✅ | ✅   | ✅ (no `ctrl-t` tiling) |
 | `dfzf-focus-toggle` | Jump to a given window and back           | ✅ | ✅   | ✅ |
-| `dfzf-scrollbacks`   | Fuzzy-search within all your terminals at once            | ✅ | ✅   | ⚠️¹ |
+| `dfzf-scrollbacks`   | Fuzzy-search within all your terminals at once            | ✅ | ✅   | ⚠️ kitty remote control |
 | `dfzf-launcher`  | Launch desktop apps or cmds in terminal      | ✅ | ✅   | ❌ `.desktop` entries, layouts |
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   | ❌ mako only |
-| `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   | ⚠️¹ |
+| `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   | ⚠️ |
 | `dfzf-clipboard` | Searchable clipboard with image/text preview | ✅ | ✅   | ⚠️ CopyQ |
 | `dfzf-password`  | Copy and preview entries from a password CLI  | ✅ | ✅   | ⚠️ CopyQ (no `pbcopy` fallback) |
-| `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   | ⚠️¹ reply/forward need `setsid` |
-| `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   | ⚠️¹ override the Linux `exit_cmd_*` |
+| `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   | ⚠️ reply/forward need `setsid` |
+| `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   | ⚠️ override the Linux `exit_cmd_*` |
 | `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   | ⚠️ wifi/bluetooth defaults are Linux-only |
 | `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   | ✅ |
 | `dfzf-term`   | Terminal management (kill/new/toggle/scratchpad) | ✅ | ✅   | ❌ scratchpad, layouts |
@@ -69,9 +69,8 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 
 macOS ([Hammerspoon backend](#installation), experimental): ✅ covered by tests
 against a mocked Hammerspoon, not yet run on a real Mac · ⚠️ expected to work,
-untested · ¹ needs GNU sed (`sed -z`), e.g. `brew install gnu-sed` with its
-`gnubin` directory first in `PATH` · ❌ not supported, fails with an explicit
-error when it goes through the window manager.
+untested · ❌ not supported, fails with an explicit error when it goes through
+the window manager.
 
 ---
 ## Terminal Support Matrix

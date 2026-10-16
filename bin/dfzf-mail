@@ -27,17 +27,17 @@ dfzf-mail-load |
 	fzf --prompt "Mail [INBOX p1] > " \
 		--bind="?:transform-header(dfzf-help toggle mail)" \
 		--preview-window="up:wrap" \
-		--preview="id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); dfzf-mail-preview \"\$(dfzf-mail-state folder)\" \"\$id\"" \
-		--bind="ctrl-k:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya --log off message move --from \"\$(dfzf-mail-state folder)\" --to Trash \"\$id\")+reload(dfzf-mail-load)" \
-		--bind="ctrl-j:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); dfzf-mail-html \"\$(dfzf-mail-state folder)\" \"\$id\")+accept" \
-		--bind="ctrl-d:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); himalaya --log off attachment download -m \"\$(dfzf-mail-state folder)\" \"\$id\" >/dev/null 2>&1)" \
+		--preview="id=\$(echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s'); dfzf-mail-preview \"\$(dfzf-mail-state folder)\" \"\$id\"" \
+		--bind="ctrl-k:execute-silent(id=\$(echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s'); himalaya --log off message move --from \"\$(dfzf-mail-state folder)\" --to Trash \"\$id\")+reload(dfzf-mail-load)" \
+		--bind="ctrl-j:execute-silent(id=\$(echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s'); dfzf-mail-html \"\$(dfzf-mail-state folder)\" \"\$id\")+accept" \
+		--bind="ctrl-d:execute-silent(id=\$(echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s'); himalaya --log off attachment download -m \"\$(dfzf-mail-state folder)\" \"\$id\" >/dev/null 2>&1)" \
 		--bind=">:execute-silent(dfzf-mail-state next-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="<:execute-silent(dfzf-mail-state prev-page)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="ctrl-l:execute(dfzf-mail-state pick-folder </dev/tty >/dev/tty)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
-		--bind="ctrl-o:execute(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); dfzf-mail-state move \"\$id\" </dev/tty >/dev/tty)+reload(dfzf-mail-load)" \
+		--bind="ctrl-o:execute(id=\$(echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s'); dfzf-mail-state move \"\$id\" </dev/tty >/dev/tty)+reload(dfzf-mail-load)" \
 		--bind="ctrl-s:execute(dfzf-mail-state search </dev/tty >/dev/tty)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
 		--bind="alt-a:execute-silent(dfzf-mail-state toggle-att)+reload(dfzf-mail-load)+transform-prompt(dfzf-mail-state prompt)" \
-		--bind="ctrl-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-reply \"\$folder\" \"\$id\")+abort" \
+		--bind="ctrl-r:execute-silent(id=\$(echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-reply \"\$folder\" \"\$id\")+abort" \
 		--bind="ctrl-w:execute-silent(setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-write)+abort" \
-		--bind="ctrl-alt-r:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-reply \"\$folder\" \"\$id\" --all)+abort" \
-		--bind="ctrl-f:execute-silent(id=\$(echo {}| sed -Ez 's/.*#([0-9]+).*/\1/'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-forward \"\$folder\" \"\$id\")+abort"
+		--bind="ctrl-alt-r:execute-silent(id=\$(echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-reply \"\$folder\" \"\$id\" --all)+abort" \
+		--bind="ctrl-f:execute-silent(id=\$(echo {}| perl -0777 -pe 's/.*#([0-9]+).*/\$1/s'); folder=\$(dfzf-mail-state folder); setsid -f \${DFZF_TERM:-kitty -1 -e} dfzf-mail-forward \"\$folder\" \"\$id\")+abort"

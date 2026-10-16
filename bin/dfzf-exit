@@ -41,6 +41,6 @@ done
 result=$(echo "$choices" |
 	fzf --disabled --prompt "Exit > " \
 		--bind='enter:accept' \
-		"${binds[@]}" | sed -Ez 's/^([a-z]):.*/$exit_cmd_\1/g')
+		"${binds[@]}" | perl -0777 -pe 's/^([a-z]):.*/\$exit_cmd_$1/s')
 
 eval "$result" && sleep infinity
