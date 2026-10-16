@@ -5,6 +5,8 @@ windows_app_id_map_json="{}"
 windows_glyph_rules_json='[{"glyph": " "}]'
 windows_title_rm_pattern="— Mozilla Firefox "
 windows_app_filter="${DFZF_WINDOWS_APP_FILTER-}"
+# kitty remote-control socket; kitty suffixes `listen_on` with its pid, hence the {pid} placeholder.
+kitty_socket='/tmp/kitty-{pid}'
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 findcommand=$(command -v fd || command -v fdfind) || {
 	echo "Neither fd nor fdfind found"
@@ -17,6 +19,7 @@ input_json=""
 # --show-hidden forces including dfzf-hidden windows for this invocation only,
 # without touching the persistent /tmp/dfzf-windows-show-hidden state file.
 force_show_hidden="${DFZF_WINDOWS_SHOW_HIDDEN-false}"
+kitty_companions="${DFZF_WINDOWS_KITTY_COMPANIONS-false}"
 
 while [[ $# -gt 0 ]]; do
 	case $1 in
@@ -30,6 +33,10 @@ while [[ $# -gt 0 ]]; do
 		;;
 	--show-hidden)
 		force_show_hidden=true
+		shift
+		;;
+	--kitty-companions)
+		kitty_companions=true
 		shift
 		;;
 	*)
@@ -48,6 +55,37 @@ fi
 # "Argument list too long" once enough windows were open.
 if [ "$input_json" = "-" ]; then
 	input_json="$(cat)"
+fi
+
+# kittyx companion shells live inside a kitty OS window, invisible to the WM:
+# list them as pseudo windows of their host, matched by pid and exact title.
+add_kitty_companions() {
+	local tree="$1" pid socket kitty_json
+	if ! command -v kitten >/dev/null; then
+		printf '%s' "$tree"
+		return
+	fi
+	for pid in $(jq -r '[.. | objects | select(.type == "con") | .pid // empty] | unique | .[]' <<<"$tree"); do
+		socket="${kitty_socket//\{pid\}/$pid}"
+		[[ -S $socket ]] || continue
+		kitty_json=$(kitten @ --to "unix:$socket" ls 2>/dev/null) || continue
+		tree=$(jq --argjson pid "$pid" --argjson kitty "$kitty_json" '
+		  [.. | objects | select(.type == "con" and .pid == $pid)] as $hosts
+		  | [ $kitty[]
+		      | ([.tabs[] | select(.is_active) | .windows[] | select(.is_active) | .title][0]) as $os_title
+		      | first($hosts[] | select(.name == $os_title)) as $host
+		      | .tabs[].windows[] | select(.user_vars.kittyx_companion)
+		      | (([$host.marks[]? | select(startswith("_dfzf-sort-"))] | first // "_dfzf-sort-0")
+		          | ltrimstr("_dfzf-sort-") | tonumber | if . > 0 then . - 1 else 0 end) as $sort
+		      | {type: "con", id: $host.id, name: ("↳ " + .title), app_id: $host.app_id,
+		         window_properties: $host.window_properties, urgent: false,
+		         marks: ["_dfzf-sort-\($sort)"], kitty_window: "\($pid).\(.id)"} ] as $companions
+		  | .nodes += $companions' <<<"$tree")
+	done
+	printf '%s' "$tree"
+}
+if [[ $kitty_companions == true ]]; then
+	input_json="$(add_kitty_companions "$input_json")"
 fi
 
 state_hidden_file="/tmp/dfzf-windows-show-hidden"
@@ -81,6 +119,7 @@ result=$(
     | . as $win
     | {
         id: .id,
+        kitty: .kitty_window,
         name: .name,
         sort: ([.marks[]? | select(startswith("_dfzf-sort"))] | first // "_dfzf-sort-0"),
         app_id: (
@@ -108,7 +147,7 @@ result=$(
 	      }
 	    | select($app_filter == "" or (.app_id | ascii_downcase) == ($app_filter | ascii_downcase))
 	      
-	    | "\(.sort)\(if .urgent then "\u001b[33m" else "" end)\(.glyph) [\(.app_id)]\(if .urgent then "\u001b[0m" else "" end)\t\(.red)\(.blue)\(.green) \(format_title(.name)) #\(.id)"
+	    | "\(.sort)\(if .urgent then "\u001b[33m" else "" end)\(.glyph) [\(.app_id)]\(if .urgent then "\u001b[0m" else "" end)\t\(.red)\(.blue)\(.green) \(format_title(.name)) #\(.id)\(if .kitty then " ~k\(.kitty)" else "" end)"
 	  ' | sort -nr |
 		sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' |
 		perl -pe '
