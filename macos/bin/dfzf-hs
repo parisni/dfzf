@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Bridge to the Dfzf Hammerspoon spoon: sends one JSON request ({"op": ...})
+# through the `hs` CLI and prints the reply. Usage: dfzf-hs '<json request>'
+
+request="${1:?usage: dfzf-hs <json request>}"
+
+command -v hs >/dev/null || {
+	echo "dfzf-hs: 'hs' CLI not found (run hs.ipc.cliInstall() in Hammerspoon)" >&2
+	exit 1
+}
+
+# The request travels inside a Lua long bracket string, which needs no escaping
+# as long as the payload never contains its closing delimiter.
+if [[ $request == *']==]'* ]]; then
+	echo "dfzf-hs: request contains the reserved sequence ']==]'" >&2
+	exit 2
+fi
+
+exec hs -c "spoon.Dfzf:ipc([==[${request}]==])"

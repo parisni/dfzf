@@ -8,10 +8,13 @@ if [ -n "${SWAYSOCK:-}" ]; then
 	msgcommand="swaymsg"
 elif [ -n "${I3SOCK:-}" ]; then
 	msgcommand="i3-msg"
+elif [ "$(uname -s)" = "Darwin" ]; then
+	# Hammerspoon shim speaking the subset of the i3 IPC that dfzf uses (macos/).
+	msgcommand="dfzf-hs-msg"
 fi
 
 if [ -z "$msgcommand" ]; then
-	echo "No running instance of Sway or i3 detected."
+	echo "No running instance of Sway, i3 or macOS (Hammerspoon) detected."
 	exit 1
 fi
 

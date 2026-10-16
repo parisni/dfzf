@@ -39,7 +39,8 @@ export DFZF_WINDOWS_SHOW_HIDDEN="$show_hidden"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 
 extract_con_id() {
-	sed -Ez 's/.*#([0-9]+).*/\1/'
+	# perl rather than `sed -z`: BSD sed (macOS) has no NUL-separated mode.
+	perl -0777 -pe 's/.*#([0-9]+).*/$1/s'
 }
 toggle_color() {
 	color="$1"

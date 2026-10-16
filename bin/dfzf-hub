@@ -58,6 +58,6 @@ done
 result=$(echo "$choices" |
 	fzf --tac --disabled --prompt "Hub > " \
 		--bind='enter:accept' \
-		"${binds[@]}" | sed -Ez 's/^([a-z]):.*/$hub_cmd_\1/g')
+		"${binds[@]}" | perl -0777 -pe 's/^([a-z]):.*/\$hub_cmd_$1/s')
 
 eval "$result"
