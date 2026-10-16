@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# GUI app launcher for macOS: fuzzy-pick an .app bundle and `open` it. CLI
+# tools are meant to be run from a terminal, so there are no other providers.
+
+launcher_app_dirs=(
+	/Applications
+	/Applications/Utilities
+	/System/Applications
+	/System/Applications/Utilities
+	"$HOME/Applications"
+)
+[ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
+
+list_apps() {
+	local dir app name
+	for dir in "${launcher_app_dirs[@]}"; do
+		for app in "$dir"/*.app; do
+			[[ -d $app ]] || continue
+			name="${app##*/}"
+			printf '%s\t%s\n' "${name%.app}" "$app"
+		done
+	done | sort -f -u -t $'\t' -k1,1
+}
+
+if [[ ${1:-} == --list ]]; then
+	list_apps
+	exit 0
+fi
+
+dfzf-kill-bro >/dev/null
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+
+choice=$(list_apps | fzf --prompt "Launcher > " --delimiter $'\t' --with-nth 1) || exit 0
+# open hands the app to launchd: it outlives the popup, no detaching needed.
+open "${choice#*$'\t'}"

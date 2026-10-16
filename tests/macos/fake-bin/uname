@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Pretend to be macOS so dfzf scripts take their Darwin code paths.
+echo Darwin

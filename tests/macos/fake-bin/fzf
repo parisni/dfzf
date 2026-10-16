@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Non-interactive fzf: selects the first input line matching $DFZF_TEST_PICK.
+grep -m1 -- "$DFZF_TEST_PICK" || exit 130
