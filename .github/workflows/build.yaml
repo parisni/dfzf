@@ -109,8 +109,33 @@ jobs:
           name: dfzf-${{ matrix.arch }}
           path: dist/*
 
+  build-darwin:
+    needs: [pre-commit, test]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # Shell scripts only, no Rust daemon: the Hammerspoon spoon replaces it.
+      # macos/bin is copied last so its scripts override the sway ones.
+      - name: Create .tar.gz
+        run: |
+          mkdir -p package/bin dist
+          cp bin/* package/bin/
+          cp macos/bin/* package/bin/
+          cp -R macos/Dfzf.spoon package/
+          tar -czf dist/dfzf-darwin-${GITHUB_REF_NAME#v}.tar.gz -C package bin Dfzf.spoon
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dfzf-darwin
+          path: dist/*
+
   release:
-    needs: build
+    needs: [build, build-darwin]
     runs-on: ubuntu-22.04
 
     steps:
