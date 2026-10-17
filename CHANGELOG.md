@@ -2,6 +2,22 @@
 ## [Unreleased]
 
 
+<a name="v1.0.0"></a>
+## [v1.0.0] - 2026-10-17
+### Bug Fixes
+- **ci:** drop pipx and bump2version from the global mise tools
+
+### Code Refactoring
+- replace sed -z with perl -0777 for BSD sed portability
+
+### Features
+- **ci:** publish a darwin archive with the macOS scripts and spoon
+- **git:** support the lazygit scratchpad on macOS
+- **launcher:** open .app bundles on macOS
+- **macos:** add hammerspoon backend and a test suite
+- **windows:** list kittyx companion shells with --kitty-companions
+
+
 <a name="v0.19.3"></a>
 ## [v0.19.3] - 2026-09-28
 ### Bug Fixes
@@ -648,7 +664,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v0.19.3...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.0.0...HEAD
+[v1.0.0]: https://github.com/parisni/dfzf/compare/v0.19.3...v1.0.0
 [v0.19.3]: https://github.com/parisni/dfzf/compare/v0.19.2...v0.19.3
 [v0.19.2]: https://github.com/parisni/dfzf/compare/v0.19.1...v0.19.2
 [v0.19.1]: https://github.com/parisni/dfzf/compare/v0.19.0...v0.19.1
