@@ -60,7 +60,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   | ⚠️ |
 | `dfzf-clipboard` | Searchable clipboard with image/text preview | ✅ | ✅   | ⚠️ CopyQ |
 | `dfzf-password`  | Copy and preview entries from a password CLI  | ✅ | ✅   | ⚠️ CopyQ (no `pbcopy` fallback) |
-| `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   | ⚠️ reply/forward need `setsid` |
+| `dfzf-mail`      | View, preview and delete emails     | ✅ |  ✅   | ⚠️ |
 | `dfzf-exit`      | Logout, reboot, suspend, hibernate           | ❌ | ✅   | ⚠️ override the Linux `exit_cmd_*` |
 | `dfzf-tools`      | Clock, calendar, top, wifi, bluetooth, fetch popup      | ✅ |  ✅   | ⚠️ wifi/bluetooth defaults are Linux-only |
 | `dfzf-hub`   | Invoke other dfzf commnands            | ✅ | ✅   | ✅ |

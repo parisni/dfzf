@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Portable `setsid -f`: util-linux is not on macOS, perl is already a dfzf dependency.
+# Runs the command in its own session so it outlives the popup closing right after.
+(($#)) || {
+	echo "usage: dfzf-detach <command> [args...]" >&2
+	exit 2
+}
+exec perl -MPOSIX -e '
+	defined(my $pid = fork) or die "dfzf-detach: fork: $!\n";
+	exit 0 if $pid;
+	POSIX::setsid();
+	exec { $ARGV[0] } @ARGV or die "dfzf-detach: $ARGV[0]: $!\n";
+' -- "$@"
