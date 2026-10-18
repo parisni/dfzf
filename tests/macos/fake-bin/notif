@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Fake notif CLI: `list` prints $DFZF_TEST_NOTIFS (format of notif's ListCommand),
+# other commands are recorded.
+if [[ $1 == list ]]; then
+	cat "$DFZF_TEST_NOTIFS"
+else
+	echo "notif $*" >>"$DFZF_TEST_LOG"
+fi

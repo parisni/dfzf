@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Notification Center browser for macOS, through the `notif` CLI (Accessibility
+# API). Lists what Notification Center shows: macOS keeps no notification history.
+
+if ! command -v notif >/dev/null; then
+	echo "dfzf-notifs: notif not found (brew install coryfklein/tap/notif)" >&2
+	exit 1
+fi
+
+# One "<index>\t<text>" line per entry. notif prints bodies verbatim, so a line
+# without an "[index]" prefix continues a multi-line body of the previous entry.
+list() {
+	notif list | perl -ne '
+		chomp;
+		if (/^\s*\[([0-9.]+)\] (.*)$/) { print "\n" if $count++; print "$1\t$2" }
+		elsif ($count && /\S/) { s/^\s+//; print " $_" }
+		END { print "\n" if $count }'
+}
+
+# notif indexes are screen positions that shift as notifications come and go:
+# re-resolve the picked text against a fresh listing instead of trusting them.
+resolve() {
+	list | perl -sne '
+		chomp;
+		my ($index, $text) = split /\t/, $_, 2;
+		next unless $text eq $picked_text;
+		$hit //= $index;
+		if ($index eq $picked_index) { $hit = $index; last }
+		END { if (defined $hit) { print "$hit\n" } else { $? = 1 } }
+	' -- -picked_index="$1" -picked_text="$2"
+}
+
+case "${1:-}" in
+--list)
+	list
+	exit 0
+	;;
+--click | --dismiss)
+	picked="${2:?usage: dfzf-notifs-macos $1 <listed line>}"
+	if ! index="$(resolve "${picked%%$'\t'*}" "${picked#*$'\t'}")"; then
+		echo "dfzf-notifs: notification gone: ${picked#*$'\t'}" >&2
+		exit 1
+	fi
+	notif "${1#--}" "$index" >/dev/null
+	exit 0
+	;;
+esac
+
+export SHELL="$(command -v bash)"
+dfzf-kill-bro >/dev/null
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+
+picked=$(list | fzf --prompt "Notifs > " --delimiter $'\t' --with-nth 2 \
+	--preview 'printf "%s\n" {2}' \
+	--preview-window=up:30%:wrap \
+	--bind "ctrl-k:execute-silent(dfzf-notifs-macos --dismiss {})+reload(dfzf-notifs-macos --list)" \
+	--bind "ctrl-h:change-header(No notification history on macOS)") || exit 0
+# Clicking runs the notification's own action, which brings its app forward.
+dfzf-notifs-macos --click "$picked"

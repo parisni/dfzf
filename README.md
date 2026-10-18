@@ -56,7 +56,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 | `dfzf-focus-toggle` | Jump to a given window and back           | ✅ | ✅   | ✅ |
 | `dfzf-scrollbacks`   | Fuzzy-search within all your terminals at once            | ✅ | ✅   | ⚠️ kitty remote control |
 | `dfzf-launcher`  | Launch desktop apps or cmds in terminal      | ✅ | ✅   | ✅ GUI apps only (`.app` bundles, `launcher_app_dirs`) |
-| `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   | ❌ mako only |
+| `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   | ⚠️ [`notif`](https://github.com/coryfklein/macos-notification-cli), no history |
 | `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   | ⚠️ |
 | `dfzf-clipboard` | Searchable clipboard with image/text preview | ✅ | ✅   | ⚠️ CopyQ |
 | `dfzf-password`  | Copy and preview entries from a password CLI  | ✅ | ✅   | ⚠️ CopyQ (no `pbcopy` fallback) |
@@ -676,6 +676,14 @@ Password-store
   
   ```bash
     sudo apt install jq mako-notifier
+  ```
+
+  On macOS, Notification Center is read through
+  [`notif`](https://github.com/coryfklein/macos-notification-cli) (Accessibility
+  API, granted to the terminal running dfzf); there is no history (`ctrl-h`).
+
+  ```bash
+    brew install coryfklein/tap/notif
   ```
   ![Image](https://github.com/user-attachments/assets/645934df-c121-4f46-96d9-6b616f4b66cf)
 </details>
