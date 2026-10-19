@@ -422,10 +422,12 @@ hub_cmd_q="pomatez || dfzf-windows-load|rg pomatez|sed -Ez 's/.*#([0-9]+).*/\1/'
 # password backend commands: defaults target pass-compatible `show` commands
 pass_preview_cmd='pass show'
 pass_show_password_cmd='pass show'
+pass_otp_cmd='pass otp'
 
 # example: use gopass instead
 # pass_preview_cmd='gopass show --nosync'
 # pass_show_password_cmd='gopass show --nosync -o'
+# pass_otp_cmd='gopass otp -o'
 ```
 
 </details>
@@ -647,6 +649,7 @@ Password-store
 
   - `?`: toggle a keybinding cheatsheet in the header
   - `Return`: copy content
+  - `ctrl-o`: copy the current OTP code (requires the [pass-otp](https://github.com/tadfisher/pass-otp) extension)
   - `ctrl-j`: preview content
   - works with any password CLI exposing compatible `show` commands
 
@@ -659,6 +662,7 @@ Password-store
   ```bash
     pass_preview_cmd='gopass show --nosync'
     pass_show_password_cmd='gopass show --nosync -o'
+    pass_otp_cmd='gopass otp -o'
   ```
   ![Image](https://github.com/user-attachments/assets/2ebeec63-3ee8-4a47-9b8c-988c8cb5ffeb)
 </details>

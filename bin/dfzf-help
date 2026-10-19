@@ -32,7 +32,7 @@ cheatsheet() {
 		printf '%s' $'? help · enter paste · y copy (keep open) · ctrl-k delete'
 		;;
 	password)
-		printf '%s' $'? help · enter copy password · ctrl-j toggle preview'
+		printf '%s' $'? help · enter copy password · ctrl-o copy otp · ctrl-j toggle preview'
 		;;
 	*)
 		return 1
