@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
   pull_request:
+  # Dry run of the darwin packaging: builds the archive as an artifact, while
+  # `build` and therefore `release` stay tag-only.
+  workflow_dispatch:
 
 jobs:
   pre-commit:
@@ -131,7 +134,7 @@ jobs:
 
   build-darwin:
     needs: [pre-commit, test, native]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: macos-14
 
     steps:
@@ -149,11 +152,14 @@ jobs:
       - name: Create .tar.gz
         run: |
           test -f macos/Dfzf.spoon/hs/_dfzf.so
+          version=${GITHUB_REF_NAME#v}
+          [[ $GITHUB_REF_TYPE == tag ]] || version="dev-${GITHUB_SHA::7}"
           mkdir -p package/bin dist
           cp bin/* package/bin/
           cp macos/bin/* package/bin/
           cp -R macos/Dfzf.spoon package/
-          tar -czf dist/dfzf-darwin-${GITHUB_REF_NAME#v}.tar.gz -C package bin Dfzf.spoon
+          tar -czf "dist/dfzf-darwin-$version.tar.gz" -C package bin Dfzf.spoon
+          tar -tzf "dist/dfzf-darwin-$version.tar.gz" | grep -qx 'Dfzf.spoon/hs/_dfzf.so'
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
