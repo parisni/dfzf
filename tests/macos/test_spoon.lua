@@ -86,8 +86,18 @@ hs = {
   spoons = { bindHotkeysToSpec = function() end },
 }
 package.preload["hs.ipc"] = function() return {} end
+-- The native module never exists here: make that explicit so a locally built
+-- hs/_dfzf.so cannot change which backend these tests exercise.
+package.preload["hs._dfzf"] = function() error("hs._dfzf absent in tests") end
+local filterCount = 0
+local newFilter = hs.window.filter.new
+hs.window.filter.new = function(...)
+  filterCount = filterCount + 1
+  return newFilter(...)
+end
 
-local spoon = dofile(arg[1] or "../../macos/Dfzf.spoon/init.lua")
+local spoonPath = arg[1] or "../../macos/Dfzf.spoon/init.lua"
+local spoon = dofile(spoonPath)
 local function ipc(req)
   local key = "req" .. tostring(#requests + 1)
   requests[key] = req
@@ -190,5 +200,36 @@ check("state of closed window pruned", spoon._state[5] == nil)
 
 check("unknown op errors", not pcall(ipc, { op = "nope" }))
 check("focus on unknown id errors", not pcall(ipc, { op = "focus", id = 42 }))
+
+local function startWith(module)
+  package.loaded["hs._dfzf"] = nil
+  package.preload["hs._dfzf"] = module
+  filterCount = 0
+  return dofile(spoonPath):start()
+end
+
+local config, stopped
+local native = startWith(function()
+  return {
+    start = function(c) config = c return true end,
+    stop = function() stopped = true end,
+  }
+end)
+check("native module: spoon delegates, no window filter",
+  native._native ~= nil and filterCount == 0 and native._state == nil)
+check("native module receives the spoon config",
+  config.popupRatio == 0.65 and config.maximize == true and config.identityTitles["dfzf-term"]
+    and config.popupTitles["dfzf-popup"] and config.floatingTitles["dfzf-git"])
+check("native module: Lua ipc refuses requests", not pcall(native.ipc, native, "x"))
+native:stop()
+check("stop stops the native module", stopped == true and native._native == nil)
+
+local fallback = startWith(function() error("module not found") end)
+check("require failure falls back to Lua", fallback._native == nil and filterCount == 1)
+
+fallback = startWith(function()
+  return { start = function() return nil, "dfzf: no Accessibility permission" end, stop = function() end }
+end)
+check("start failure falls back to Lua", fallback._native == nil and filterCount == 1)
 
 os.exit(failures == 0 and 0 or 1)

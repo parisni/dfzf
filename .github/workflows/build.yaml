@@ -23,6 +23,26 @@ jobs:
       - uses: jdx/mise-action@v2
       - run: mise run test
 
+  # Runners grant no Accessibility permission: the AX source is only compiled
+  # here, the tests run against the simulated one.
+  native:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      # Provides LuaSkin.framework, whose headers the module compiles against.
+      - name: Install Hammerspoon
+        run: brew install --cask hammerspoon
+      - name: Build universal library
+        working-directory: macos/native
+        run: make universal && lipo -info obj_universal/_dfzf.so
+      - name: Test native core
+        working-directory: macos/native
+        run: make test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hs-dfzf
+          path: macos/native/obj_universal/_dfzf.so
+
   build:
     # Gate the release on lint and tests: without this, build/release run in
     # parallel with them and tags get published despite a red job.
@@ -110,18 +130,25 @@ jobs:
           path: dist/*
 
   build-darwin:
-    needs: [pre-commit, test]
+    needs: [pre-commit, test, native]
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-22.04
+    runs-on: macos-14
 
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Download hs._dfzf
+        uses: actions/download-artifact@v4
+        with:
+          name: hs-dfzf
+          path: macos/Dfzf.spoon/hs
+
       # Shell scripts only, no Rust daemon: the Hammerspoon spoon replaces it.
       # macos/bin is copied last so its scripts override the sway ones.
       - name: Create .tar.gz
         run: |
+          test -f macos/Dfzf.spoon/hs/_dfzf.so
           mkdir -p package/bin dist
           cp bin/* package/bin/
           cp macos/bin/* package/bin/
@@ -143,6 +170,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist
+          # hs-dfzf already ships inside the darwin archive.
+          pattern: dfzf-*
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

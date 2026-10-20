@@ -1,5 +1,5 @@
--- Hammerspoon backend for dfzf on macOS: window list, focus, marks and recency,
--- served to the dfzf scripts through `hs -c` (see macos/bin/dfzf-hs-msg).
+-- Hammerspoon backend for dfzf on macOS, served by the native hs._dfzf module
+-- on a Unix socket, else by this file through `hs -c` (see macos/bin/dfzf-hs).
 
 local obj = {}
 obj.__index = obj
@@ -24,6 +24,8 @@ obj.popupTitles = { ["dfzf-popup"] = true }
 obj.floatingTitles = { ["dfzf-git"] = true, ["dfzf-scratchpad"] = true }
 obj.popupRatio = 0.65
 obj.maximize = true
+-- nil: $DFZF_HS_SOCKET, else ~/.local/state/dfzf/hs.sock (same default as dfzf-hs).
+obj.socketPath = nil
 -- Hammerspoon inherits launchd's minimal PATH: prepend where dfzf, kitty and
 -- their dependencies usually live.
 obj.path = "/opt/homebrew/bin:/usr/local/bin:" .. os.getenv("HOME") .. "/.local/bin"
@@ -35,6 +37,8 @@ obj.commands = {
 }
 
 local PREVIEW_MARK = "_dfzf-preview"
+
+local spoonDir = debug.getinfo(1, "S").source:match("^@(.*/)") or "./"
 local SORT_PREFIX = "_dfzf-sort"
 -- Focus events are delivered asynchronously and can land after a preview has
 -- already cleared its mark: ignore them for this long after the clear.
@@ -325,6 +329,9 @@ end
 
 -- Entry point of `dfzf-hs`: runs one JSON request and returns its reply.
 function obj:ipc(request)
+  if self._native then
+    error("dfzf: the native backend is active, requests go through its socket")
+  end
   local req = hs.json.decode(request)
   local handler = req and handlers[req.op]
   if not handler then
@@ -353,9 +360,38 @@ function obj:bindHotkeys(mapping)
   return self
 end
 
+-- Returns the started native module, or nil and the reason it is unavailable.
+function obj:_startNative()
+  if not package.cpath:find(spoonDir, 1, true) then
+    package.cpath = spoonDir .. "?.so;" .. package.cpath
+  end
+  local loaded, native = pcall(require, "hs._dfzf")
+  if not loaded then
+    return nil, native
+  end
+  local started, err = native.start({
+    socketPath = self.socketPath,
+    identityTitles = self.identityTitles,
+    popupTitles = self.popupTitles,
+    floatingTitles = self.floatingTitles,
+    popupRatio = self.popupRatio,
+    maximize = self.maximize,
+  })
+  if not started then
+    return nil, err
+  end
+  return native
+end
+
 function obj:start()
-  -- dfzf talks to the spoon through the `hs` CLI, which needs hs.ipc loaded.
+  -- `dfzf-hs` falls back to the `hs` CLI, which needs hs.ipc loaded.
   require("hs.ipc")
+  local native, reason = self:_startNative()
+  if native then
+    self._native = native
+    return self
+  end
+  print("Dfzf: native backend unavailable (" .. tostring(reason) .. "), using the Lua backend")
   self._state = {}
   self._previewGraceUntil = {}
   self._filter = hs.window.filter.new(true):setCurrentSpace(nil)
@@ -382,6 +418,10 @@ function obj:start()
 end
 
 function obj:stop()
+  if self._native then
+    self._native.stop()
+    self._native = nil
+  end
   if self._filter then
     self._filter:unsubscribeAll()
     self._filter = nil

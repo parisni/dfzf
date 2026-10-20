@@ -2,3 +2,5 @@
 **/target
 dfzf_binaries*
 .venv/
+macos/native/obj_*/
+macos/Dfzf.spoon/hs/
