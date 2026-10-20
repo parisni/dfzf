@@ -14,6 +14,12 @@ description = "Run the test suite (tests/run.sh)"
 tools = { lua = "5.4" }
 run = "tests/run.sh"
 
+# macOS only: needs Xcode's clang and Hammerspoon.app for the LuaSkin headers.
+[tasks.test-native]
+description = "Build hs._dfzf and run its native tests (macOS)"
+dir = "macos/native"
+run = ["make universal", "make test"]
+
 # Release automation, migrated from the previous makefile so everything runs
 # through `mise run`. git-chglog and bump2version are declared per-task (not in
 # the global [tools]) so a plain `mise install` for development never needs to

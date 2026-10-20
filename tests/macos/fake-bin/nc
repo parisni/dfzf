@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Fake nc: logs its arguments and the request read on stdin, then replies with
+# $DFZF_TEST_NC_REPLY (printf %b escapes) and exits $DFZF_TEST_NC_STATUS.
+{
+	echo "nc $*"
+	cat
+} >>"$DFZF_TEST_LOG"
+printf '%b' "${DFZF_TEST_NC_REPLY:-}"
+exit "${DFZF_TEST_NC_STATUS:-0}"

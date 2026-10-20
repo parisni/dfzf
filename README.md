@@ -153,6 +153,8 @@ brew install bash fzf jq fd ripgrep
 # bin/ and macos/bin/ in your PATH (macos/bin/dfzf-mark replaces the Rust one)
 cp bin/* macos/bin/* /opt/homebrew/bin/
 cp -R macos/Dfzf.spoon ~/.hammerspoon/Spoons/
+# archive downloaded with a browser only: lift the quarantine on the native module
+xattr -dr com.apple.quarantine ~/.hammerspoon/Spoons/Dfzf.spoon
 ```
 
 ```lua
@@ -169,6 +171,18 @@ spoon.Dfzf:bindHotkeys({
   git = { hyper, "g" },
 })
 ```
+
+Native backend: the release archive ships `Dfzf.spoon/hs/_dfzf.so`, a native
+Hammerspoon module (from a checkout: `make -C macos/native spoon`). It tracks
+windows, marks and recency off the main thread and serves dfzf on a Unix socket,
+`~/.local/state/dfzf/hs.sock` (override with `DFZF_HS_SOCKET` for both the
+scripts and Hammerspoon, or `Dfzf.socketPath`), so a busy Hammerspoon or a hung
+app no longer stalls the window switcher. It needs the Accessibility permission
+for Hammerspoon. When the module is missing or fails to start, the spoon logs
+why in the Hammerspoon console and serves dfzf itself through the `hs` CLI, as
+does `dfzf-hs` whenever the socket does not answer. CI builds and tests the
+module against a simulated window source only: the Accessibility path, window
+placement and the speed-up have not been checked on a real Mac yet.
 
 Differences with sway/i3:
 - macOS has no per-window `app_id`: dfzf windows are identified by their title
