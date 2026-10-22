@@ -2,6 +2,18 @@
 ## [Unreleased]
 
 
+<a name="v1.1.0"></a>
+## [v1.1.0] - 2026-10-22
+### CI/CD
+- **darwin:** dry-run the darwin packaging on workflow_dispatch
+
+### Features
+- **macos:** serve dfzf from a native Hammerspoon module
+- **mail:** detach compose terminals without setsid The reply, reply-all, forward and write bindings spawn the compose terminal with `setsid -f` so it survives the popup closing on +abort. setsid comes from util-linux, which macOS does not ship, so these bindings failed there.
+- **notifs:** browse Notification Center on macOS through notif macOS has no mako: dfzf-notifs now delegates to dfzf-notifs-macos, which lists Notification Center with the notif CLI (Accessibility API). enter clicks the pick (runs its action), ctrl-k dismisses it; ctrl-h reports that macOS keeps no history.
+- **password:** copy the current otp code with ctrl-o
+
+
 <a name="v1.0.0"></a>
 ## [v1.0.0] - 2026-10-17
 ### Bug Fixes
@@ -664,7 +676,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.1.0...HEAD
+[v1.1.0]: https://github.com/parisni/dfzf/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/parisni/dfzf/compare/v0.19.3...v1.0.0
 [v0.19.3]: https://github.com/parisni/dfzf/compare/v0.19.2...v0.19.3
 [v0.19.2]: https://github.com/parisni/dfzf/compare/v0.19.1...v0.19.2
