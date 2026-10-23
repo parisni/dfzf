@@ -4,6 +4,7 @@ local clock = 1000.0
 local requests = {}
 local windows, focusedId = {}, nil
 local callbacks = {}
+local lastTask
 
 local function encode(value)
   local kind = type(value)
@@ -84,6 +85,15 @@ hs = {
   },
   screen = { mainScreen = function() return screen end },
   spoons = { bindHotkeysToSpec = function() end },
+  task = {
+    new = function(path, callback, args)
+      local task = { path = path, args = args, env = { PATH = "/usr/bin:/bin" } }
+      function task:environment() return self.env end
+      function task:setEnvironment(env) self.env = env end
+      function task:start() lastTask = self end
+      return task
+    end,
+  },
 }
 package.preload["hs.ipc"] = function() return {} end
 -- The native module never exists here: make that explicit so a locally built
@@ -211,6 +221,12 @@ check("state of closed window pruned", spoon._state[5] == nil)
 
 check("unknown op errors", not pcall(ipc, { op = "nope" }))
 check("focus on unknown id errors", not pcall(ipc, { op = "focus", id = 42 }))
+
+spoon:_run("kitty -1 --title dfzf-term")
+check("run detaches the command from Hammerspoon",
+  lastTask.path == "/bin/sh" and lastTask.args[1] == "-c"
+  and lastTask.args[2] == "(kitty -1 --title dfzf-term\n) </dev/null >/dev/null 2>&1 &"
+  and lastTask.env.PATH == spoon.path .. ":/usr/bin:/bin")
 
 local function startWith(module)
   package.loaded["hs._dfzf"] = nil

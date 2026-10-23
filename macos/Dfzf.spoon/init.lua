@@ -361,7 +361,9 @@ function obj:ipc(request)
 end
 
 function obj:_run(command)
-  local task = hs.task.new("/bin/sh", nil, { "-c", command })
+  -- Detached: the kitty instance a command may start must outlive a reload or
+  -- quit of Hammerspoon, and must not hold the task's pipes (hs.task would block).
+  local task = hs.task.new("/bin/sh", nil, { "-c", "(" .. command .. "\n) </dev/null >/dev/null 2>&1 &" })
   local env = task:environment()
   env.PATH = self.path .. ":" .. (env.PATH or "/usr/bin:/bin")
   task:setEnvironment(env)
