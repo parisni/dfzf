@@ -23,6 +23,7 @@ set -euo pipefail
 #
 # Behaviour:
 #   - target missing            -> run fallback-cmd (if any)
+#                                  remembering the current window as origin
 #   - not on target             -> mark current window as origin, focus target
 #   - already on target         -> focus the origin window (back), clear mark
 #   - origin lost/absent        -> stay put (nothing sensible to go back to)
@@ -59,9 +60,13 @@ while IFS= read -r mid; do
 done <<<"$matched_ids"
 
 if [[ -z $matched_ids ]]; then
-	# Target does not exist: drop any stale origin and run the fallback.
+	# Target does not exist: the fallback creates it, so the current window is
+	# the origin to come back to on the next toggle.
 	dfzf-exec -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
 	if [[ ${#fallback[@]} -gt 0 ]]; then
+		if [[ -n $current_id ]]; then
+			dfzf-exec -q "[con_id=${current_id}] mark --add ${origin_mark}" >/dev/null 2>&1 || true
+		fi
 		exec "${fallback[@]}"
 	fi
 	exit 0
