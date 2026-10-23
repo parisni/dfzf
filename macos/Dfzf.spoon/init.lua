@@ -213,10 +213,30 @@ function obj:_place(win)
       h = frame.h * ratio,
     }, 0)
     win:focus()
+    self:_closePopupsOlderThan(win:id())
   elseif self.maximize then
     if not self.floatingTitles[win:title() or ""] then
       win:maximize(0)
     end
+  end
+end
+
+-- One dfzf popup at a time, the newest wins: macOS window ids only grow, so this
+-- needs no focus (unlike sway's dfzf-kill-bro) and a replayed event on an older
+-- popup never closes a newer one.
+function obj:_closePopupsOlderThan(id)
+  if not id then
+    return
+  end
+  local older = {}
+  for _, other in ipairs(self._filter:getWindows()) do
+    local otherId = other:id()
+    if otherId and otherId < id and self.popupTitles[other:title() or ""] then
+      table.insert(older, other)
+    end
+  end
+  for _, other in ipairs(older) do
+    other:close()
   end
 end
 

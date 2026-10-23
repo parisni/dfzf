@@ -164,10 +164,34 @@ static NSString *noWindow(id windowId) {
                                       area.size.width * ratio, area.size.height * ratio);
             [self->_source setFrame:frame ofWindow:windowId];
             [self->_source focusWindow:windowId];
+            [self closePopupsOlderThan:windowId];
         } else if (self->_config.maximize && ![self->_config.floatingTitles containsObject:title]) {
             [self->_source setFrame:area ofWindow:windowId];
         }
     });
+}
+
+// One dfzf popup at a time, the newest wins: macOS window ids only grow, so this
+// needs no focus (unlike sway's dfzf-kill-bro) and a replayed event on an older
+// popup never closes a newer one.
+- (void)closePopupsOlderThan:(DFZWindowID)windowId {
+    NSMutableArray<NSNumber *> *older = [NSMutableArray array];
+    [self withState:^(DFZState *state) {
+        for (DFZWindowInfo *info in [state windows]) {
+            if (info.windowId < windowId && [self->_config.popupTitles containsObject:info.title]) {
+                [older addObject:@(info.windowId)];
+            }
+        }
+    }];
+    for (NSNumber *item in older) {
+        DFZWindowID target = item.unsignedIntValue;
+        dispatch_queue_t queue = [_source queueForWindow:target];
+        if (queue) {
+            dispatch_async(queue, ^{
+                [self->_source closeWindow:target];
+            });
+        }
+    }
 }
 
 #pragma mark - Requests

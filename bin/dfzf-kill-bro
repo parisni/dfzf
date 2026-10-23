@@ -3,7 +3,20 @@ set -euo pipefail
 
 tree_json="$(dfzf-exec -t get_tree)"
 
+# macOS: Dfzf.spoon closes older popups as soon as a new one appears; here the
+# popup may not be focused yet and would kill itself.
+if [[ -z ${SWAYSOCK:-} && -z ${I3SOCK:-} && $OSTYPE == darwin* ]]; then
+	echo "$tree_json"
+	exit 0
+fi
+
 current_id="$(echo "$tree_json" | jq -r '.. | objects | select(.focused == true) | .id')"
+
+# Nothing focused: the current popup cannot be told apart, so kill nothing.
+if [[ -z $current_id ]]; then
+	echo "$tree_json"
+	exit 0
+fi
 
 # Extract and kill all dfzf-popup windows except the focused one
 echo "$tree_json" | jq -r \

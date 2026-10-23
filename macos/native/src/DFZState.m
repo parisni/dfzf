@@ -77,6 +77,10 @@ static id jsonBool(BOOL value) {
     return _windows[@(windowId)];
 }
 
+- (NSArray<DFZWindowInfo *> *)windows {
+    return _windows.allValues;
+}
+
 - (void)focusWindow:(DFZWindowID)windowId {
     _focusedId = windowId;
     DFZEntry *entry = [self entry:windowId];

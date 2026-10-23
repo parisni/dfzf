@@ -275,6 +275,22 @@ static void testSpoonParity(NSString *directory) {
     [h settle];
     NSRect popup = [h.mock window:4].frame;
     check(@"popup centered at 65%", popup.size.width == 650 && popup.origin.x == 175 && h.mock.focusedId == 4);
+    [h.mock addWindow:DFZMakeWindow(7, @"dfzf-popup", @"kitty", 4242, YES) event:DFZWindowEventCreated];
+    [h settle];
+    [h settle];
+    check(@"new popup closes the older one",
+          [h.mock window:4] == nil && [h.mock window:7] != nil && h.mock.focusedId == 7);
+    [h.mock addWindow:DFZMakeWindow(10, @"dfzf-popup", @"kitty", 4242, YES) event:DFZWindowEventCreated];
+    [h settle];
+    [h settle];
+    [h.mock addWindow:DFZMakeWindow(8, @"dfzf-popup", @"kitty", 4242, YES) event:DFZWindowEventCreated];
+    [h settle];
+    [h settle];
+    check(@"late event on an older popup keeps the newer one", [h.mock window:10] != nil && [h.mock window:7] == nil);
+    [h.mock addWindow:DFZMakeWindow(9, @"hx notes.md", @"kitty", 4242, YES) event:DFZWindowEventCreated];
+    [h settle];
+    [h settle];
+    check(@"regular window never closes popups", [h.mock window:10] != nil);
     [h.mock addWindow:DFZMakeWindow(5, @"dfzf-term", @"kitty", 4242, YES) event:DFZWindowEventCreated];
     [h settle];
     check(@"regular window maximized", NSEqualRects([h.mock window:5].frame, NSMakeRect(0, 25, 1000, 800)));

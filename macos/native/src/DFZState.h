@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)upsertWindow:(DFZWindowInfo *)info;
 - (void)removeWindow:(DFZWindowID)windowId;
 - (nullable DFZWindowInfo *)window:(DFZWindowID)windowId;
+- (NSArray<DFZWindowInfo *> *)windows;
 - (void)focusWindow:(DFZWindowID)windowId;
 - (void)seedRecency:(NSArray<NSNumber *> *)frontToBack;
 - (void)touch:(DFZWindowID)windowId timestampMs:(long long)timestampMs;

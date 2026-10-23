@@ -10,6 +10,9 @@ scratch_dir="$(mktemp -d)"
 trap 'rm -r "$scratch_dir"' EXIT
 
 export PATH="$macos_tests_dir/fake-hs:$repo_dir/macos/bin:$repo_dir/bin:$PATH"
+# Scripts on the hot path test $OSTYPE rather than uname (fake-bin/uname): bash
+# honours an inherited OSTYPE, so the Darwin code paths also run on linux CI.
+export OSTYPE=darwin
 export HOME="$scratch_dir"
 export DFZF_TEST_TREE="$macos_tests_dir/fixtures/tree.json"
 export DFZF_TEST_LOG="$scratch_dir/requests.log"
