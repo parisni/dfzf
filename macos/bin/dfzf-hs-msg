@@ -10,6 +10,9 @@ die() {
 }
 unsupported() { die "unsupported on macOS: $*"; }
 
+# shellcheck source=dfzf-hs
+source "$(command -v dfzf-hs)"
+
 msg_type="command"
 words=()
 while [[ $# -gt 0 ]]; do
@@ -30,13 +33,20 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-# Hammerspoon may encode an empty Lua table as an object: normalize the list
-# fields so jq filters like `.marks | index(...)` behave as with sway.
+# The Lua backend (hs.json) may encode an empty Lua table as an object: normalize
+# the list fields so jq filters like `.marks | index(...)` behave as with sway.
+# The native backend already emits lists: without any `{}`, skip the jq pass.
 get_tree() {
-	dfzf-hs '{"op":"tree"}' | jq '
+	local tree
+	tree=$(dfzf_hs '{"op":"tree"}')
+	if [[ $tree != *'{}'* ]]; then
+		printf '%s\n' "$tree"
+		return
+	fi
+	jq '
 	  (.. | objects | select(has("marks") and (.marks | type) != "array") | .marks) |= []
 	  | (.. | objects | select(has("nodes") and (.nodes | type) != "array") | .nodes) |= []
-	  | (.. | objects | select(has("floating_nodes") and (.floating_nodes | type) != "array") | .floating_nodes) |= []'
+	  | (.. | objects | select(has("floating_nodes") and (.floating_nodes | type) != "array") | .floating_nodes) |= []' <<<"$tree"
 }
 
 case "$msg_type" in
@@ -45,7 +55,7 @@ get_tree)
 	exit 0
 	;;
 get_outputs)
-	dfzf-hs '{"op":"outputs"}'
+	dfzf_hs '{"op":"outputs"}'
 	exit 0
 	;;
 command) ;;
@@ -128,7 +138,7 @@ if [[ $has_criteria == true ]]; then
 	[[ $ids == '[]' ]] && die "No matching node"
 fi
 
-call() { dfzf-hs "$1" >/dev/null; }
+call() { dfzf_hs "$1" >/dev/null; }
 
 case "$verb" in
 focus)

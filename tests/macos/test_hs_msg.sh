@@ -33,6 +33,12 @@ expect_error() {
 assert_eq "get_tree normalizes empty lists" '[[],[],[],[]]' \
 	"$(dfzf-hs-msg -t get_tree --raw | jq -c '[.marks, (.. | objects | select(.id == 22) | .marks, .nodes),
 	  (.. | objects | select(.name == "__i3_scratch") | .nodes)]')"
+# Native backend: lists already encoded as lists, the tree is passed through as is
+# (jq would have pretty-printed it).
+jq -c '(.. | objects | select(has("marks")) | .marks, .nodes, .floating_nodes) |= (if type == "array" then . else [] end)' \
+	"$DFZF_TEST_TREE" >"$DFZF_TEST_TREE_OVERRIDE"
+assert_eq "get_tree skips jq without empty objects" "$(cat "$DFZF_TEST_TREE_OVERRIDE")" "$(dfzf-hs-msg -t get_tree)"
+rm "$DFZF_TEST_TREE_OVERRIDE"
 assert_eq "get_outputs" '1000' "$(dfzf-hs-msg -t get_outputs | jq '.[0].rect.width')"
 
 expect_request "focus, criteria and action split" '{"op":"focus","id":22}' -q '[con_id=22]' focus

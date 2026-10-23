@@ -8,7 +8,8 @@ if [ -n "${SWAYSOCK:-}" ]; then
 	msgcommand="swaymsg"
 elif [ -n "${I3SOCK:-}" ]; then
 	msgcommand="i3-msg"
-elif [ "$(uname -s)" = "Darwin" ]; then
+# $OSTYPE instead of uname: no extra process on the path of every dfzf command.
+elif [[ $OSTYPE == darwin* ]]; then
 	# Hammerspoon shim speaking the subset of the i3 IPC that dfzf uses (macos/).
 	msgcommand="dfzf-hs-msg"
 fi

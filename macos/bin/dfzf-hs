@@ -1,43 +1,52 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 # Bridge to the Dfzf Hammerspoon spoon: sends one JSON request ({"op": ...}) and
 # prints the reply. Usage: dfzf-hs '<json request>'
+# dfzf-hs-msg sources this file and calls dfzf_hs directly: one bash startup less
+# on every request, which dominates dfzf's latency on macOS.
 
-request="${1:?usage: dfzf-hs <json request>}"
+dfzf_hs() {
+	local request="${1:?usage: dfzf-hs <json request>}"
+	local socket response status payload
 
-# The native hs._dfzf module answers on this socket without going through Lua;
-# its protocol is one request line in, `ok|err` then the payload out.
-socket="${DFZF_HS_SOCKET:-$HOME/.local/state/dfzf/hs.sock}"
-if [[ -S $socket ]] && command -v nc >/dev/null; then
-	if response=$(printf '%s\n' "$request" | nc -U "$socket" 2>/dev/null) && [[ -n $response ]]; then
-		status="${response%%$'\n'*}"
-		payload=""
-		[[ $response == *$'\n'* ]] && payload="${response#*$'\n'}"
-		case "$status" in
-		ok)
-			[[ -z $payload ]] || printf '%s\n' "$payload"
-			exit 0
-			;;
-		err)
-			printf '%s\n' "$payload" >&2
-			exit 1
-			;;
-		esac
+	# The native hs._dfzf module answers on this socket without going through Lua;
+	# its protocol is one request line in, `ok|err` then the payload out.
+	socket="${DFZF_HS_SOCKET:-$HOME/.local/state/dfzf/hs.sock}"
+	if [[ -S $socket ]] && command -v nc >/dev/null; then
+		if response=$(printf '%s\n' "$request" | nc -U "$socket" 2>/dev/null) && [[ -n $response ]]; then
+			status="${response%%$'\n'*}"
+			payload=""
+			[[ $response == *$'\n'* ]] && payload="${response#*$'\n'}"
+			case "$status" in
+			ok)
+				[[ -z $payload ]] || printf '%s\n' "$payload"
+				return 0
+				;;
+			err)
+				printf '%s\n' "$payload" >&2
+				return 1
+				;;
+			esac
+		fi
+		# Stale socket (Hammerspoon gone, or running the Lua backend): use the CLI.
 	fi
-	# Stale socket (Hammerspoon gone, or running the Lua backend): use the CLI.
-fi
 
-command -v hs >/dev/null || {
-	echo "dfzf-hs: 'hs' CLI not found (run hs.ipc.cliInstall() in Hammerspoon)" >&2
-	exit 1
+	command -v hs >/dev/null || {
+		echo "dfzf-hs: 'hs' CLI not found (run hs.ipc.cliInstall() in Hammerspoon)" >&2
+		return 1
+	}
+
+	# The request travels inside a Lua long bracket string, which needs no escaping
+	# as long as the payload never contains its closing delimiter.
+	if [[ $request == *']==]'* ]]; then
+		echo "dfzf-hs: request contains the reserved sequence ']==]'" >&2
+		return 2
+	fi
+
+	hs -c "spoon.Dfzf:ipc([==[${request}]==])"
 }
 
-# The request travels inside a Lua long bracket string, which needs no escaping
-# as long as the payload never contains its closing delimiter.
-if [[ $request == *']==]'* ]]; then
-	echo "dfzf-hs: request contains the reserved sequence ']==]'" >&2
-	exit 2
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+	set -euo pipefail
+	dfzf_hs "$@"
 fi
-
-exec hs -c "spoon.Dfzf:ipc([==[${request}]==])"
