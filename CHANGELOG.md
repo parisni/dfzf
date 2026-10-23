@@ -2,6 +2,16 @@
 ## [Unreleased]
 
 
+<a name="v1.1.2"></a>
+## [v1.1.2] - 2026-10-24
+### Bug Fixes
+- **exit,hub:** handle uppercase option keys on enter
+- **git:** use the foreground process cwd of the kitty window
+
+### Maintenance
+- **mise:** pin python 3.12 for pre-commit hooks
+
+
 <a name="v1.1.1"></a>
 ## [v1.1.1] - 2026-10-23
 ### Bug Fixes
@@ -698,7 +708,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.1.2...HEAD
+[v1.1.2]: https://github.com/parisni/dfzf/compare/v1.1.1...v1.1.2
 [v1.1.1]: https://github.com/parisni/dfzf/compare/v1.1.0...v1.1.1
 [v1.1.0]: https://github.com/parisni/dfzf/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/parisni/dfzf/compare/v0.19.3...v1.0.0
