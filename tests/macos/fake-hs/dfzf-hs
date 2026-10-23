@@ -8,6 +8,17 @@ dfzf_hs() {
 	case "$(jq -r .op <<<"$request")" in
 	tree) cat "$tree" ;;
 	outputs) echo '[{"name":"screen","focused":true,"rect":{"x":0,"y":25,"width":1000,"height":800}}]' ;;
+	focus | show | move | resize)
+		# Mirrors the backend: single-window actions reject an unknown id.
+		if ! jq -e --argjson id "$(jq .id <<<"$request")" 'any(.. | objects; .id? == $id)' "$tree" >/dev/null; then
+			echo "dfzf: no window with id $(jq .id <<<"$request")" >&2
+			return 1
+		fi
+		echo "$request" >>"$DFZF_TEST_LOG"
+		if [[ $(jq -r .op <<<"$request") == show && -n ${DFZF_TEST_TREE_ON_SHOW:-} ]]; then
+			cp "$DFZF_TEST_TREE_ON_SHOW" "$DFZF_TEST_TREE_OVERRIDE"
+		fi
+		;;
 	*)
 		echo "$request" >>"$DFZF_TEST_LOG"
 		if [[ $(jq -r .op <<<"$request") == show && -n ${DFZF_TEST_TREE_ON_SHOW:-} ]]; then

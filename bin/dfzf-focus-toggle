@@ -41,32 +41,42 @@ fallback=("$@")
 origin_mark="_dfzf-origin-${key}"
 probe_mark="_dfzf-focus-toggle-probe-${key}"
 
+# dfzf-exec only picks the backend: on macOS call it directly, one bash start
+# less on each of the requests below.
+msg=dfzf-exec
+if [[ -z ${SWAYSOCK:-} && -z ${I3SOCK:-} && $OSTYPE == darwin* ]]; then
+	msg=dfzf-hs-msg
+fi
+
 # Marks are unique (sway and the macOS backend alike): marking the new origin
 # moves the mark off the previous one, so an explicit unmark is only needed when
 # there is no window to mark.
 set_origin() {
 	if [[ -n $1 ]]; then
-		dfzf-exec -q "[con_id=$1] mark --add ${origin_mark}" >/dev/null 2>&1 || true
+		"$msg" -q "[con_id=$1] mark --add ${origin_mark}" >/dev/null 2>&1 || true
 	else
-		dfzf-exec -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
+		"$msg" -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
 	fi
 }
 
 # Probe the target: tag every window matching <criteria> with a transient mark,
 # read it back from the tree, then remove it. This lets us use sway's own
 # criteria matching instead of re-implementing it in jq.
-dfzf-exec -q "${criteria} mark --add ${probe_mark}" >/dev/null 2>&1 || true
+"$msg" -q "${criteria} mark --add ${probe_mark}" >/dev/null 2>&1 || true
 
-tree="$(dfzf-exec -t get_tree)"
-current_id="$(echo "$tree" | jq -r 'first(.. | objects | select(.focused == true) | .id) // empty')"
-matched_ids="$(echo "$tree" | jq -r --arg m "$probe_mark" \
-	'.. | objects | select((.marks // []) | index($m)) | .id')"
-target_focused="$(echo "$tree" | jq -r --arg m "$probe_mark" \
-	'[.. | objects | select((.marks // []) | index($m)) | .focused] | any')"
+tree="$("$msg" -t get_tree)"
+# One jq pass: focused window, whether a target is focused, then the targets.
+mapfile -t probe < <(jq -r --arg m "$probe_mark" '
+	(first(.. | objects | select(.focused == true) | .id) // ""),
+	([.. | objects | select((.marks // []) | index($m)) | .focused] | any),
+	(.. | objects | select((.marks // []) | index($m)) | .id)' <<<"$tree")
+current_id="${probe[0]-}"
+target_focused="${probe[1]-false}"
+matched_ids="$(printf '%s\n' "${probe[@]:2}")"
 
 while IFS= read -r mid; do
 	if [[ -n $mid ]]; then
-		dfzf-exec -q "[con_id=${mid}] unmark ${probe_mark}" >/dev/null 2>&1 || true
+		"$msg" -q "[con_id=${mid}] unmark ${probe_mark}" >/dev/null 2>&1 || true
 	fi
 done <<<"$matched_ids"
 
@@ -93,14 +103,14 @@ if [[ $target_focused == "true" ]]; then
 			| {id, origin: ($marks | index($m) != null),
 				sort: ([$marks[] | select(startswith("_dfzf-sort-")) | ltrimstr("_dfzf-sort-") | tonumber] | max // 0)}]
 		| (map(select(.origin)) | first) // max_by(.sort) | .id // empty')"
-	dfzf-exec -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
+	"$msg" -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
 
 	if [[ -n $origin_id ]]; then
-		dfzf-exec -q "[con_id=${origin_id}] focus" >/dev/null
+		"$msg" -q "[con_id=${origin_id}] focus" >/dev/null
 	fi
 	exit 0
 fi
 
 # Not on the target yet: mark the current window as origin, then jump to target.
 set_origin "$current_id"
-dfzf-exec -q "${criteria} focus" >/dev/null
+"$msg" -q "${criteria} focus" >/dev/null

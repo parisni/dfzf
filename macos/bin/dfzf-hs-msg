@@ -155,9 +155,10 @@ ids='null'
 re_single_id='^\[\["con_id","([0-9]+)"\]\]$'
 single_id=""
 [[ $criteria =~ $re_single_id ]] && single_id="${BASH_REMATCH[1]}"
-if [[ $has_criteria == true && -n $single_id && ($verb == mark || $verb == unmark || $verb == kill) ]]; then
-	# A bare con_id needs no tree lookup for actions where an unknown id is
-	# harmless; focus & co still check it, for the `focus || fallback` chains.
+if [[ $has_criteria == true && -n $single_id && $verb =~ ^(mark|unmark|kill|focus|scratchpad|move|resize)$ ]]; then
+	# A bare con_id needs no tree lookup: an unknown id is harmless for
+	# mark/unmark/kill, and an error from the backend for the single-window
+	# actions, which keeps the `focus || fallback` chains working.
 	ids="[$single_id]"
 elif [[ $has_criteria == true ]]; then
 	ids=$(select_ids)
