@@ -29,10 +29,18 @@ obj.socketPath = nil
 -- Hammerspoon inherits launchd's minimal PATH: prepend where dfzf, kitty and
 -- their dependencies usually live.
 obj.path = "/opt/homebrew/bin:/usr/local/bin:" .. os.getenv("HOME") .. "/.local/bin"
+-- Homebrew's `kitty` is a bash script re-executing the app binary: call the
+-- binary itself when present, one process less on every popup.
+local KITTY_APP = "/Applications/kitty.app/Contents/MacOS/kitty"
+local kittyApp = io.open(KITTY_APP, "r")
+local kitty = kittyApp and KITTY_APP or "kitty"
+if kittyApp then
+  kittyApp:close()
+end
 obj.commands = {
-  windows = "kitty -1 --title dfzf-popup -e dfzf-windows",
-  hub = "kitty -1 --title dfzf-popup -e dfzf-hub",
-  term = [[dfzf-focus-toggle term '[app_id="^dfzf-term$"]' kitty -1 --title dfzf-term]],
+  windows = kitty .. " -1 --title dfzf-popup -e dfzf-windows",
+  hub = kitty .. " -1 --title dfzf-popup -e dfzf-hub",
+  term = [[dfzf-focus-toggle term '[app_id="^dfzf-term$"]' ]] .. kitty .. " -1 --title dfzf-term",
   git = "dfzf-git",
 }
 
@@ -422,7 +430,8 @@ end
 function obj:_run(command)
   -- Detached: the kitty instance a command may start must outlive a reload or
   -- quit of Hammerspoon, and must not hold the task's pipes (hs.task would block).
-  local task = hs.task.new("/bin/sh", nil, { "-c", "(" .. command .. "\n) </dev/null >/dev/null 2>&1 &" })
+  -- /bin/bash, not /bin/sh: macOS's sh re-executes bash, one process more.
+  local task = hs.task.new("/bin/bash", nil, { "-c", "(" .. command .. "\n) </dev/null >/dev/null 2>&1 &" })
   local env = task:environment()
   env.PATH = self.path .. ":" .. (env.PATH or "/usr/bin:/bin")
   task:setEnvironment(env)

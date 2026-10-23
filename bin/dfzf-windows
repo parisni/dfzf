@@ -2,7 +2,12 @@
 set -euo pipefail
 
 export SHELL="$(command -v bash)"
-current_tree=$(dfzf-kill-bro)
+# macOS: Dfzf.spoon already keeps a single popup, dfzf-kill-bro would only relay the tree.
+if [[ $OSTYPE == darwin* ]]; then
+	current_tree=$(dfzf-exec -t get_tree)
+else
+	current_tree=$(dfzf-kill-bro)
+fi
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 windows_prompt_pattern="^[>$%] "
 windows_app_filter="${DFZF_WINDOWS_APP_FILTER-}"
@@ -115,10 +120,15 @@ if [[ -z $result ]]; then
 	exit 0
 fi
 
-dfzf-exec -q '[con_id='"$(head -n1 <<<"$result" | extract_con_id)"']' floating disable
+# macOS has no floating windows: skip a round-trip to the backend on every launch.
+if [[ $OSTYPE != darwin* ]]; then
+	dfzf-exec -q '[con_id='"$(head -n1 <<<"$result" | extract_con_id)"']' floating disable
+fi
 
 # Start with the keybinding cheatsheet hidden each session (`?` toggles it).
-dfzf-help reset windows
+if [[ -e ${XDG_RUNTIME_DIR:-/tmp}/dfzf-help.windows ]]; then
+	dfzf-help reset windows
+fi
 
 start_binds=(--bind "change:first")
 if [[ $no_first_item == false ]]; then

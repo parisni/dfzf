@@ -29,7 +29,6 @@ if [[ ${1:-} == --list ]]; then
 	exit 0
 fi
 
-dfzf-kill-bro >/dev/null
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 
 choice=$(list_apps | fzf --prompt "Launcher > " --delimiter $'\t' --with-nth 1) || exit 0

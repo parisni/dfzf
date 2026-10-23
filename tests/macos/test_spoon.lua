@@ -254,7 +254,7 @@ check("focus on unknown id errors", not pcall(ipc, { op = "focus", id = 42 }))
 
 spoon:_run("kitty -1 --title dfzf-term")
 check("run detaches the command from Hammerspoon",
-  lastTask.path == "/bin/sh" and lastTask.args[1] == "-c"
+  lastTask.path == "/bin/bash" and lastTask.args[1] == "-c"
   and lastTask.args[2] == "(kitty -1 --title dfzf-term\n) </dev/null >/dev/null 2>&1 &"
   and lastTask.env.PATH == spoon.path .. ":/usr/bin:/bin")
 

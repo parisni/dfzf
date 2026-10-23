@@ -2,7 +2,7 @@
 set -euo pipefail
 
 export SHELL="$(command -v bash)"
-dfzf-kill-bro >/dev/null
+[[ $OSTYPE == darwin* ]] || dfzf-kill-bro >/dev/null
 
 tools_top_cmd="gotop"
 tools_calendar_cmd="khal interactive"

@@ -152,6 +152,8 @@ brew install --cask hammerspoon kitty
 brew install bash fzf jq fd ripgrep
 # bin/ and macos/bin/ in your PATH (macos/bin/dfzf-mark replaces the Rust one)
 cp bin/* macos/bin/* /opt/homebrew/bin/
+# optional, faster: an absolute bash shebang skips one process (/usr/bin/env) per script
+for f in bin/* macos/bin/*; do sed -i '' "1s|^#!/usr/bin/env bash\$|#!$(brew --prefix)/bin/bash|" "/opt/homebrew/bin/${f##*/}"; done
 cp -R macos/Dfzf.spoon ~/.hammerspoon/Spoons/
 # archive downloaded with a browser only: lift the quarantine on the native module
 xattr -dr com.apple.quarantine ~/.hammerspoon/Spoons/Dfzf.spoon

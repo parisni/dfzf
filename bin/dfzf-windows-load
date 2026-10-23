@@ -8,10 +8,6 @@ windows_app_filter="${DFZF_WINDOWS_APP_FILTER-}"
 # kitty remote-control socket; kitty suffixes `listen_on` with its pid, hence the {pid} placeholder.
 kitty_socket='/tmp/kitty-{pid}'
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
-findcommand=$(command -v fd || command -v fdfind) || {
-	echo "Neither fd nor fdfind found"
-	exit 1
-}
 
 # Parse command line options
 input_json=""
@@ -54,7 +50,7 @@ fi
 # kernel limit (MAX_ARG_STRLEN, 128KiB), which made callers fail with
 # "Argument list too long" once enough windows were open.
 if [ "$input_json" = "-" ]; then
-	input_json="$(cat)"
+	input_json="$(</dev/stdin)"
 fi
 
 # kittyx companion shells live inside a kitty OS window, invisible to the WM:
@@ -98,7 +94,13 @@ RESET=$'\033[0m'
 RED=$'\033[31m'
 BLUE=$'\033[34m'
 GREEN=$'\033[32m'
-color_state_file=$($findcommand 'dfzf-windows-color-.+' /tmp -d 1 -t f 2>/dev/null | head -n 1)
+color_state_file=""
+for state_file in /tmp/dfzf-windows-color-?*; do
+	if [[ -f $state_file ]]; then
+		color_state_file="$state_file"
+		break
+	fi
+done
 # Main processing logic using jq
 result=$(
 	echo "$input_json" | jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GREEN" --arg reset "$RESET" \

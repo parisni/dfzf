@@ -115,7 +115,11 @@ if [[ $action == exec\ * ]]; then
 	cmd="${cmd#--no-startup-id }"
 	# Detach like sway's exec: the caller (often a short-lived popup) must not
 	# take the launched program down with it.
-	nohup /bin/sh -c "$cmd" >/dev/null 2>&1 &
+	# nohup without its two execs (nohup itself, then /bin/sh re-executing bash).
+	(
+		trap '' HUP
+		exec /bin/bash -c "$cmd"
+	) </dev/null >/dev/null 2>&1 &
 	exit 0
 fi
 
@@ -127,6 +131,8 @@ fi
 # Without criteria, sway applies the command to the focused window; the one
 # exception is a bare `unmark`, which targets every window.
 read -r verb rest <<<"$action"
+# No-op: windows are either maximized or dfzf popups sized by the spoon.
+[[ $verb == floating ]] && exit 0
 if [[ $has_criteria == false && $verb != unmark ]]; then
 	criteria='[["con_id","__focused__"]]'
 	has_criteria=true
@@ -175,9 +181,6 @@ focus)
 	;;
 kill)
 	call "{\"op\":\"close\",\"ids\":$ids}"
-	;;
-floating)
-	# No-op: windows are either maximized or dfzf popups sized by the spoon.
 	;;
 scratchpad)
 	[[ $rest == show ]] || unsupported "scratchpad $rest"
