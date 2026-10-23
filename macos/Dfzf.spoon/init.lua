@@ -43,6 +43,10 @@ local SORT_PREFIX = "_dfzf-sort"
 -- Focus events are delivered asynchronously and can land after a preview has
 -- already cleared its mark: ignore them for this long after the clear.
 local PREVIEW_GRACE_SECONDS = 0.5
+-- Closing a popup lets its app (kitty, which also hosts dfzf-term) activate
+-- itself again: for this long, its windows cannot take the focus back from
+-- the window the popup handed it to.
+local HANDOFF_SECONDS = 1.0
 
 local function now()
   return hs.timer.secondsSinceEpoch()
@@ -190,12 +194,66 @@ function obj:_onFocused(win)
   if not id then
     return
   end
+  self:_guardHandoff(win, id)
   local entry = self:_entry(id)
   -- A preview only peeks at a window: it must not reorder the recency list.
   if contains(entry.marks, PREVIEW_MARK) or (self._previewGraceUntil[id] or 0) > now() then
     return
   end
   self:_touch(id, math.floor(now() * 1000))
+end
+
+local function pidOf(win)
+  local app = win:application()
+  return app and app:pid()
+end
+
+-- A focus request from a popup: remember where it sent the focus, for when it closes.
+function obj:_noteFocusRequest(id)
+  self._handoff = nil
+  local target = hs.window.get(id)
+  if not target or self.popupTitles[target:title() or ""] then
+    return
+  end
+  local popup
+  for _, win in ipairs(self._filter:getWindows()) do
+    local winId = win:id()
+    if winId and self.popupTitles[win:title() or ""] and (not popup or winId > popup:id()) then
+      popup = win
+    end
+  end
+  if popup then
+    self._handoff = { popupId = popup:id(), pid = pidOf(popup), target = target }
+  end
+end
+
+-- The destroyed window may no longer tell its id: then trust the popup being gone.
+function obj:_onDestroyed(win)
+  local handoff = self._handoff
+  if not handoff or handoff.untilTime then
+    return
+  end
+  local id = win and win:id()
+  if id ~= handoff.popupId and (id or hs.window.get(handoff.popupId)) then
+    return
+  end
+  handoff.untilTime = now() + HANDOFF_SECONDS
+  local focused = hs.window.focusedWindow()
+  if not focused or focused:id() ~= handoff.target:id() then
+    handoff.target:focus()
+  end
+end
+
+function obj:_guardHandoff(win, id)
+  local handoff = self._handoff
+  if not handoff or not handoff.untilTime or id == handoff.target:id() then
+    return
+  end
+  if now() > handoff.untilTime then
+    self._handoff = nil
+  elseif pidOf(win) == handoff.pid then
+    handoff.target:focus()
+  end
 end
 
 function obj:_place(win)
@@ -252,6 +310,7 @@ function handlers.focus(self, req)
     win:unminimize()
   end
   win:focus()
+  self:_noteFocusRequest(req.id)
 end
 
 function handlers.close(self, req)
@@ -430,6 +489,7 @@ function obj:start()
 
   local wf = hs.window.filter
   self._filter:subscribe(wf.windowFocused, function(win) self:_onFocused(win) end)
+  self._filter:subscribe(wf.windowDestroyed, function(win) self:_onDestroyed(win) end)
   self._filter:subscribe(wf.windowCreated, function(win) self:_place(win) end)
   self._filter:subscribe(wf.windowTitleChanged, function(win)
     if self.popupTitles[win:title() or ""] then

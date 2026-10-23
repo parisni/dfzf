@@ -73,6 +73,7 @@ hs = {
     orderedWindows = function() return { windows[2], windows[1] } end,
     filter = {
       windowFocused = "focused", windowCreated = "created", windowTitleChanged = "title",
+      windowDestroyed = "destroyed",
       new = function()
         local f = {}
         function f:setCurrentSpace() return self end
@@ -218,6 +219,35 @@ ipc({ op = "close", ids = { 5, 42 } })
 check("close existing, ignore unknown", hs.window.get(5) == nil)
 ipc({ op = "tree" })
 check("state of closed window pruned", spoon._state[5] == nil)
+
+-- Closing the popup reactivates kitty, which focuses its other window back.
+local function steal(win)
+  focusedId = win:id()
+  callbacks.focused(win)
+end
+local handoffPopup = hs.window.get(10)
+ipc({ op = "focus", id = 1 })
+handoffPopup:close()
+callbacks.destroyed(handoffPopup)
+steal(windows[2])
+check("handoff: closed popup's app cannot steal the focus back", focusedId == 1)
+clock = clock + 2
+steal(windows[2])
+check("handoff: expires after the grace period", focusedId == 2)
+local idle = newWindow(11, "dfzf-popup", "kitty")
+callbacks.created(idle)
+idle:close()
+callbacks.destroyed({ id = function() return nil end })
+steal(windows[2])
+check("handoff: popup that focused nothing forces nothing", focusedId == 2)
+local preview = newWindow(12, "dfzf-popup", "kitty")
+callbacks.created(preview)
+ipc({ op = "focus", id = 1 })
+ipc({ op = "focus", id = 12 })
+preview:close()
+callbacks.destroyed({ id = function() return nil end })
+steal(windows[2])
+check("handoff: preview that refocused the popup forces nothing", focusedId == 2)
 
 check("unknown op errors", not pcall(ipc, { op = "nope" }))
 check("focus on unknown id errors", not pcall(ipc, { op = "focus", id = 42 }))

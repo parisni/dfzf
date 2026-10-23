@@ -50,11 +50,22 @@ static NSString *noWindow(id windowId) {
     return [NSString stringWithFormat:@"dfzf: no window with id %@", windowId ?: @"nil"];
 }
 
+// Closing a popup lets its app (kitty, which also hosts dfzf-term) activate
+// itself again: for this long, its windows cannot take the focus back from
+// the window the popup handed it to.
+static const NSTimeInterval kHandoffSeconds = 1.0;
+
 @implementation DFZController {
     id<DFZWindowSource> _source;
     DFZConfig *_config;
     DFZState *_state;
     dispatch_queue_t _stateQueue;
+    // State queue only. Popup that focused another window, and that window.
+    DFZWindowID _handoffPopup;
+    DFZWindowID _handoffTarget;
+    // Set once the popup is gone: the app to keep off the target until then.
+    pid_t _handoffPid;
+    NSTimeInterval _handoffUntil;
 }
 
 - (instancetype)initWithSource:(id<DFZWindowSource>)source config:(DFZConfig *)config {
@@ -97,12 +108,16 @@ static NSString *noWindow(id windowId) {
 
 - (void)windowSourceDidRemoveWindow:(DFZWindowID)windowId {
     dispatch_async(_stateQueue, ^{
+        if (windowId == self->_handoffPopup) {
+            [self armHandoffFromPopup:windowId];
+        }
         [self->_state removeWindow:windowId];
     });
 }
 
 - (void)windowSourceDidFocusWindow:(DFZWindowID)windowId {
     dispatch_async(_stateQueue, ^{
+        [self guardHandoffAgainst:windowId];
         [self->_state focusWindow:windowId];
     });
 }
@@ -194,6 +209,63 @@ static NSString *noWindow(id windowId) {
     }
 }
 
+#pragma mark - Popup handoff (on the state queue)
+
+- (BOOL)isPopup:(DFZWindowID)windowId {
+    DFZWindowInfo *info = [_state window:windowId];
+    return info && [_config.popupTitles containsObject:info.title];
+}
+
+// A focus request from a popup: remember where it sent the focus, for when it closes.
+- (void)noteFocusRequest:(DFZWindowID)target {
+    _handoffPopup = 0;
+    if ([self isPopup:target]) {
+        return;
+    }
+    for (DFZWindowInfo *info in [_state windows]) {
+        if ([_config.popupTitles containsObject:info.title] && info.windowId > _handoffPopup) {
+            _handoffPopup = info.windowId;
+        }
+    }
+    _handoffTarget = target;
+}
+
+- (void)armHandoffFromPopup:(DFZWindowID)popup {
+    _handoffPopup = 0;
+    DFZWindowInfo *target = [_state window:_handoffTarget];
+    if (!target) {
+        return;
+    }
+    _handoffPid = [_state window:popup].pid;
+    _handoffUntil = _state.clock() + kHandoffSeconds;
+    if (_state.focusedId != _handoffTarget) {
+        [self refocusHandoffTarget];
+    }
+}
+
+- (void)guardHandoffAgainst:(DFZWindowID)windowId {
+    if (!_handoffUntil || windowId == _handoffTarget) {
+        return;
+    }
+    if (_state.clock() > _handoffUntil) {
+        _handoffUntil = 0;
+        return;
+    }
+    if ([_state window:windowId].pid == _handoffPid) {
+        [self refocusHandoffTarget];
+    }
+}
+
+- (void)refocusHandoffTarget {
+    DFZWindowID target = _handoffTarget;
+    dispatch_queue_t queue = [_source queueForWindow:target];
+    if (queue) {
+        dispatch_async(queue, ^{
+            [self->_source focusWindow:target];
+        });
+    }
+}
+
 #pragma mark - Requests
 
 // Runs a window action on its app queue, giving up at the deadline so a hung
@@ -263,6 +335,7 @@ static NSString *noWindow(id windowId) {
         __block BOOL minimized = NO;
         [self withState:^(DFZState *state) {
             minimized = [state window:windowId].minimized;
+            [self noteFocusRequest:windowId];
         }];
         [self onWindow:windowId deadline:deadline error:error run:^{
             if (minimized) {

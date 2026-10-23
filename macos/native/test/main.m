@@ -366,6 +366,61 @@ static void testTreeFixture(NSString *directory, NSString *fixture) {
     [h stop];
 }
 
+// Closing the popup reactivates kitty, which focuses its other window back.
+static void stealFocus(DFZHarness *h, DFZWindowID windowId) {
+    h.mock.focusedId = windowId;
+    [h.mock emitFocus:windowId];
+    [h settle];
+    [h settle];
+}
+
+static void testPopupHandoff(NSString *directory) {
+    DFZHarness *h = [[DFZHarness alloc] initWithPath:[directory stringByAppendingPathComponent:@"handoff.sock"]];
+    [h.mock addWindow:20 title:@"New Tab" app:@"Firefox" pid:900];
+    [h.mock addWindow:21 title:@"dfzf-term" app:@"kitty" pid:901];
+    [h.mock addWindow:22 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h start];
+    gClock = 5000.0;
+
+    [h request:@"{\"op\":\"focus\",\"id\":20}"];
+    [h.mock closeWindow:22];
+    [h settle];
+    stealFocus(h, 21);
+    check(@"handoff: closed popup's app cannot steal the focus back", h.mock.focusedId == 20);
+
+    [h.mock addWindow:23 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h settle];
+    gClock = 5100.0;
+    [h request:@"{\"op\":\"focus\",\"id\":20}"];
+    stealFocus(h, 21);
+    [h.mock closeWindow:23];
+    [h settle];
+    [h settle];
+    check(@"handoff: steal before the popup is gone is undone too", h.mock.focusedId == 20);
+
+    gClock = 5110.0;
+    stealFocus(h, 21);
+    check(@"handoff: expires after the grace period", h.mock.focusedId == 21);
+
+    [h.mock addWindow:24 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h settle];
+    h.mock.focusedId = 24;
+    [h.mock closeWindow:24];
+    [h settle];
+    stealFocus(h, 21);
+    check(@"handoff: popup that focused nothing forces nothing", h.mock.focusedId == 21);
+
+    [h.mock addWindow:25 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h settle];
+    [h request:@"{\"op\":\"focus\",\"id\":20}"];
+    [h request:@"{\"op\":\"focus\",\"id\":25}"];
+    [h.mock closeWindow:25];
+    [h settle];
+    stealFocus(h, 21);
+    check(@"handoff: preview that refocused the popup forces nothing", h.mock.focusedId == 21);
+    [h stop];
+}
+
 static void testHungApp(NSString *directory) {
     DFZHarness *h = [[DFZHarness alloc] initWithPath:[directory stringByAppendingPathComponent:@"hung.sock"]];
     [h.mock addWindow:7 title:@"spinning" app:@"Slow" pid:700];
@@ -414,6 +469,7 @@ int main(int argc, const char *argv[]) {
         NSString *directory = @(mkdtemp(base));
         testSpoonParity(directory);
         testTreeFixture(directory, @(argv[1]));
+        testPopupHandoff(directory);
         testHungApp(directory);
         [[NSFileManager defaultManager] removeItemAtPath:directory error:NULL];
     }
