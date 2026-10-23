@@ -328,8 +328,12 @@ static void axCallback(AXObserverRef observer, AXUIElementRef element, CFStringR
     CFRunLoopWakeUp(_axRunLoop);
 
     NSArray *windows = copyAttribute(app.element, kAXWindowsAttribute);
+    // Outside the initial scan (no group) the app has just launched, or was
+    // activated before its launch notification: windows it opened before the
+    // observer was attached are new ones, to be placed like any created window.
+    DFZWindowEvent event = group ? DFZWindowEventScanned : DFZWindowEventCreated;
     for (id window in windows) {
-        [self registerWindow:window app:app event:DFZWindowEventScanned];
+        [self registerWindow:window app:app event:event];
     }
     if (app.pid == [self frontmostPid]) {
         [self reportFocusedWindowOf:app];
