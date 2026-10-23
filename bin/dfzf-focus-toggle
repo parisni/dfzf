@@ -26,7 +26,7 @@ set -euo pipefail
 #                                  remembering the current window as origin
 #   - not on target             -> mark current window as origin, focus target
 #   - already on target         -> focus the origin window (back), clear mark
-#   - origin lost/absent        -> stay put (nothing sensible to go back to)
+#   - origin lost/absent        -> focus the most recent other window instead
 
 if [[ $# -lt 2 ]]; then
 	echo "usage: dfzf-focus-toggle <key> <criteria> [fallback-cmd ...]" >&2
@@ -82,12 +82,20 @@ if [[ -z $matched_ids ]]; then
 fi
 
 if [[ $target_focused == "true" ]]; then
-	# Already on the target: jump back to the origin window if it still exists.
-	origin_id="$(echo "$tree" | jq -r --arg m "$origin_mark" \
-		'first(.. | objects | select((.marks // []) | index($m)) | .id) // empty')"
+	# Already on the target: jump back to the origin window if it still exists,
+	# else to the most recent visible window that is not a target (an origin
+	# lost, or left on the target itself, must not turn the toggle into a no-op).
+	origin_id="$(echo "$tree" | jq -r --arg m "$origin_mark" --arg p "$probe_mark" '
+		[.. | objects | select(.type == "workspace" and .name != "__i3_scratch")
+			| .. | objects | select(.type == "con" and .focused != true and ((.nodes // []) | length) == 0)
+			| (.marks // [] | if type == "array" then . else [] end) as $marks
+			| select($marks | index($p) | not)
+			| {id, origin: ($marks | index($m) != null),
+				sort: ([$marks[] | select(startswith("_dfzf-sort-")) | ltrimstr("_dfzf-sort-") | tonumber] | max // 0)}]
+		| (map(select(.origin)) | first) // max_by(.sort) | .id // empty')"
 	dfzf-exec -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
 
-	if [[ -n $origin_id && $origin_id != "$current_id" ]]; then
+	if [[ -n $origin_id ]]; then
 		dfzf-exec -q "[con_id=${origin_id}] focus" >/dev/null
 	fi
 	exit 0
