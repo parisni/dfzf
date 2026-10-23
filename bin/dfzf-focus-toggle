@@ -41,6 +41,17 @@ fallback=("$@")
 origin_mark="_dfzf-origin-${key}"
 probe_mark="_dfzf-focus-toggle-probe-${key}"
 
+# Marks are unique (sway and the macOS backend alike): marking the new origin
+# moves the mark off the previous one, so an explicit unmark is only needed when
+# there is no window to mark.
+set_origin() {
+	if [[ -n $1 ]]; then
+		dfzf-exec -q "[con_id=$1] mark --add ${origin_mark}" >/dev/null 2>&1 || true
+	else
+		dfzf-exec -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
+	fi
+}
+
 # Probe the target: tag every window matching <criteria> with a transient mark,
 # read it back from the tree, then remove it. This lets us use sway's own
 # criteria matching instead of re-implementing it in jq.
@@ -62,13 +73,11 @@ done <<<"$matched_ids"
 if [[ -z $matched_ids ]]; then
 	# Target does not exist: the fallback creates it, so the current window is
 	# the origin to come back to on the next toggle.
-	dfzf-exec -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
 	if [[ ${#fallback[@]} -gt 0 ]]; then
-		if [[ -n $current_id ]]; then
-			dfzf-exec -q "[con_id=${current_id}] mark --add ${origin_mark}" >/dev/null 2>&1 || true
-		fi
+		set_origin "$current_id"
 		exec "${fallback[@]}"
 	fi
+	set_origin ""
 	exit 0
 fi
 
@@ -85,9 +94,5 @@ if [[ $target_focused == "true" ]]; then
 fi
 
 # Not on the target yet: mark the current window as origin, then jump to target.
-# Clear any previous origin first so only one window ever carries the mark.
-dfzf-exec -q "[con_mark=\"^${origin_mark}\$\"] unmark ${origin_mark}" >/dev/null 2>&1 || true
-if [[ -n $current_id ]]; then
-	dfzf-exec -q "[con_id=${current_id}] mark --add ${origin_mark}" >/dev/null 2>&1 || true
-fi
+set_origin "$current_id"
 dfzf-exec -q "${criteria} focus" >/dev/null

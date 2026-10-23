@@ -69,6 +69,14 @@ dfzf-hs-msg -q '[con_id=11] floating disable'
 assert_eq "floating is a no-op" "" "$(cat "$DFZF_TEST_LOG")"
 
 expect_error "no match is an error (fallback chains)" "No matching node" -q '[con_id=99] focus'
+
+# Bare con_id: mark/unmark/kill skip the tree lookup (id 7 is not in the fixture,
+# a lookup would fail), focus still checks the window exists.
+expect_request "con_id mark skips the tree" '{"op":"mark","id":7,"mark":"_o","add":true}' -q '[con_id=7] mark --add _o'
+expect_request "con_id unmark skips the tree" '{"op":"unmark","mark":"_o","ids":[7]}' -q '[con_id=7] unmark _o'
+expect_request "con_id kill skips the tree" '{"op":"close","ids":[7]}' -q '[con_id=7] kill'
+expect_error "con_id focus still checks the window" "No matching node" -q '[con_id=7] focus'
+expect_request "mark is JSON-escaped" '{"op":"mark","id":7,"mark":"_a\"b\\c","add":false}' -q '[con_id=7] mark _a"b\c'
 expect_error "workspaces unsupported" "unsupported on macOS" -q 'workspace 2'
 expect_error "command chains unsupported" "unsupported on macOS" -q '[con_id=11] move to workspace 2, focus'
 expect_error "other moves unsupported" "unsupported on macOS" -q 'move left'

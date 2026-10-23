@@ -10,6 +10,16 @@ die() {
 }
 unsupported() { die "unsupported on macOS: $*"; }
 
+# JSON is built with printf rather than `jq -n`: one process less per request.
+json_str() {
+	local s="$1"
+	s="${s//\\/\\\\}"
+	s="${s//\"/\\\"}"
+	s="${s//$'\t'/\\t}"
+	s="${s//$'\n'/\\n}"
+	printf '"%s"' "$s"
+}
+
 # shellcheck source=dfzf-hs
 source "$(command -v dfzf-hs)"
 
@@ -87,7 +97,12 @@ if [[ $command_str =~ $re_command ]]; then
 		con_id | app_id | class | title | con_mark) ;;
 		*) unsupported "criteria key '$key'" ;;
 		esac
-		criteria=$(jq -cn --argjson c "$criteria" --arg k "$key" --arg v "$value" '$c + [[$k, $v]]')
+		pair="[$(json_str "$key"),$(json_str "$value")]"
+		if [[ $criteria == '[]' ]]; then
+			criteria="[$pair]"
+		else
+			criteria="${criteria%]},$pair]"
+		fi
 	done
 fi
 
@@ -131,38 +146,49 @@ select_ids() {
 }
 
 ids='null'
-if [[ $has_criteria == true ]]; then
+re_single_id='^\[\["con_id","([0-9]+)"\]\]$'
+single_id=""
+[[ $criteria =~ $re_single_id ]] && single_id="${BASH_REMATCH[1]}"
+if [[ $has_criteria == true && -n $single_id && ($verb == mark || $verb == unmark || $verb == kill) ]]; then
+	# A bare con_id needs no tree lookup for actions where an unknown id is
+	# harmless; focus & co still check it, for the `focus || fallback` chains.
+	ids="[$single_id]"
+elif [[ $has_criteria == true ]]; then
 	ids=$(select_ids)
 	# Mirror sway: a command whose criteria match nothing is an error, which
 	# callers use for fallbacks (`... focus || ...`).
 	[[ $ids == '[]' ]] && die "No matching node"
 fi
 
+# Last matched id: sway applies the command to each match in turn, so the last
+# one wins for single-window actions.
+last_id="${ids#[}"
+last_id="${last_id%]}"
+last_id="${last_id##*,}"
+
 call() { dfzf_hs "$1" >/dev/null; }
 
 case "$verb" in
 focus)
 	[[ -z $rest ]] || unsupported "focus $rest"
-	# sway applies the command to each match in turn: the last one ends up focused.
-	call "$(jq -cn --argjson ids "$ids" '{op: "focus", id: $ids[-1]}')"
+	call "{\"op\":\"focus\",\"id\":$last_id}"
 	;;
 kill)
-	call "$(jq -cn --argjson ids "$ids" '{op: "close", ids: $ids}')"
+	call "{\"op\":\"close\",\"ids\":$ids}"
 	;;
 floating)
 	# No-op: windows are either maximized or dfzf popups sized by the spoon.
 	;;
 scratchpad)
 	[[ $rest == show ]] || unsupported "scratchpad $rest"
-	call "$(jq -cn --argjson ids "$ids" '{op: "show", id: $ids[-1]}')"
+	call "{\"op\":\"show\",\"id\":$last_id}"
 	;;
 move)
 	re_position='^position ([0-9]+)(px)? ([0-9]+)(px)?$'
 	if [[ $rest == scratchpad ]]; then
-		call "$(jq -cn --argjson ids "$ids" '{op: "hide", ids: $ids}')"
+		call "{\"op\":\"hide\",\"ids\":$ids}"
 	elif [[ $rest =~ $re_position ]]; then
-		call "$(jq -cn --argjson ids "$ids" --argjson x "${BASH_REMATCH[1]}" --argjson y "${BASH_REMATCH[3]}" \
-			'{op: "move", id: $ids[-1], x: $x, y: $y}')"
+		call "{\"op\":\"move\",\"id\":$last_id,\"x\":$((10#${BASH_REMATCH[1]})),\"y\":$((10#${BASH_REMATCH[3]}))}"
 	else
 		unsupported "move $rest"
 	fi
@@ -170,15 +196,14 @@ move)
 resize)
 	re_size='^set ([0-9]+)(px)? ([0-9]+)(px)?$'
 	[[ $rest =~ $re_size ]] || unsupported "resize $rest"
-	call "$(jq -cn --argjson ids "$ids" --argjson w "${BASH_REMATCH[1]}" --argjson h "${BASH_REMATCH[3]}" \
-		'{op: "resize", id: $ids[-1], w: $w, h: $h}')"
+	call "{\"op\":\"resize\",\"id\":$last_id,\"w\":$((10#${BASH_REMATCH[1]})),\"h\":$((10#${BASH_REMATCH[3]}))}"
 	;;
 urgent)
 	case "$rest" in
 	enable | disable | toggle) ;;
 	*) unsupported "urgent $rest" ;;
 	esac
-	call "$(jq -cn --argjson ids "$ids" --arg mode "$rest" '{op: "urgent", ids: $ids, mode: $mode}')"
+	call "{\"op\":\"urgent\",\"ids\":$ids,\"mode\":\"$rest\"}"
 	;;
 mark)
 	add=false
@@ -187,13 +212,15 @@ mark)
 		rest="${rest#--add }"
 	fi
 	[[ -n $rest && $rest != -* && $rest != *\ * ]] || unsupported "mark $rest"
-	call "$(jq -cn --argjson ids "$ids" --arg mark "$rest" --argjson add "$add" \
-		'{op: "mark", id: $ids[-1], mark: $mark, add: $add}')"
+	call "{\"op\":\"mark\",\"id\":$last_id,\"mark\":$(json_str "$rest"),\"add\":$add}"
 	;;
 unmark)
 	[[ $rest != *\ * ]] || unsupported "unmark $rest"
-	call "$(jq -cn --argjson ids "$ids" --arg mark "$rest" \
-		'{op: "unmark", mark: $mark} + (if $ids == null then {} else {ids: $ids} end)')"
+	if [[ $ids == null ]]; then
+		call "{\"op\":\"unmark\",\"mark\":$(json_str "$rest")}"
+	else
+		call "{\"op\":\"unmark\",\"mark\":$(json_str "$rest"),\"ids\":$ids}"
+	fi
 	;;
 *)
 	unsupported "'$action'"
