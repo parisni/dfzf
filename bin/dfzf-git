@@ -41,7 +41,8 @@ kitty_cwd() {
 	kitty @ --to "unix:$socket" ls 2>/dev/null | jq -r --arg class "$class" '
 		[.[] | select($class == "" or .wm_class == $class)]
 		| (map(select(.is_focused)) + map(select(.last_focused)) + .)[0] // empty
-		| .tabs[] | select(.is_active) | .windows[] | select(.is_active) | .cwd // empty
+		| .tabs[] | select(.is_active) | .windows[] | select(.is_active)
+		| .foreground_processes[0].cwd // .cwd // empty
 	'
 }
 
