@@ -14,8 +14,12 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-builtin-literals
 
-  -  repo: https://github.com/koalaman/shellcheck-precommit
-     rev: v0.10.0
-     hooks:
-       - id: shellcheck
-         args: ["--exclude=SC1091,SC2155,SC2016,SC2034,SC2145,SC2178,SC2128"]
+  # The upstream hook runs a docker image: use the shellcheck pinned in mise.toml.
+  - repo: local
+    hooks:
+      - id: shellcheck
+        name: ShellCheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+        args: ["--exclude=SC1091,SC2155,SC2016,SC2034,SC2145,SC2178,SC2128"]

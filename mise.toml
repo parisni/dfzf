@@ -3,6 +3,7 @@ experimental = true
 
 [tools]
 pre-commit = "4.3.0"
+shellcheck = "0.10.0"
 
 [hooks]
 postinstall = ["mise exec -- pre-commit install"]
