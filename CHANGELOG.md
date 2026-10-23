@@ -2,6 +2,28 @@
 ## [Unreleased]
 
 
+<a name="v1.1.1"></a>
+## [v1.1.1] - 2026-10-23
+### Bug Fixes
+- **focus-toggle:** go back to the last window when the origin is lost
+- **focus-toggle:** remember the origin when creating the target
+- **macos:** keep the focus where a closing popup sent it
+- **macos:** detach the commands the spoon starts
+- **macos:** maximize the windows an app opens at launch
+- **macos:** keep a single popup without relying on focus
+
+### Code Refactoring
+- **macos:** cut the requests of a focus toggle
+- **macos:** spawn fewer processes on the tree path
+
+### Maintenance
+- **pre-commit:** run the mise-pinned shellcheck instead of docker
+
+### Performance Improvements
+- **macos:** cut the processes of a focus toggle
+- **macos:** spawn fewer processes when a popup opens
+
+
 <a name="v1.1.0"></a>
 ## [v1.1.0] - 2026-10-22
 ### CI/CD
@@ -676,7 +698,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.1.1...HEAD
+[v1.1.1]: https://github.com/parisni/dfzf/compare/v1.1.0...v1.1.1
 [v1.1.0]: https://github.com/parisni/dfzf/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/parisni/dfzf/compare/v0.19.3...v1.0.0
 [v0.19.3]: https://github.com/parisni/dfzf/compare/v0.19.2...v0.19.3
