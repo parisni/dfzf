@@ -2,6 +2,21 @@
 ## [Unreleased]
 
 
+<a name="v1.2.0"></a>
+## [v1.2.0] - 2026-10-24
+### Bug Fixes
+- **macos:** drop NO_COLOR and TERM from the commands the spoon runs
+- **macos:** replace sleep infinity with tail -f /dev/null
+
+### Features
+- **macos:** add a persistent windows switcher
+
+### Performance Improvements
+- **macos:** read the tree and focus in one request from dfzf-windows
+- **macos:** run focus toggles natively in a single request
+- **windows:** format the list in a single jq pass
+
+
 <a name="v1.1.2"></a>
 ## [v1.1.2] - 2026-10-24
 ### Bug Fixes
@@ -708,7 +723,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.2.0...HEAD
+[v1.2.0]: https://github.com/parisni/dfzf/compare/v1.1.2...v1.2.0
 [v1.1.2]: https://github.com/parisni/dfzf/compare/v1.1.1...v1.1.2
 [v1.1.1]: https://github.com/parisni/dfzf/compare/v1.1.0...v1.1.1
 [v1.1.0]: https://github.com/parisni/dfzf/compare/v1.0.0...v1.1.0
