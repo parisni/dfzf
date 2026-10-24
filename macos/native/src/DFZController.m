@@ -6,6 +6,7 @@
         _identityTitles = [NSSet set];
         _popupTitles = [NSSet set];
         _floatingTitles = [NSSet set];
+        _centeredTitles = [NSSet set];
         _popupRatio = 0.65;
         _maximize = YES;
         _actionTimeout = 2.0;
@@ -302,14 +303,16 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
             return;
         }
         NSRect area = screen.frame;
+        double ratio = self->_config.popupRatio;
+        NSRect centered = NSMakeRect(area.origin.x + area.size.width * (1 - ratio) / 2,
+                                     area.origin.y + area.size.height * (1 - ratio) / 2,
+                                     area.size.width * ratio, area.size.height * ratio);
         if ([self->_config.popupTitles containsObject:title]) {
-            double ratio = self->_config.popupRatio;
-            NSRect frame = NSMakeRect(area.origin.x + area.size.width * (1 - ratio) / 2,
-                                      area.origin.y + area.size.height * (1 - ratio) / 2,
-                                      area.size.width * ratio, area.size.height * ratio);
-            [self->_source setFrame:frame ofWindow:windowId];
+            [self->_source setFrame:centered ofWindow:windowId];
             [self->_source focusWindow:windowId];
             [self closePopupsOlderThan:windowId];
+        } else if ([self->_config.centeredTitles containsObject:title]) {
+            [self->_source setFrame:centered ofWindow:windowId];
         } else if (self->_config.maximize && ![self->_config.floatingTitles containsObject:title]) {
             [self->_source setFrame:area ofWindow:windowId];
         }
@@ -467,6 +470,15 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
     if ([op isEqualToString:@"focusToggle"]) {
         return [self focusToggle:req deadline:deadline error:error];
     }
+    if ([op isEqualToString:@"hideApp"]) {
+        double pid = 0;
+        if (!numberFrom(req[@"pid"], &pid) || pid <= 0) {
+            *error = @"";
+            return nil;
+        }
+        [_source hideApplication:(pid_t)pid];
+        return @"";
+    }
     if ([op isEqualToString:@"close"] || [op isEqualToString:@"hide"]) {
         if (!ids) {
             *error = @"";
@@ -596,7 +608,9 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
         DFZWindowID back = 0;
         long long backRecency = -1;
         for (DFZWindowInfo *info in windows) {
-            if (info.minimized || info.windowId == current || [targets containsObject:@(info.windowId)]) {
+            // A hidden switcher is no window to go back to.
+            if (info.minimized || info.windowId == current || [targets containsObject:@(info.windowId)]
+                || [self->_config.centeredTitles containsObject:info.title]) {
                 continue;
             }
             if ([[state marksOfWindow:info.windowId] containsObject:originMark]) {

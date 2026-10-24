@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DFZMockSource : NSObject <DFZWindowSource>
 @property (nonatomic, copy) NSArray<NSNumber *> *frontToBack;
 @property (atomic) DFZWindowID focusedId;
+// Last pid given to hideApplication:, 0 before.
+@property (atomic) pid_t hiddenPid;
 - (void)addWindow:(DFZWindowID)windowId title:(NSString *)title app:(NSString *)app pid:(pid_t)pid;
 - (void)addWindow:(DFZWindowInfo *)info event:(DFZWindowEvent)event;
 - (void)emitFocus:(DFZWindowID)windowId;

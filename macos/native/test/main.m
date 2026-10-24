@@ -108,6 +108,7 @@ static id normalize(id value) {
             [NSSet setWithArray:@[ @"dfzf-popup", @"dfzf-term", @"dfzf-hidden", @"dfzf-git", @"dfzf-scratchpad" ]];
         config.popupTitles = [NSSet setWithObject:@"dfzf-popup"];
         config.floatingTitles = [NSSet setWithArray:@[ @"dfzf-git", @"dfzf-scratchpad" ]];
+        config.centeredTitles = [NSSet setWithObject:@"dfzf-switcher"];
         _controller = [[DFZController alloc] initWithSource:_mock config:config];
         [_controller withState:^(DFZState *state) {
             state.clock = ^NSTimeInterval {
@@ -523,6 +524,44 @@ static void testFocusToggle(NSString *directory) {
     [h stop];
 }
 
+// The persistent dfzf-windows: centered, hidden by request, never a popup.
+static void testSwitcher(NSString *directory) {
+    DFZHarness *h = [[DFZHarness alloc] initWithPath:[directory stringByAppendingPathComponent:@"switcher.sock"]];
+    [h.mock addWindow:1 title:@"hx main.go" app:@"kitty" pid:400];
+    [h.mock addWindow:2 title:@"general - Slack" app:@"Slack" pid:401];
+    h.mock.frontToBack = @[ @1, @2 ];
+    [h start];
+    [h.mock emitFocus:1];
+    [h settle];
+
+    [h.mock addWindow:DFZMakeWindow(3, @"dfzf-switcher", @"kitty", 402, YES) event:DFZWindowEventCreated];
+    [h settle];
+    NSRect frame = [h.mock window:3].frame;
+    check(@"switcher: centered at 65% without taking the focus",
+          frame.size.width == 650 && frame.origin.x == 175 && h.mock.focusedId != 3);
+    [h.mock addWindow:DFZMakeWindow(4, @"dfzf-popup", @"kitty", 403, YES) event:DFZWindowEventCreated];
+    [h settle];
+    [h settle];
+    check(@"switcher: a new popup does not close it", [h.mock window:3] != nil);
+
+    BOOL ok = NO;
+    [h request:@"{\"op\":\"hideApp\",\"pid\":402}" ok:&ok];
+    check(@"switcher: hideApp hides its application", ok && h.mock.hiddenPid == 402);
+    NSString *reply = [h request:@"{\"op\":\"hideApp\"}" ok:&ok];
+    check(@"switcher: hideApp needs a pid", !ok && [reply hasPrefix:@"dfzf: invalid request"]);
+
+    [h request:@"{\"op\":\"close\",\"ids\":[4]}"];
+    gClock = 6900.0;
+    [h.mock emitFocus:1];
+    [h settle];
+    gClock = 7000.0;
+    [h request:@"{\"op\":\"focus\",\"id\":3}"];
+    [h request:@"{\"op\":\"focus\",\"id\":2}"];
+    [h request:toggleRequest(@"slack", @"[app_id=\"^slack$\"]", NO) ok:&ok];
+    check(@"switcher: the toggle never goes back to it", ok && h.mock.focusedId == 1);
+    [h stop];
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 2) {
@@ -538,6 +577,7 @@ int main(int argc, const char *argv[]) {
         testPopupHandoff(directory);
         testHungApp(directory);
         testFocusToggle(directory);
+        testSwitcher(directory);
         [[NSFileManager defaultManager] removeItemAtPath:directory error:NULL];
     }
     return gFailures == 0 ? 0 : 1;

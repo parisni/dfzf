@@ -18,10 +18,14 @@ obj.identityTitles = {
   ["dfzf-hidden"] = true,
   ["dfzf-git"] = true,
   ["dfzf-scratchpad"] = true,
+  ["dfzf-switcher"] = true,
 }
 obj.popupTitles = { ["dfzf-popup"] = true }
 -- Scratchpad-like windows sized by their own scripts (dfzf-resize): never maximized.
 obj.floatingTitles = { ["dfzf-git"] = true, ["dfzf-scratchpad"] = true }
+-- Centered like popups, but neither closed by a newer popup nor focused when
+-- created: the windows switcher, hidden between uses.
+obj.centeredTitles = { ["dfzf-switcher"] = true }
 obj.popupRatio = 0.65
 obj.maximize = true
 -- nil: $DFZF_HS_SOCKET, else ~/.local/state/dfzf/hs.sock (same default as dfzf-hs).
@@ -45,6 +49,18 @@ obj.commands = {
   term = { toggle = "term", criteria = '[app_id="^dfzf-term$"]', fallback = kitty .. " -1 --title dfzf-term" },
   git = "dfzf-git",
 }
+-- Native backend only: the `windows` hotkey shows a dfzf-windows kept alive in
+-- its own hidden kitty instance (`--instance-group`: hiding it leaves the other
+-- kitty windows alone) instead of opening a popup: no window nor process to
+-- start, only the list to reload.
+obj.switcher = false
+obj.switcherCommand = kitty .. " -1 --instance-group dfzf-switcher -o macos_quit_when_last_window_closed=yes"
+  .. " --title dfzf-switcher -e dfzf-windows --persistent"
+local SWITCHER_TITLE = "dfzf-switcher"
+-- The reload rebinds `load` so the list opens on the previous window, as the
+-- popup's start:up did.
+local SWITCHER_SHOW = "change-query()+rebind(load)+reload(dfzf-windows-load)"
+local SWITCHER_START_SECONDS = 10
 
 local PREVIEW_MARK = "_dfzf-preview"
 
@@ -429,13 +445,17 @@ function obj:ipc(request)
   return handler(self, req) or ""
 end
 
-function obj:_run(command)
+-- extraEnv: variables for the command only, kept off its command line (and ps).
+function obj:_run(command, extraEnv)
   -- Detached: the kitty instance a command may start must outlive a reload or
   -- quit of Hammerspoon, and must not hold the task's pipes (hs.task would block).
   -- /bin/bash, not /bin/sh: macOS's sh re-executes bash, one process more.
   local task = hs.task.new("/bin/bash", nil, { "-c", "(" .. command .. "\n) </dev/null >/dev/null 2>&1 &" })
   local env = task:environment()
   env.PATH = self.path .. ":" .. (env.PATH or "/usr/bin:/bin")
+  for name, value in pairs(extraEnv or {}) do
+    env[name] = value
+  end
   task:setEnvironment(env)
   task:start()
 end
@@ -468,12 +488,169 @@ function obj:focusToggle(key, criteria, fallback)
 end
 
 function obj:_command(name)
+  if name == "windows" and self.switcher and self._native then
+    self:showSwitcher()
+    return
+  end
   local command = self.commands[name]
   if type(command) == "table" then
     self:focusToggle(command.toggle, command.criteria, command.fallback)
   else
     self:_run(command)
   end
+end
+
+local function readFile(path)
+  local file = io.open(path, "r")
+  if not file then
+    return nil
+  end
+  local content = file:read("a")
+  file:close()
+  return (content:gsub("%s+$", ""))
+end
+
+-- The key and port files sit next to the dfzf socket, in a private directory.
+function obj:_switcherFiles()
+  local socket = self.socketPath or os.getenv("DFZF_HS_SOCKET") or (os.getenv("HOME") .. "/.local/state/dfzf/hs.sock")
+  local dir = socket:match("^(.*)/[^/]*$") or "."
+  return dir .. "/switcher.key", dir .. "/switcher.port"
+end
+
+-- fzf's FZF_API_KEY: kept across reloads, as the switcher outlives them.
+function obj:_switcherKey()
+  local keyFile = self:_switcherFiles()
+  local key = readFile(keyFile)
+  if not key or key == "" then
+    key = hs.host.uuid():gsub("-", "") .. hs.host.uuid():gsub("-", "")
+    local file = assert(io.open(keyFile, "w"))
+    file:write(key)
+    file:close()
+  end
+  return key
+end
+
+-- Calls back with the switcher's {port, key} when its fzf answers, else nil.
+function obj:_switcherProbe(callback)
+  local _, portFile = self:_switcherFiles()
+  local port = readFile(portFile)
+  if not port or not port:match("^%d+$") then
+    callback(nil)
+    return
+  end
+  local key = self:_switcherKey()
+  hs.http.asyncGet("http://localhost:" .. port .. "?limit=1", { ["x-api-key"] = key }, function(status)
+    callback(status == 200 and { port = port, key = key } or nil)
+  end)
+end
+
+-- Newest switcher window of the tree: a stale one may linger while it closes.
+function obj:_switcherWindow(callback)
+  self._native.request('{"op":"tree"}', function(ok, reply)
+    local found
+    local function walk(node)
+      if node.type == "con" and node.name == SWITCHER_TITLE and (not found or node.id > found) then
+        found = node.id
+      end
+      for _, child in ipairs(node.nodes or {}) do
+        walk(child)
+      end
+    end
+    if ok then
+      walk(hs.json.decode(reply) or {})
+    end
+    callback(found)
+  end)
+end
+
+function obj:_switcherAttach(switcher, attempts)
+  self:_switcherWindow(function(id)
+    if not id and attempts > 0 then
+      hs.timer.doAfter(0.1, function() self:_switcherAttach(switcher, attempts - 1) end)
+      return
+    end
+    self._switcherStarting = false
+    if not id then
+      print("Dfzf: the windows switcher has no window")
+      return
+    end
+    switcher.id = id
+    self._switcher = switcher
+    if self._switcherShowWhenReady then
+      self._switcherShowWhenReady = false
+      self:showSwitcher()
+    end
+  end)
+end
+
+-- Attaches to a running switcher (it survives Hammerspoon reloads), else starts
+-- one; `show` shows it once ready. Falls back to the popup if it never answers.
+function obj:_switcherStart(show)
+  self._switcherShowWhenReady = self._switcherShowWhenReady or show
+  if self._switcherStarting then
+    return
+  end
+  self._switcherStarting = true
+  self:_switcherProbe(function(running)
+    if running then
+      self:_switcherAttach(running, 10)
+      return
+    end
+    local _, portFile = self:_switcherFiles()
+    os.remove(portFile)
+    self:_run(self.switcherCommand, { FZF_API_KEY = self:_switcherKey(), DFZF_SWITCHER_PORT_FILE = portFile })
+    local deadline = now() + SWITCHER_START_SECONDS
+    local probing = false
+    local poll
+    poll = hs.timer.doEvery(0.05, function()
+      if probing then
+        return
+      end
+      probing = true
+      self:_switcherProbe(function(started)
+        probing = false
+        if started then
+          poll:stop()
+          self:_switcherAttach(started, 10)
+        elseif now() > deadline then
+          poll:stop()
+          self._switcherStarting = false
+          print("Dfzf: the windows switcher did not start, using the popup")
+          if self._switcherShowWhenReady then
+            self._switcherShowWhenReady = false
+            self:_run(self.commands.windows)
+          end
+        end
+      end)
+    end)
+  end)
+end
+
+-- The `windows` hotkey with Dfzf.switcher: reloads the hidden list and brings
+-- its window back, both in-process; a dead switcher is started again.
+function obj:showSwitcher()
+  local switcher = self._switcher
+  if not switcher then
+    self:_switcherStart(true)
+    return
+  end
+  local function lost()
+    if self._switcher == switcher then
+      self._switcher = nil
+      self:_switcherStart(true)
+    end
+  end
+  hs.http.asyncPost("http://localhost:" .. switcher.port, SWITCHER_SHOW, { ["x-api-key"] = switcher.key },
+    function(status)
+      if status ~= 200 then
+        lost()
+      end
+    end)
+  self._native.request(hs.json.encode({ op = "focus", id = switcher.id }), function(ok)
+    if not ok then
+      lost()
+    end
+  end)
 end
 
 -- Binds hotkeys to the entries of `Dfzf.commands` (windows, hub, term, git).
@@ -502,6 +679,7 @@ function obj:_startNative()
     identityTitles = self.identityTitles,
     popupTitles = self.popupTitles,
     floatingTitles = self.floatingTitles,
+    centeredTitles = self.centeredTitles,
     popupRatio = self.popupRatio,
     maximize = self.maximize,
   })
@@ -517,6 +695,9 @@ function obj:start()
   local native, reason = self:_startNative()
   if native then
     self._native = native
+    if self.switcher then
+      self:_switcherStart(false)
+    end
     return self
   end
   print("Dfzf: native backend unavailable (" .. tostring(reason) .. "), using the Lua backend")

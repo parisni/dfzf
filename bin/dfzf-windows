@@ -2,18 +2,6 @@
 set -euo pipefail
 
 export SHELL="$(command -v bash)"
-# macOS: Dfzf.spoon already keeps a single popup, dfzf-kill-bro would only relay
-# the tree. The native backend's tree needs no normalization: read it in one
-# request, without the dfzf-exec -> dfzf-hs-msg hops (the Lua one may encode
-# empty lists as `{}`, which dfzf-hs-msg fixes).
-if [[ $OSTYPE == darwin* ]]; then
-	# shellcheck source=../macos/bin/dfzf-hs
-	source "$(command -v dfzf-hs)"
-	current_tree=$(dfzf_hs '{"op":"tree"}')
-	[[ $current_tree != *'{}'* ]] || current_tree=$(dfzf-hs-msg -t get_tree)
-else
-	current_tree=$(dfzf-kill-bro)
-fi
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
 windows_prompt_pattern="^[>$%] "
 windows_app_filter="${DFZF_WINDOWS_APP_FILTER-}"
@@ -27,6 +15,11 @@ kitty_companions=false
 # --show-hidden includes dfzf-hidden windows for this session only. Exported so
 # the in-fzf reload(dfzf-windows-load) binds inherit it (no /tmp state change).
 show_hidden=false
+# --persistent (macOS, native backend): the Dfzf.spoon windows switcher. fzf
+# outlives each use in its own hidden kitty instance: the spoon reloads the list
+# and shows it through fzf --listen, closing becomes hiding. Needs FZF_API_KEY
+# and DFZF_SWITCHER_PORT_FILE, where the port is published once ready.
+persistent=false
 
 while [[ $# -gt 0 ]]; do
 	case $1 in
@@ -44,6 +37,10 @@ while [[ $# -gt 0 ]]; do
 		;;
 	--kitty-companions)
 		kitty_companions=true
+		shift
+		;;
+	--persistent)
+		persistent=true
 		shift
 		;;
 	*)
@@ -112,23 +109,74 @@ set_prompt
 PREVIEW='echo {}'
 PREVIEW_WINDOW='up:3,wrap'
 
-# Pipe the tree instead of passing it as an argument: a large tree (many windows
-# with long titles) overflows MAX_ARG_STRLEN and aborts with "Argument list too long".
-result=$(printf '%s' "$current_tree" | dfzf-windows-load --input-json -)
+start_binds=(--bind "change:first")
+if [[ $persistent == true ]]; then
+	if [[ -z ${FZF_API_KEY:-} || -z ${DFZF_SWITCHER_PORT_FILE:-} || -z ${KITTY_PID:-} ]]; then
+		echo "dfzf-windows --persistent: FZF_API_KEY, DFZF_SWITCHER_PORT_FILE and KITTY_PID are required" >&2
+		exit 2
+	fi
+	# shellcheck source=../macos/bin/dfzf-hs
+	source "$(command -v dfzf-hs)"
+	hide_switcher() { dfzf_hs "{\"op\":\"hideApp\",\"pid\":$KITTY_PID}" >/dev/null; }
+	publish_port() {
+		printf '%s' "$FZF_PORT" >"$DFZF_SWITCHER_PORT_FILE.tmp"
+		mv "$DFZF_SWITCHER_PORT_FILE.tmp" "$DFZF_SWITCHER_PORT_FILE"
+	}
+	export -f dfzf_hs hide_switcher publish_port
+	# Closing hides: the selection, query and list are reset for the next use,
+	# whose reload rebinds `load` to preselect the previous window once.
+	close_action="execute-silent(hide_switcher)+deselect-all+clear-query+reload(true)"
+	self_app_id="dfzf-switcher"
+	if [[ $no_first_item == false ]]; then
+		start_binds+=(--bind "load:pos(2)+unbind(load)")
+	else
+		start_binds+=(--bind "load:unbind(load)")
+	fi
+	start_binds+=(--listen --bind "start:execute-silent(hide_switcher; publish_port)"
+		--bind "ctrl-c:$close_action" --bind "ctrl-q:$close_action")
+	enter_action="execute-silent(dfzf-windows-line focus {})+$close_action"
+	# Hiding hands the focus back to the previous app, as the popup's close did.
+	esc_action="$close_action"
+	result=""
+else
+	# macOS: Dfzf.spoon already keeps a single popup, dfzf-kill-bro would only
+	# relay the tree. The native backend's tree needs no normalization: read it
+	# in one request, without the dfzf-exec -> dfzf-hs-msg hops (the Lua one may
+	# encode empty lists as `{}`, which dfzf-hs-msg fixes).
+	if [[ $OSTYPE == darwin* ]]; then
+		# shellcheck source=../macos/bin/dfzf-hs
+		source "$(command -v dfzf-hs)"
+		current_tree=$(dfzf_hs '{"op":"tree"}')
+		[[ $current_tree != *'{}'* ]] || current_tree=$(dfzf-hs-msg -t get_tree)
+	else
+		current_tree=$(dfzf-kill-bro)
+	fi
+	close_action="abort"
+	self_app_id="dfzf-popup"
+	if [[ $no_first_item == false ]]; then
+		start_binds=(--bind "start:up" "${start_binds[@]}")
+	fi
+	enter_action="execute-silent(dfzf-windows-line focus {})+accept"
+	esc_action='execute-silent(dfzf-windows-line focus "$(dfzf-windows-load | head -n1)")+abort'
+	# Pipe the tree instead of passing it as an argument: a large tree (many
+	# windows with long titles) overflows MAX_ARG_STRLEN and aborts with
+	# "Argument list too long".
+	result=$(printf '%s' "$current_tree" | dfzf-windows-load --input-json -)
 
-# Check if result is empty and provide a working fzf with no entries
-if [[ -z $result ]]; then
-	echo "No windows found" | fzf --sync --prompt "$PROMPT" \
-		--preview='echo "No windows available"' \
-		--preview-window="up:3,wrap" \
-		--bind="enter:abort" \
-		--bind="esc:abort"
-	exit 0
-fi
+	# Check if result is empty and provide a working fzf with no entries
+	if [[ -z $result ]]; then
+		echo "No windows found" | fzf --sync --prompt "$PROMPT" \
+			--preview='echo "No windows available"' \
+			--preview-window="up:3,wrap" \
+			--bind="enter:abort" \
+			--bind="esc:abort"
+		exit 0
+	fi
 
-# macOS has no floating windows: skip a round-trip to the backend on every launch.
-if [[ $OSTYPE != darwin* ]]; then
-	dfzf-exec -q '[con_id='"$(head -n1 <<<"$result" | extract_con_id)"']' floating disable
+	# macOS has no floating windows: skip a round-trip to the backend on every launch.
+	if [[ $OSTYPE != darwin* ]]; then
+		dfzf-exec -q '[con_id='"$(head -n1 <<<"$result" | extract_con_id)"']' floating disable
+	fi
 fi
 
 # Start with the keybinding cheatsheet hidden each session (`?` toggles it).
@@ -136,17 +184,12 @@ if [[ -e ${XDG_RUNTIME_DIR:-/tmp}/dfzf-help.windows ]]; then
 	dfzf-help reset windows
 fi
 
-start_binds=(--bind "change:first")
-if [[ $no_first_item == false ]]; then
-	start_binds=(--bind "start:up" "${start_binds[@]}")
-fi
-
 fzf --sync --multi --prompt "$PROMPT" \
 	"${start_binds[@]}" \
 	--bind="?:transform-header(dfzf-help toggle windows)" \
 	--preview="$PREVIEW" \
 	--preview-window="$PREVIEW_WINDOW" \
-	--bind "ctrl-t:execute-silent(echo {+} |rg -o '#\d+\b' | rg -o '\d+' | paste -sd ' ' - | xargs dfzf-windows-till)+abort" \
+	--bind "ctrl-t:execute-silent(echo {+} |rg -o '#\d+\b' | rg -o '\d+' | paste -sd ' ' - | xargs dfzf-windows-till)+$close_action" \
 	--bind="ctrl-r:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-red --append-ts)+reload(dfzf-windows-load)" \
 	--bind="ctrl-b:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-blue --append-ts)+reload(dfzf-windows-load)" \
 	--bind="ctrl-g:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-mark --con-id @ --mark _dfzf-green --append-ts)+reload(dfzf-windows-load)" \
@@ -157,6 +200,6 @@ fzf --sync --multi --prompt "$PROMPT" \
 	--bind="ctrl-k:execute-silent(dfzf-windows-line kill {})+reload(dfzf-windows-load)" \
 	--bind="ctrl-u:execute-silent(echo {} |extract_con_id| xargs -I @ dfzf-exec -q '[con_id=@] urgent toggle')+reload(dfzf-windows-load)" \
 	--bind="ctrl-h:reload(toggle_hidden)" \
-	--bind="ctrl-j:execute-silent(echo {} |extract_con_id| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec -q '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec -q '[app_id=\"^dfzf-popup$\"]' focus || dfzf-exec -q '[class=\"^dfzf-popup$\"]' focus \")" \
-	--bind="enter:execute-silent(dfzf-windows-line focus {})+accept" \
-	--bind="esc:execute-silent(dfzf-windows-line focus \"\$(dfzf-windows-load | head -n1)\")+abort" <<<"$result"
+	--bind="ctrl-j:execute-silent(echo {} |extract_con_id| xargs -I @ sh -c \"dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec -q '[con_id=@]' focus && dfzf-mark --con-id @ --mark _dfzf-preview && dfzf-exec -q '[app_id=\\\"^$self_app_id$\\\"]' focus || dfzf-exec -q '[class=\\\"^$self_app_id$\\\"]' focus \")" \
+	--bind="enter:$enter_action" \
+	--bind="esc:$esc_action" < <([[ -z $result ]] || printf '%s\n' "$result")

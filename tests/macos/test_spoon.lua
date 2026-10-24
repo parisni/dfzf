@@ -5,6 +5,7 @@ local requests = {}
 local windows, focusedId = {}, nil
 local callbacks = {}
 local lastTask
+local timers, httpCalls, httpStatus = {}, {}, 200
 
 local function encode(value)
   local kind = type(value)
@@ -60,7 +61,27 @@ local function newWindow(id, title, app, standard)
 end
 
 hs = {
-  timer = { secondsSinceEpoch = function() return clock end },
+  timer = {
+    secondsSinceEpoch = function() return clock end,
+    doAfter = function(_, fn) fn() end,
+    doEvery = function(_, fn)
+      local timer = { fn = fn }
+      function timer:stop() self.stopped = true end
+      table.insert(timers, timer)
+      return timer
+    end,
+  },
+  host = { uuid = function() return "1111-2222" end },
+  http = {
+    asyncGet = function(url, headers, callback)
+      table.insert(httpCalls, { method = "GET", url = url, headers = headers })
+      callback(httpStatus, "{}")
+    end,
+    asyncPost = function(url, body, headers, callback)
+      table.insert(httpCalls, { method = "POST", url = url, body = body, headers = headers })
+      callback(httpStatus, "")
+    end,
+  },
   json = {
     encode = encode,
     decode = function(s) return requests[s] end,
@@ -88,7 +109,7 @@ hs = {
   spoons = { bindHotkeysToSpec = function() end },
   task = {
     new = function(path, callback, args)
-      local task = { path = path, args = args, env = { PATH = "/usr/bin:/bin" } }
+      local task = { path = path, args = args, env = { PATH = "/usr/bin:/bin", NO_COLOR = "1", TERM = "xterm-kitty" } }
       function task:environment() return self.env end
       function task:setEnvironment(env) self.env = env end
       function task:start() lastTask = self end
@@ -257,6 +278,8 @@ check("run detaches the command from Hammerspoon",
   lastTask.path == "/bin/bash" and lastTask.args[1] == "-c"
   and lastTask.args[2] == "(kitty -1 --title dfzf-term\n) </dev/null >/dev/null 2>&1 &"
   and lastTask.env.PATH == spoon.path .. ":/usr/bin:/bin")
+check("run drops the NO_COLOR and TERM Hammerspoon may inherit from a shell",
+  lastTask.env.NO_COLOR == nil and lastTask.env.TERM == nil)
 
 lastTask = nil
 spoon:focusToggle("it's", '[app_id="^slack$"]', "open -a Slack")
@@ -315,5 +338,70 @@ fallback = startWith(function()
   return { start = function() return nil, "dfzf: no Accessibility permission" end, stop = function() end }
 end)
 check("start failure falls back to Lua", fallback._native == nil and filterCount == 1)
+
+-- Windows switcher: a persistent dfzf-windows driven over fzf --listen.
+local stateDir = os.tmpname() .. ".d"
+os.execute("mkdir -p " .. stateDir)
+local nativeRequests, focusOk = {}, true
+local switcherTree = { type = "root", nodes = { { type = "con", id = 77, name = "dfzf-switcher", nodes = {} } } }
+requests["<switcher tree>"] = switcherTree
+package.loaded["hs._dfzf"] = nil
+package.preload["hs._dfzf"] = function()
+  return {
+    start = function(c) config = c return true end,
+    stop = function() end,
+    request = function(json, callback)
+      table.insert(nativeRequests, json)
+      if json:find('"op":"tree"', 1, true) then
+        callback(true, "<switcher tree>")
+      else
+        callback(focusOk, focusOk and "" or "dfzf: no window with id 77")
+      end
+      return true
+    end,
+  }
+end
+local switcher = dofile(spoonPath)
+switcher.switcher = true
+switcher.socketPath = stateDir .. "/hs.sock"
+lastTask = nil
+switcher:start()
+check("native module receives the centered titles", config.centeredTitles["dfzf-switcher"] == true)
+check("switcher: started with the spoon, key and port file through the environment",
+  lastTask and lastTask.args[2]:find("--instance-group dfzf-switcher", 1, true)
+    and lastTask.args[2]:find("dfzf-windows --persistent", 1, true)
+    and lastTask.env.FZF_API_KEY == "11112222" .. "11112222"
+    and lastTask.env.DFZF_SWITCHER_PORT_FILE == stateDir .. "/switcher.port"
+    and not lastTask.args[2]:find("11112222", 1, true))
+
+local portFile = io.open(stateDir .. "/switcher.port", "w")
+portFile:write("6300")
+portFile:close()
+httpCalls = {}
+timers[#timers].fn()
+check("switcher: attached once its fzf answers", switcher._switcher and switcher._switcher.id == 77
+  and timers[#timers].stopped and httpCalls[1].headers["x-api-key"] == "1111222211112222")
+
+httpCalls, nativeRequests, lastTask = {}, {}, nil
+switcher:_command("windows")
+check("switcher: windows reloads the list and focuses it, without any process",
+  #httpCalls == 1 and httpCalls[1].method == "POST" and httpCalls[1].url == "http://localhost:6300"
+    and httpCalls[1].body == "change-query()+rebind(load)+reload(dfzf-windows-load)"
+    and nativeRequests[1]:find('"op":"focus"', 1, true) and nativeRequests[1]:find('"id":77', 1, true)
+    and lastTask == nil)
+
+focusOk, httpStatus = false, 500
+switcher:_command("windows")
+check("switcher: a lost window starts a new switcher", switcher._switcher == nil and lastTask ~= nil
+  and lastTask.args[2]:find("dfzf-windows --persistent", 1, true))
+focusOk, httpStatus = true, 200
+
+local popupOnly = dofile(spoonPath)
+popupOnly._native = { request = function() error("no native request expected") end }
+lastTask = nil
+popupOnly:_command("windows")
+check("without Dfzf.switcher, windows opens the popup",
+  lastTask and lastTask.args[2]:find("--title dfzf-popup -e dfzf-windows", 1, true) ~= nil)
+os.execute("rm -r " .. stateDir)
 
 os.exit(failures == 0 and 0 or 1)

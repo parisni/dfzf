@@ -63,7 +63,8 @@ static int pushFailure(lua_State *L, NSString *message) {
 }
 
 /// hs._dfzf.start(config) -> true | nil, error
-/// config: socketPath, identityTitles, popupTitles, floatingTitles, popupRatio, maximize.
+/// config: socketPath, identityTitles, popupTitles, floatingTitles, centeredTitles,
+/// popupRatio, maximize.
 static int dfzf_start(lua_State *L) {
     luaL_checktype(L, 1, LUA_TTABLE);
     stopBackend();
@@ -72,6 +73,7 @@ static int dfzf_start(lua_State *L) {
     config.identityTitles = titlesField(L, 1, "identityTitles");
     config.popupTitles = titlesField(L, 1, "popupTitles");
     config.floatingTitles = titlesField(L, 1, "floatingTitles");
+    config.centeredTitles = titlesField(L, 1, "centeredTitles");
     if (lua_getfield(L, 1, "popupRatio") == LUA_TNUMBER) {
         config.popupRatio = lua_tonumber(L, -1);
     }

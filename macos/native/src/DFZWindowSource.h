@@ -47,6 +47,8 @@ typedef NS_ENUM(NSInteger, DFZWindowEvent) {
 - (void)setWindow:(DFZWindowID)windowId minimized:(BOOL)minimized;
 - (BOOL)getFrame:(NSRect *)frame ofWindow:(DFZWindowID)windowId;
 - (void)setFrame:(NSRect)frame ofWindow:(DFZWindowID)windowId;
+// Hides the application, as Cmd-H does; any thread.
+- (void)hideApplication:(pid_t)pid;
 // Thread-safe; the primary screen comes first.
 - (NSArray<DFZScreenInfo *> *)screens;
 @end

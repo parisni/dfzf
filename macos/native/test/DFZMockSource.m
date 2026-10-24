@@ -205,6 +205,10 @@ static DFZWindowInfo *withMinimized(DFZWindowInfo *info, BOOL minimized) {
     window.setFrameCount += 1;
 }
 
+- (void)hideApplication:(pid_t)pid {
+    self.hiddenPid = pid;
+}
+
 - (NSArray<DFZScreenInfo *> *)screens {
     DFZScreenInfo *screen = [DFZScreenInfo new];
     screen.name = @"Built-in";

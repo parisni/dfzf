@@ -6,6 +6,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSSet<NSString *> *identityTitles;
 @property (nonatomic, copy) NSSet<NSString *> *popupTitles;
 @property (nonatomic, copy) NSSet<NSString *> *floatingTitles;
+// Centered like popups, without their single-popup rule nor focus handoff:
+// the persistent windows switcher, which is hidden rather than closed.
+@property (nonatomic, copy) NSSet<NSString *> *centeredTitles;
 @property (nonatomic) double popupRatio;
 @property (nonatomic) BOOL maximize;
 // Upper bound on a request waiting for an unresponsive app.

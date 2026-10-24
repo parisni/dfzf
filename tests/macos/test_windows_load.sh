@@ -16,4 +16,11 @@ assert_eq "popup hidden, sorted by recency" "11 44 22 " "$ids"
 terminal_only=$(dfzf-hs-msg -t get_tree | dfzf-windows-load --input-json - --app dfzf-term)
 assert_eq "--app filter" "44 " "$(perl -ne 'print "$1 " if /#([0-9]+)/' <<<"$terminal_only")"
 
+# The persistent switcher is a dfzf window: never listed, even as the most recent.
+jq '(.. | objects | select(.type == "workspace" and .name == "1") | .nodes) += [{"type": "con", "id": 99,
+  "app_id": "dfzf-switcher", "name": "dfzf-switcher", "marks": ["_dfzf-sort-9999999999999"]}]' \
+	"$DFZF_TEST_TREE" >"$DFZF_TEST_TREE_OVERRIDE"
+listing=$(dfzf-hs-msg -t get_tree | dfzf-windows-load --input-json -)
+assert_eq "switcher hidden" "11 44 22 " "$(perl -ne 'print "$1 " if /#([0-9]+)/' <<<"$listing")"
+
 finish

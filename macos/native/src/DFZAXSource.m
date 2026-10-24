@@ -547,6 +547,12 @@ static void axCallback(AXObserverRef observer, AXUIElementRef element, CFStringR
     }
 }
 
+- (void)hideApplication:(pid_t)pid {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSRunningApplication runningApplicationWithProcessIdentifier:pid] hide];
+    });
+}
+
 - (BOOL)getFrame:(NSRect *)frame ofWindow:(DFZWindowID)windowId {
     AXUIElementRef element = [self elementOf:windowId app:NULL];
     if (!element) {

@@ -185,6 +185,14 @@ spoon.Dfzf:bindHotkeys({ slack = { hyper, "s" } })
 -- or from any Lua code: spoon.Dfzf:focusToggle("slack", '[app_id="^slack$"]', "open -a Slack")
 ```
 
+Windows switcher (native backend, opt-in): with `spoon.Dfzf.switcher = true`
+(before `spoon.Dfzf:start()`), the `windows` hotkey no longer opens a popup. It
+shows a `dfzf-windows --persistent` kept running in its own hidden kitty
+instance (`--instance-group dfzf-switcher`): the hotkey only reloads its list
+(through `fzf --listen`, guarded by an API key kept next to the socket) and
+brings it back, about 0.1s instead of 0.2s. `enter`, `esc` and `ctrl-t` hide it
+instead of quitting fzf; a dead switcher is started again on the next hotkey.
+
 Native backend: the release archive ships `Dfzf.spoon/hs/_dfzf.so`, a native
 Hammerspoon module (from a checkout: `make -C macos/native spoon`). It tracks
 windows, marks and recency off the main thread and serves dfzf on a Unix socket,
@@ -537,6 +545,7 @@ Install the below extensions:
 - optional `--no-first-item`: keep the cursor on the first listed window instead of preselecting the previously focused one (useful for filtered launchers like `dfzf-windows --app terminal --no-first-item`)
 - optional `--show-hidden`: include `dfzf-hidden` windows for this invocation only (session-local, does not touch the persistent `ctrl-h` state); pairs well with an app filter, e.g. `dfzf-windows --app dfzf-hidden --show-hidden --no-first-item`
 - optional `--kitty-companions`: also list [kittyx](https://github.com/parisni/kittyx) companion shells (kitty windows hidden behind their parent in a tab), shown as `↳ <title>` right after the window hosting them; `enter` jumps to the companion, `ctrl-k` closes it. Opt-in since each listing then queries kitty's remote control (`kitty_socket`, ~0.1s), e.g. `dfzf-windows --app terminal --no-first-item --kitty-companions`
+- `--persistent` (macOS): started by the Dfzf spoon for its windows switcher (`Dfzf.switcher`), not meant to be run by hand
 
 keybindings:
 
