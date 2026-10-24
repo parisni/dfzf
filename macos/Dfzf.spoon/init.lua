@@ -453,6 +453,8 @@ function obj:_run(command, extraEnv)
   local task = hs.task.new("/bin/bash", nil, { "-c", "(" .. command .. "\n) </dev/null >/dev/null 2>&1 &" })
   local env = task:environment()
   env.PATH = self.path .. ":" .. (env.PATH or "/usr/bin:/bin")
+  env.NO_COLOR = nil
+  env.TERM = nil
   for name, value in pairs(extraEnv or {}) do
     env[name] = value
   end
