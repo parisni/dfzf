@@ -10,8 +10,26 @@ kitty_socket='/tmp/kitty-{pid}'
 usage="usage: dfzf-windows-line focus|kill <line>"
 action="${1:?$usage}"
 line="${2-}"
-con_id=$(perl -0777 -ne 'print $1 if /.*#([0-9]+)/s' <<<"$line")
+# The last `#<digits>` of the line, matched bytewise like perl did: a title that
+# is not valid UTF-8 must not defeat the match.
+con_id=""
+parse_con_id() {
+	local LC_ALL=C re='.*#([0-9]+)'
+	if [[ $line =~ $re ]]; then
+		con_id="${BASH_REMATCH[1]}"
+	fi
+}
+parse_con_id
 [[ -n $con_id ]] || exit 0
+
+# macOS: one request to the backend, without the dfzf-exec -> dfzf-hs-msg hops.
+if [[ -z ${SWAYSOCK:-} && -z ${I3SOCK:-} && $OSTYPE == darwin* ]]; then
+	# shellcheck source=../macos/bin/dfzf-hs
+	source "$(command -v dfzf-hs)"
+	focus_window() { dfzf_hs "{\"op\":\"focus\",\"id\":$1}" >/dev/null; }
+else
+	focus_window() { dfzf-exec -q "[con_id=$1] focus"; }
+fi
 
 kitty_args=()
 re_kitty='~k([0-9]+)\.([0-9]+)'
@@ -26,7 +44,7 @@ focus)
 	if [[ ${#kitty_args[@]} -gt 0 ]]; then
 		kitten @ "${kitty_args[@]}" focus-window --match "$kitty_match"
 	fi
-	dfzf-exec -q "[con_id=$con_id] focus"
+	focus_window "$con_id"
 	;;
 kill)
 	if [[ ${#kitty_args[@]} -gt 0 ]]; then

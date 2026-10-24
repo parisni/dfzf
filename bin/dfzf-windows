@@ -2,9 +2,15 @@
 set -euo pipefail
 
 export SHELL="$(command -v bash)"
-# macOS: Dfzf.spoon already keeps a single popup, dfzf-kill-bro would only relay the tree.
+# macOS: Dfzf.spoon already keeps a single popup, dfzf-kill-bro would only relay
+# the tree. The native backend's tree needs no normalization: read it in one
+# request, without the dfzf-exec -> dfzf-hs-msg hops (the Lua one may encode
+# empty lists as `{}`, which dfzf-hs-msg fixes).
 if [[ $OSTYPE == darwin* ]]; then
-	current_tree=$(dfzf-exec -t get_tree)
+	# shellcheck source=../macos/bin/dfzf-hs
+	source "$(command -v dfzf-hs)"
+	current_tree=$(dfzf_hs '{"op":"tree"}')
+	[[ $current_tree != *'{}'* ]] || current_tree=$(dfzf-hs-msg -t get_tree)
 else
 	current_tree=$(dfzf-kill-bro)
 fi

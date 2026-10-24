@@ -43,7 +43,15 @@ done
 
 # Accept optional input via stdin or get tree if no input provided
 if [ -z "$input_json" ]; then
-	input_json="$(dfzf-exec -t get_tree --raw)"
+	if [[ -z ${SWAYSOCK:-} && -z ${I3SOCK:-} && $OSTYPE == darwin* ]]; then
+		# One request to the native backend, as in dfzf-windows.
+		# shellcheck source=../macos/bin/dfzf-hs
+		source "$(command -v dfzf-hs)"
+		input_json="$(dfzf_hs '{"op":"tree"}')"
+		[[ $input_json != *'{}'* ]] || input_json="$(dfzf-hs-msg -t get_tree)"
+	else
+		input_json="$(dfzf-exec -t get_tree --raw)"
+	fi
 fi
 
 # `--input-json -` reads the tree from stdin. The tree can exceed the per-argument
