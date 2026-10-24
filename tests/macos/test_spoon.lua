@@ -258,6 +258,11 @@ check("run detaches the command from Hammerspoon",
   and lastTask.args[2] == "(kitty -1 --title dfzf-term\n) </dev/null >/dev/null 2>&1 &"
   and lastTask.env.PATH == spoon.path .. ":/usr/bin:/bin")
 
+lastTask = nil
+spoon:focusToggle("it's", '[app_id="^slack$"]', "open -a Slack")
+check("focusToggle without the native backend runs the script",
+  lastTask.args[2] == [[(dfzf-focus-toggle 'it'\''s' '[app_id="^slack$"]' open -a Slack]] .. "\n) </dev/null >/dev/null 2>&1 &")
+
 local function startWith(module)
   package.loaded["hs._dfzf"] = nil
   package.preload["hs._dfzf"] = module
@@ -266,10 +271,16 @@ local function startWith(module)
 end
 
 local config, stopped
+local toggleRequest, toggleReply
 local native = startWith(function()
   return {
     start = function(c) config = c return true end,
     stop = function() stopped = true end,
+    request = function(json, callback)
+      toggleRequest = json
+      callback(true, toggleReply)
+      return true
+    end,
   }
 end)
 check("native module: spoon delegates, no window filter",
@@ -278,6 +289,22 @@ check("native module receives the spoon config",
   config.popupRatio == 0.65 and config.maximize == true and config.identityTitles["dfzf-term"]
     and config.popupTitles["dfzf-popup"] and config.floatingTitles["dfzf-git"])
 check("native module: Lua ipc refuses requests", not pcall(native.ipc, native, "x"))
+
+lastTask, toggleReply = nil, ""
+native:_command("term")
+check("term toggle goes through the native module",
+  toggleRequest:find('"op":"focusToggle"', 1, true) and toggleRequest:find('"key":"term"', 1, true)
+    and toggleRequest:find('"criteria":"[app_id=\\"^dfzf-term$\\"]"', 1, true)
+    and toggleRequest:find('"fallback":true', 1, true) and lastTask == nil)
+toggleReply = "missing"
+native:_command("term")
+check("missing toggle target runs the fallback",
+  lastTask and lastTask.args[2]:find("--title dfzf-term", 1, true) ~= nil)
+lastTask = nil
+native:focusToggle("slack", '[app_id="^slack$"]')
+check("missing toggle target without fallback runs nothing",
+  toggleRequest:find('"fallback":false', 1, true) and lastTask == nil)
+
 native:stop()
 check("stop stops the native module", stopped == true and native._native == nil)
 

@@ -174,6 +174,17 @@ spoon.Dfzf:bindHotkeys({
 })
 ```
 
+`Dfzf.commands` entries are shell commands, or focus toggles in the
+`dfzf-focus-toggle` form: `{ toggle = <key>, criteria = <criteria>, fallback = <shell command> }`
+(fallback optional). With the native backend, a toggle runs inside Hammerspoon in
+a single request, without starting any process (a few ms instead of a few hundred):
+
+```lua
+spoon.Dfzf.commands.slack = { toggle = "slack", criteria = '[app_id="^slack$"]', fallback = "open -a Slack" }
+spoon.Dfzf:bindHotkeys({ slack = { hyper, "s" } })
+-- or from any Lua code: spoon.Dfzf:focusToggle("slack", '[app_id="^slack$"]', "open -a Slack")
+```
+
 Native backend: the release archive ships `Dfzf.spoon/hs/_dfzf.so`, a native
 Hammerspoon module (from a checkout: `make -C macos/native spoon`). It tracks
 windows, marks and recency off the main thread and serves dfzf on a Unix socket,
@@ -193,6 +204,7 @@ Differences with sway/i3:
   Hammerspoon reloads.
 - `dfzf-focus-toggle` criteria match the lowercased app name as `app_id`, e.g.
   `'[app_id="firefox" title="mail.google.com"]'`.
+  With the native backend, the script sends the whole toggle as one request.
 </details>
 
 

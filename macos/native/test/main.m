@@ -457,6 +457,72 @@ static void testHungApp(NSString *directory) {
     [h stop];
 }
 
+static NSString *toggleRequest(NSString *key, NSString *criteria, BOOL fallback) {
+    NSDictionary *request = @{ @"op" : @"focusToggle", @"key" : key, @"criteria" : criteria, @"fallback" : @(fallback) };
+    NSData *data = [NSJSONSerialization dataWithJSONObject:request options:0 error:NULL];
+    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+}
+
+// Mirrors tests/macos/test_focus_toggle.sh, decided in one request.
+static void testFocusToggle(NSString *directory) {
+    DFZHarness *h = [[DFZHarness alloc] initWithPath:[directory stringByAppendingPathComponent:@"toggle.sock"]];
+    [h.mock addWindow:1 title:@"Inbox - mail.google.com" app:@"Firefox" pid:300];
+    [h.mock addWindow:2 title:@"hx main.go" app:@"kitty" pid:301];
+    [h.mock addWindow:3 title:@"general - Slack" app:@"Slack" pid:302];
+    DFZWindowInfo *hidden = DFZMakeWindow(4, @"Huddle - Slack", @"Slack", 302, YES);
+    hidden.minimized = YES;
+    [h.mock addWindow:hidden event:DFZWindowEventScanned];
+    [h.mock addWindow:5 title:@"say \"hi\"" app:@"Notes" pid:303];
+    h.mock.frontToBack = @[ @2, @1, @3 ];
+    [h start];
+    NSString *slack = @"[app_id=\"^slack$\" title=\"general\"]";
+
+    gClock = 5000.0;
+    [h.mock emitFocus:2];
+    [h settle];
+    BOOL ok = NO;
+    NSString *reply = [h request:toggleRequest(@"slack", slack, NO) ok:&ok];
+    check(@"toggle: jumps to the target", ok && [reply isEqualToString:@""] && h.mock.focusedId == 3);
+    check(@"toggle: remembers the origin", [[h marks:2] containsString:@"_dfzf-origin-slack"]);
+
+    reply = [h request:toggleRequest(@"slack", slack, NO) ok:&ok];
+    check(@"toggle: on target, back to the origin", ok && h.mock.focusedId == 2);
+    check(@"toggle: origin mark cleared", ![[h marks:2] containsString:@"origin"]);
+
+    gClock = 6000.0;
+    [h.mock emitFocus:1];
+    [h settle];
+    [h request:@"{\"op\":\"focus\",\"id\":3}"];
+    [h request:toggleRequest(@"slack", slack, NO) ok:&ok];
+    check(@"toggle: no origin, most recent other window", ok && h.mock.focusedId == 1);
+
+    [h request:toggleRequest(@"huddle", @"[title=\"^Huddle\"]", NO) ok:&ok];
+    check(@"toggle: minimized target is unminimized", ok && h.mock.focusedId == 4 && ![h.mock window:4].info.minimized);
+    check(@"toggle: origin marked before jumping", [[h marks:1] containsString:@"_dfzf-origin-huddle"]);
+
+    [h request:@"{\"op\":\"focus\",\"id\":2}"];
+    reply = [h request:toggleRequest(@"absent", @"[app_id=\"^absent$\"]", YES) ok:&ok];
+    check(@"toggle: missing target replies missing", ok && [reply isEqualToString:@"missing"] && h.mock.focusedId == 2);
+    check(@"toggle: missing target with fallback marks the origin", [[h marks:2] containsString:@"_dfzf-origin-absent"]);
+    reply = [h request:toggleRequest(@"absent", @"[app_id=\"^absent$\"]", NO) ok:&ok];
+    check(@"toggle: missing target without fallback clears the origin",
+          ok && [reply isEqualToString:@"missing"] && ![[h marks:2] containsString:@"origin"]);
+
+    [h request:toggleRequest(@"mail", @"[app_id=firefox title=\"mail\\.google\\.com\"]", NO) ok:&ok];
+    check(@"toggle: bareword and regex escapes", ok && h.mock.focusedId == 1);
+    [h request:toggleRequest(@"quote", @"[title=\"say \\\"hi\\\"\"]", NO) ok:&ok];
+    check(@"toggle: escaped quote is unescaped", ok && h.mock.focusedId == 5);
+
+    reply = [h request:toggleRequest(@"x", @"[workspace=\"1\"]", NO) ok:&ok];
+    check(@"toggle: unsupported criteria key errors",
+          !ok && [reply isEqualToString:@"dfzf: unsupported on macOS: criteria key 'workspace'"]);
+    reply = [h request:toggleRequest(@"x", @"[app_id=\"slack]", NO) ok:&ok];
+    check(@"toggle: unterminated criteria errors", !ok && [reply hasPrefix:@"dfzf: cannot parse criteria"]);
+    reply = [h request:@"{\"op\":\"focusToggle\",\"criteria\":\"[]\"}" ok:&ok];
+    check(@"toggle: missing key is invalid", !ok && [reply hasPrefix:@"dfzf: invalid request"]);
+    [h stop];
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 2) {
@@ -471,6 +537,7 @@ int main(int argc, const char *argv[]) {
         testTreeFixture(directory, @(argv[1]));
         testPopupHandoff(directory);
         testHungApp(directory);
+        testFocusToggle(directory);
         [[NSFileManager defaultManager] removeItemAtPath:directory error:NULL];
     }
     return gFailures == 0 ? 0 : 1;

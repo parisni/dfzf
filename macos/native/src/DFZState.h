@@ -29,6 +29,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSString *> *)marksOfWindow:(DFZWindowID)windowId;
 - (BOOL)isUrgent:(DFZWindowID)windowId;
 - (BOOL)hasEntry:(DFZWindowID)windowId;
+// Standard windows in the order of the tree: visible ones, then minimized ones.
+- (NSArray<DFZWindowInfo *> *)treeWindows;
+// The app_id reported in the tree: the title for dfzf windows, else the app name.
+- (NSString *)appId:(DFZWindowInfo *)info;
+// Timestamp of the window's recency mark, 0 without one.
+- (long long)recencyOfWindow:(DFZWindowID)windowId;
 - (NSString *)treeJSON;
 @end
 

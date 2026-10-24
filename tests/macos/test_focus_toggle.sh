@@ -33,4 +33,19 @@ assert_eq "on target: back to the origin" '{"op":"focus","id":44}' "$(on_target 
 assert_eq "on target, origin on the target itself: most recent other window" '{"op":"focus","id":11}' "$(on_target 33)"
 assert_eq "on target, no origin: most recent other window" '{"op":"focus","id":11}' "$(on_target 999)"
 
+# Native backend: the whole toggle is one focusToggle request.
+: >"$DFZF_TEST_LOG"
+DFZF_TEST_FOCUS_TOGGLE_REPLY="" dfzf-focus-toggle mail '[app_id="firefox" title="mail\.google"]'
+assert_eq "native: a single request" \
+	'{"op":"focusToggle","key":"mail","criteria":"[app_id=\"firefox\" title=\"mail\\.google\"]","fallback":false}' \
+	"$(cat "$DFZF_TEST_LOG")"
+
+rm -f "$scratch_dir/created"
+DFZF_TEST_FOCUS_TOGGLE_REPLY=missing dfzf-focus-toggle term '[app_id="^absent$"]' touch "$scratch_dir/created"
+assert_eq "native: missing target runs the fallback" "yes" "$([[ -e $scratch_dir/created ]] && echo yes)"
+
+rm -f "$scratch_dir/created"
+DFZF_TEST_FOCUS_TOGGLE_REPLY="" dfzf-focus-toggle term '[app_id="^dfzf-term$"]' touch "$scratch_dir/created"
+assert_eq "native: existing target skips the fallback" "" "$([[ -e $scratch_dir/created ]] && echo yes)"
+
 finish

@@ -37,10 +37,12 @@ local kitty = kittyApp and KITTY_APP or "kitty"
 if kittyApp then
   kittyApp:close()
 end
+-- A string runs as a shell command; a table is a focus toggle (see
+-- Dfzf:focusToggle), which the native backend serves without any process.
 obj.commands = {
   windows = kitty .. " -1 --title dfzf-popup -e dfzf-windows",
   hub = kitty .. " -1 --title dfzf-popup -e dfzf-hub",
-  term = [[dfzf-focus-toggle term '[app_id="^dfzf-term$"]' ]] .. kitty .. " -1 --title dfzf-term",
+  term = { toggle = "term", criteria = '[app_id="^dfzf-term$"]', fallback = kitty .. " -1 --title dfzf-term" },
   git = "dfzf-git",
 }
 
@@ -438,12 +440,48 @@ function obj:_run(command)
   task:start()
 end
 
--- Binds hotkeys to the entries of `Dfzf.commands` (windows, hub, term).
+local function shellQuote(text)
+  return "'" .. text:gsub("'", [['\'']]) .. "'"
+end
+
+-- dfzf-focus-toggle <key> <criteria> [fallback]: jumps to the windows matching
+-- the sway-like criteria, and back on the next call. The native backend decides
+-- in one in-process request; the fallback (a shell command creating the target)
+-- only starts when no window matches. The Lua backend runs the script itself.
+function obj:focusToggle(key, criteria, fallback)
+  if not self._native then
+    self:_run("dfzf-focus-toggle " .. shellQuote(key) .. " " .. shellQuote(criteria)
+      .. (fallback and " " .. fallback or ""))
+    return
+  end
+  local request = hs.json.encode({ op = "focusToggle", key = key, criteria = criteria, fallback = fallback ~= nil })
+  local sent, err = self._native.request(request, function(ok, reply)
+    if not ok then
+      print("Dfzf: focusToggle " .. key .. ": " .. tostring(reply))
+    elseif reply == "missing" and fallback then
+      self:_run(fallback)
+    end
+  end)
+  if not sent then
+    print("Dfzf: focusToggle " .. key .. ": " .. tostring(err))
+  end
+end
+
+function obj:_command(name)
+  local command = self.commands[name]
+  if type(command) == "table" then
+    self:focusToggle(command.toggle, command.criteria, command.fallback)
+  else
+    self:_run(command)
+  end
+end
+
+-- Binds hotkeys to the entries of `Dfzf.commands` (windows, hub, term, git).
 function obj:bindHotkeys(mapping)
   local spec = {}
   for name in pairs(self.commands) do
     spec[name] = function()
-      self:_run(self.commands[name])
+      self:_command(name)
     end
   end
   hs.spoons.bindHotkeysToSpec(spec, mapping)

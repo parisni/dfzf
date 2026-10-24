@@ -193,6 +193,29 @@ static void removeMarks(DFZEntry *entry, BOOL (^predicate)(NSString *mark)) {
     return info.appName.lowercaseString;
 }
 
+- (long long)recencyOfWindow:(DFZWindowID)windowId {
+    NSString *prefix = [kSortPrefix stringByAppendingString:@"-"];
+    long long recency = 0;
+    for (NSString *mark in _entries[@(windowId)].marks) {
+        if ([mark hasPrefix:prefix]) {
+            recency = MAX(recency, [mark substringFromIndex:prefix.length].longLongValue);
+        }
+    }
+    return recency;
+}
+
+- (NSArray<DFZWindowInfo *> *)treeWindows {
+    NSMutableArray<DFZWindowInfo *> *visible = [NSMutableArray array];
+    NSMutableArray<DFZWindowInfo *> *hidden = [NSMutableArray array];
+    for (NSNumber *windowId in _order) {
+        DFZWindowInfo *info = _windows[windowId];
+        if (info.standard) {
+            [(info.minimized ? hidden : visible) addObject:info];
+        }
+    }
+    return [visible arrayByAddingObjectsFromArray:hidden];
+}
+
 static NSDictionary *container(NSInteger containerId, NSString *type, NSString *name, NSArray *nodes) {
     return @{
         @"id" : @(containerId),
@@ -218,11 +241,8 @@ static NSDictionary *container(NSInteger containerId, NSString *type, NSString *
     }
     NSMutableArray *visible = [NSMutableArray array];
     NSMutableArray *hidden = [NSMutableArray array];
-    for (NSNumber *windowId in _order) {
-        DFZWindowInfo *info = _windows[windowId];
-        if (!info.standard) {
-            continue;
-        }
+    for (DFZWindowInfo *info in [self treeWindows]) {
+        NSNumber *windowId = @(info.windowId);
         DFZEntry *entry = _entries[windowId];
         [(info.minimized ? hidden : visible) addObject:@{
             @"id" : windowId,

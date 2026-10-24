@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Stand-in for macos/bin/dfzf-hs: serves fixture data and logs every other
 # request. DFZF_TEST_TREE_ON_SHOW swaps the tree once a window is shown.
+# focusToggle is unknown, like with the Lua backend, unless
+# DFZF_TEST_FOCUS_TOGGLE_REPLY sets the reply of the native one.
 # Sourced by dfzf-hs-msg like the real one, hence the dfzf_hs function.
 dfzf_hs() {
 	local request="$1" tree="$DFZF_TEST_TREE"
@@ -8,6 +10,14 @@ dfzf_hs() {
 	case "$(jq -r .op <<<"$request")" in
 	tree) cat "$tree" ;;
 	outputs) echo '[{"name":"screen","focused":true,"rect":{"x":0,"y":25,"width":1000,"height":800}}]' ;;
+	focusToggle)
+		if [[ -z ${DFZF_TEST_FOCUS_TOGGLE_REPLY+set} ]]; then
+			echo "dfzf: unknown request $request" >&2
+			return 1
+		fi
+		echo "$request" >>"$DFZF_TEST_LOG"
+		[[ -z $DFZF_TEST_FOCUS_TOGGLE_REPLY ]] || echo "$DFZF_TEST_FOCUS_TOGGLE_REPLY"
+		;;
 	focus | show | move | resize)
 		# Mirrors the backend: single-window actions reject an unknown id.
 		if ! jq -e --argjson id "$(jq .id <<<"$request")" 'any(.. | objects; .id? == $id)' "$tree" >/dev/null; then

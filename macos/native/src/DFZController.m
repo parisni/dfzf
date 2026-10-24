@@ -50,6 +50,136 @@ static NSString *noWindow(id windowId) {
     return [NSString stringWithFormat:@"dfzf: no window with id %@", windowId ?: @"nil"];
 }
 
+static BOOL isCriteriaSpace(unichar character) {
+    return [NSCharacterSet.whitespaceCharacterSet characterIsMember:character];
+}
+
+// Same syntax and keys as dfzf-hs-msg: [key="value with \"escapes\"" key=bareword].
+// Only \" is unescaped: any other backslash belongs to the regex.
+static NSArray<NSArray<NSString *> *> *parseCriteria(NSString *text, NSString **error) {
+    NSString *body = [text stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+    NSUInteger length = body.length;
+    BOOL valid = length >= 2 && [body characterAtIndex:0] == '[' && [body characterAtIndex:length - 1] == ']';
+    NSUInteger index = 1;
+    NSUInteger end = length - 1;
+    NSSet<NSString *> *supported = [NSSet setWithArray:@[ @"con_id", @"app_id", @"class", @"title", @"con_mark" ]];
+    NSMutableArray<NSArray<NSString *> *> *pairs = [NSMutableArray array];
+    while (valid) {
+        while (index < end && isCriteriaSpace([body characterAtIndex:index])) {
+            index++;
+        }
+        if (index >= end) {
+            break;
+        }
+        NSUInteger start = index;
+        while (index < end && (([body characterAtIndex:index] >= 'a' && [body characterAtIndex:index] <= 'z')
+                                  || [body characterAtIndex:index] == '_')) {
+            index++;
+        }
+        NSString *key = [body substringWithRange:NSMakeRange(start, index - start)];
+        if (!key.length || index >= end || [body characterAtIndex:index] != '=') {
+            valid = NO;
+            break;
+        }
+        index++;
+        NSMutableString *value = [NSMutableString string];
+        if (index < end && [body characterAtIndex:index] == '"') {
+            index++;
+            valid = NO;
+            while (index < end) {
+                unichar character = [body characterAtIndex:index++];
+                if (character == '"') {
+                    valid = YES;
+                    break;
+                }
+                if (character == '\\' && index < end) {
+                    unichar escaped = [body characterAtIndex:index++];
+                    if (escaped != '"') {
+                        [value appendString:@"\\"];
+                    }
+                    character = escaped;
+                }
+                [value appendFormat:@"%C", character];
+            }
+        } else {
+            start = index;
+            while (index < end && !isCriteriaSpace([body characterAtIndex:index])) {
+                index++;
+            }
+            [value appendString:[body substringWithRange:NSMakeRange(start, index - start)]];
+            valid = value.length > 0;
+        }
+        if (valid && ![supported containsObject:key]) {
+            *error = [NSString stringWithFormat:@"dfzf: unsupported on macOS: criteria key '%@'", key];
+            return nil;
+        }
+        if (valid) {
+            [pairs addObject:@[ key, value ]];
+        }
+    }
+    if (!valid) {
+        *error = [NSString stringWithFormat:@"dfzf: cannot parse criteria: %@", text];
+        return nil;
+    }
+    return pairs;
+}
+
+typedef BOOL (^DFZMatcher)(DFZWindowInfo *info, DFZState *state);
+
+// Matches windows like dfzf-hs-msg does on the tree: con_id by equality, the
+// other keys as unanchored regexes (jq's test()). Runs on the state queue.
+static DFZMatcher criteriaMatcher(NSString *text, NSString **error) {
+    NSArray<NSArray<NSString *> *> *pairs = parseCriteria(text, error);
+    if (!pairs) {
+        return nil;
+    }
+    NSMutableArray<DFZMatcher> *matchers = [NSMutableArray array];
+    for (NSArray<NSString *> *pair in pairs) {
+        NSString *key = pair[0];
+        NSString *value = pair[1];
+        if ([key isEqualToString:@"con_id"]) {
+            [matchers addObject:^BOOL(DFZWindowInfo *info, DFZState *state) {
+                return [[NSString stringWithFormat:@"%u", info.windowId] isEqualToString:value];
+            }];
+            continue;
+        }
+        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:value options:0 error:NULL];
+        if (!regex) {
+            *error = [NSString stringWithFormat:@"dfzf: invalid regex in criteria: %@", value];
+            return nil;
+        }
+        BOOL (^test)(NSString *) = ^BOOL(NSString *subject) {
+            return [regex firstMatchInString:subject options:0 range:NSMakeRange(0, subject.length)] != nil;
+        };
+        if ([key isEqualToString:@"title"]) {
+            [matchers addObject:^BOOL(DFZWindowInfo *info, DFZState *state) {
+                return test(info.title ?: @"");
+            }];
+        } else if ([key isEqualToString:@"con_mark"]) {
+            [matchers addObject:^BOOL(DFZWindowInfo *info, DFZState *state) {
+                for (NSString *mark in [state marksOfWindow:info.windowId]) {
+                    if (test(mark)) {
+                        return YES;
+                    }
+                }
+                return NO;
+            }];
+        } else {
+            [matchers addObject:^BOOL(DFZWindowInfo *info, DFZState *state) {
+                return test([state appId:info] ?: @"");
+            }];
+        }
+    }
+    return ^BOOL(DFZWindowInfo *info, DFZState *state) {
+        for (DFZMatcher matcher in matchers) {
+            if (!matcher(info, state)) {
+                return NO;
+            }
+        }
+        return YES;
+    };
+}
+
 // Closing a popup lets its app (kitty, which also hosts dfzf-term) activate
 // itself again: for this long, its windows cannot take the focus back from
 // the window the popup handed it to.
@@ -332,18 +462,10 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
             *error = noWindow(req[@"id"]);
             return nil;
         }
-        __block BOOL minimized = NO;
-        [self withState:^(DFZState *state) {
-            minimized = [state window:windowId].minimized;
-            [self noteFocusRequest:windowId];
-        }];
-        [self onWindow:windowId deadline:deadline error:error run:^{
-            if (minimized) {
-                [self->_source setWindow:windowId minimized:NO];
-            }
-            [self->_source focusWindow:windowId];
-        }];
-        return *error ? nil : @"";
+        return [self focus:windowId deadline:deadline error:error] ? @"" : nil;
+    }
+    if ([op isEqualToString:@"focusToggle"]) {
+        return [self focusToggle:req deadline:deadline error:error];
     }
     if ([op isEqualToString:@"close"] || [op isEqualToString:@"hide"]) {
         if (!ids) {
@@ -402,6 +524,101 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
         return *error ? nil : @"";
     }
     return [self runStateOp:op request:req windowId:hasId ? @(windowId) : nil ids:ids error:error];
+}
+
+// Unminimizes the window first: `scratchpad show` and `focus` alike bring it back.
+- (BOOL)focus:(DFZWindowID)windowId deadline:(dispatch_time_t)deadline error:(NSString **)error {
+    __block BOOL minimized = NO;
+    [self withState:^(DFZState *state) {
+        minimized = [state window:windowId].minimized;
+        [self noteFocusRequest:windowId];
+    }];
+    return [self onWindow:windowId deadline:deadline error:error run:^{
+        if (minimized) {
+            [self->_source setWindow:windowId minimized:NO];
+        }
+        [self->_source focusWindow:windowId];
+    }];
+}
+
+// dfzf-focus-toggle in a single request, with the same decisions as the script:
+// jump to the target remembering the window we came from (mark
+// _dfzf-origin-<key>), jump back to it when already on the target, or reply
+// "missing" so the caller creates the target. Decisions and marks happen in
+// one state block: no probe marks and no round trip per step.
+- (NSString *)focusToggle:(NSDictionary *)req deadline:(dispatch_time_t)deadline error:(NSString **)error {
+    NSString *key = stringFrom(req[@"key"]);
+    NSString *criteria = stringFrom(req[@"criteria"]);
+    if (!key.length || !criteria) {
+        *error = @"";
+        return nil;
+    }
+    DFZMatcher matches = criteriaMatcher(criteria, error);
+    if (!matches) {
+        return nil;
+    }
+    BOOL fallback = [req[@"fallback"] isKindOfClass:[NSNumber class]] && [req[@"fallback"] boolValue];
+    NSString *originMark = [@"_dfzf-origin-" stringByAppendingString:key];
+    __block DFZWindowID focusTarget = 0;
+    __block BOOL missing = NO;
+    [self withState:^(DFZState *state) {
+        NSArray<DFZWindowInfo *> *windows = [state treeWindows];
+        DFZWindowID current = 0;
+        BOOL onTarget = NO;
+        NSMutableSet<NSNumber *> *targets = [NSMutableSet set];
+        for (DFZWindowInfo *info in windows) {
+            BOOL focused = info.windowId == state.focusedId;
+            if (focused) {
+                current = info.windowId;
+            }
+            if (matches(info, state)) {
+                [targets addObject:@(info.windowId)];
+                onTarget = onTarget || focused;
+                // sway applies `focus` to each match in turn: the last one wins.
+                focusTarget = info.windowId;
+            }
+        }
+        if (!onTarget) {
+            missing = targets.count == 0;
+            // The fallback creates the target: the current window is the
+            // origin to come back to. Marks are unique, so marking it moves
+            // the mark off the previous origin.
+            if (current && (!missing || fallback)) {
+                [state setMark:originMark onWindow:current add:YES];
+            } else {
+                [state unmark:originMark windows:nil];
+            }
+            return;
+        }
+        // Already on the target: back to the origin if it is still around, else
+        // to the most recent visible window that is not a target (an origin lost,
+        // or left on the target itself, must not turn the toggle into a no-op).
+        DFZWindowID back = 0;
+        long long backRecency = -1;
+        for (DFZWindowInfo *info in windows) {
+            if (info.minimized || info.windowId == current || [targets containsObject:@(info.windowId)]) {
+                continue;
+            }
+            if ([[state marksOfWindow:info.windowId] containsObject:originMark]) {
+                back = info.windowId;
+                break;
+            }
+            long long recency = [state recencyOfWindow:info.windowId];
+            if (recency >= backRecency) {
+                back = info.windowId;
+                backRecency = recency;
+            }
+        }
+        [state unmark:originMark windows:nil];
+        focusTarget = back;
+    }];
+    if (missing) {
+        return @"missing";
+    }
+    if (!focusTarget) {
+        return @"";
+    }
+    return [self focus:focusTarget deadline:deadline error:error] ? @"" : nil;
 }
 
 - (NSString *)runStateOp:(NSString *)op

@@ -48,6 +48,40 @@ if [[ -z ${SWAYSOCK:-} && -z ${I3SOCK:-} && $OSTYPE == darwin* ]]; then
 	msg=dfzf-hs-msg
 fi
 
+# The native macOS backend runs the whole toggle in one request (focusToggle):
+# no probe marks, tree or jq, one process instead of about twenty. The Lua
+# backend does not know that request: fall through to the generic path below.
+if [[ $msg == dfzf-hs-msg ]]; then
+	# shellcheck source=../macos/bin/dfzf-hs
+	source "$(command -v dfzf-hs)"
+	json_escape() {
+		local s="$1"
+		s="${s//\\/\\\\}"
+		s="${s//\"/\\\"}"
+		s="${s//$'\t'/\\t}"
+		s="${s//$'\n'/\\n}"
+		REPLY="\"$s\""
+	}
+	has_fallback=false
+	if [[ ${#fallback[@]} -gt 0 ]]; then
+		has_fallback=true
+	fi
+	json_escape "$key"
+	request="{\"op\":\"focusToggle\",\"key\":$REPLY"
+	json_escape "$criteria"
+	request+=",\"criteria\":$REPLY,\"fallback\":$has_fallback}"
+	if reply="$(dfzf_hs "$request" 2>&1)"; then
+		if [[ $reply == missing && $has_fallback == true ]]; then
+			exec "${fallback[@]}"
+		fi
+		exit 0
+	fi
+	if [[ $reply != *"unknown request"* ]]; then
+		printf '%s\n' "$reply" >&2
+		exit 1
+	fi
+fi
+
 # Marks are unique (sway and the macOS backend alike): marking the new origin
 # moves the mark off the previous one, so an explicit unmark is only needed when
 # there is no window to mark.

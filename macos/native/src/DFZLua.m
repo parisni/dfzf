@@ -10,6 +10,8 @@ static LSRefTable refTable = LUA_NOREF;
 // process): the running backend lives here, not in the Lua state.
 static DFZController *sController;
 static DFZServer *sServer;
+// Bumped with each lua_State: a request callback outliving a reload is dropped.
+static NSUInteger sGeneration;
 
 static void stopBackend(void) {
     [sServer stop];
@@ -114,9 +116,46 @@ static int dfzf_isRunning(lua_State *L) {
     return 1;
 }
 
+/// hs._dfzf.request(json, callback) -> true | nil, error
+/// Serves one request like the socket does, without spawning a client process.
+/// The request runs off the main thread (it may wait on a hung app); callback(ok,
+/// reply) then runs on the main thread.
+static int dfzf_request(lua_State *L) {
+    LuaSkin *skin = [LuaSkin sharedWithState:L];
+    [skin checkArgs:LS_TSTRING, LS_TFUNCTION, LS_TBREAK];
+    DFZController *controller = sController;
+    if (!controller) {
+        return pushFailure(L, @"dfzf: the native backend is not running");
+    }
+    NSData *request = [luaString(L, 1) dataUsingEncoding:NSUTF8StringEncoding] ?: [NSData data];
+    int callback = [skin luaRef:refTable atIndex:2];
+    NSUInteger generation = sGeneration;
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
+        BOOL ok = NO;
+        NSString *reply = [controller handleRequest:request ok:&ok];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (generation != sGeneration) {
+                return;
+            }
+            LuaSkin *mainSkin = [LuaSkin sharedWithState:NULL];
+            lua_State *mainL = mainSkin.L;
+            _lua_stackguard_entry(mainL);
+            [mainSkin pushLuaRef:refTable ref:callback];
+            lua_pushboolean(mainL, ok);
+            [mainSkin pushNSObject:reply];
+            [mainSkin protectedCallAndError:@"hs._dfzf.request callback" nargs:2 nresults:0];
+            [mainSkin luaUnref:refTable ref:callback];
+            _lua_stackguard_exit(mainL);
+        });
+    });
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 // Collected with the lua_State on reload: the next config starts afresh.
 static int dfzf_gc(lua_State *L) {
     (void)L;
+    sGeneration++;
     stopBackend();
     return 0;
 }
@@ -125,6 +164,7 @@ static const luaL_Reg moduleLib[] = {
     {"start", dfzf_start},
     {"stop", dfzf_stop},
     {"isRunning", dfzf_isRunning},
+    {"request", dfzf_request},
     {NULL, NULL},
 };
 
@@ -136,6 +176,7 @@ static const luaL_Reg moduleMetaLib[] = {
 int luaopen_hs__dfzf(lua_State *L);
 int luaopen_hs__dfzf(lua_State *L) {
     LuaSkin *skin = [LuaSkin sharedWithState:L];
+    sGeneration++;
     refTable = [skin registerLibrary:"hs._dfzf" functions:moduleLib metaFunctions:moduleMetaLib];
     return 1;
 }
