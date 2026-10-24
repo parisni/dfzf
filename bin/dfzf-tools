@@ -9,7 +9,7 @@ tools_calendar_cmd="khal interactive"
 tools_clock_cmd="tty-clock -c -C 4 -s"
 tools_wifi_cmd="nmtui connect"
 tools_bluetooth_cmd="bluetuith --no-warning"
-tools_fetch_cmd="fastfetch && sleep infinity"
+tools_fetch_cmd="fastfetch && tail -f /dev/null"
 tools_network_cmd="bandwhich"
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 

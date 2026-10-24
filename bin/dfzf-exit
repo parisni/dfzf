@@ -43,4 +43,4 @@ result=$(echo "$choices" |
 		--bind='enter:accept' \
 		"${binds[@]}" | perl -0777 -pe 's/^([a-zA-Z]):.*/\$exit_cmd_$1/s')
 
-eval "$result" && sleep infinity
+eval "$result" && tail -f /dev/null
