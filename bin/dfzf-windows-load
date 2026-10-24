@@ -109,14 +109,34 @@ for state_file in /tmp/dfzf-windows-color-?*; do
 		break
 	fi
 done
-# Main processing logic using jq
+# Main processing logic, in a single jq pass: filtering, formatting, recency
+# sort, title cleanup and the highlight of the first line. One process instead
+# of a jq | sort | sed | perl pipeline: dfzf-windows lists on every popup.
+# The sort is the former `sort -nr` on lines all prefixed by their sort mark:
+# most recent first, ties by line, both descending.
 result=$(
-	echo "$input_json" | jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GREEN" --arg reset "$RESET" \
+	jq -r --arg red "$RED" --arg blue "$BLUE" --arg green "$GREEN" --arg reset "$RESET" \
 		--argjson map "$windows_app_id_map_json" \
 		--argjson glyph_rules "$windows_glyph_rules_json" \
 		--argjson show_hidden "$show_hidden" \
-		--arg app_filter "$windows_app_filter" '
+		--arg app_filter "$windows_app_filter" \
+		--arg title_rm_pattern "$windows_title_rm_pattern" '
 	  def format_title(text): "\u2063" + text + "\u2063";
+	  # Wraps the uncolored chunks of the line in the highlight color, leaving
+	  # the already colored \e[..m...\e[0m chunks as they are.
+	  def highlight:
+	    . as $line
+	    | [match("\u001b\\[[0-9;]+m.*?\u001b\\[0m"; "g")] as $colored
+	    | ($colored | length) as $count
+	    | ([0] + [$colored[] | .offset + .length]) as $starts
+	    | ([$colored[] | .offset] + [$line | length]) as $ends
+	    | [range(0; $count + 1) as $i
+	        | $line[$starts[$i]:$ends[$i]] as $chunk
+	        | (if $i == $count and $chunk == "" then ""
+	           else "\u001b[38;2;76;120;153m" + $chunk + "\u001b[0m" end)
+	          + (if $i < $count then $colored[$i].string else "" end)]
+	    | join("");
+	  [
 	    .. | objects
 	    | select(.type == "con" or .type == "floating_con")
     | select(.window_type == null or .window_type == "normal")
@@ -156,34 +176,15 @@ result=$(
 	        )
 	      }
 	    | select($app_filter == "" or (.app_id | ascii_downcase) == ($app_filter | ascii_downcase))
-	      
-	    | "\(.sort)\(if .urgent then "\u001b[33m" else "" end)\(.glyph) [\(.app_id)]\(if .urgent then "\u001b[0m" else "" end)\t\(.red)\(.blue)\(.green) \(format_title(.name)) #\(.id)\(if .kitty then " ~k\(.kitty)" else "" end)"
-	  ' | sort -nr |
-		sed -E 's/_dfzf-sort-[0-9]*//; s/'"$windows_title_rm_pattern"'//' |
-		perl -pe '
-  use Term::ANSIColor;
-  BEGIN {
-    $color_start = "\033[38;2;76;120;153m";
-    $color_end = "\033[0m";
-  }
-
-  if ($. == 1) {
-    s{(.*)}{
-      my $line = $1;
-
-      # ANSI pattern: \033[...m
-      my @chunks = split /(\033\[[0-9;]+m.*?\033\[0m)/, $line;
-
-      for (@chunks) {
-        next if /\033\[[0-9;]+m.*?\033\[0m/;  # already colored: skip
-        $_ = $color_start . $_ . $color_end; # wrap in new color
-      }
-
-      join "", @chunks;
-    }e;
-  }
-'
-
+	    | {
+	        recency: (.sort | ltrimstr("_dfzf-sort-") | tonumber? // 0),
+	        line: "\(if .urgent then "\u001b[33m" else "" end)\(.glyph) [\(.app_id)]\(if .urgent then "\u001b[0m" else "" end)\t\(.red)\(.blue)\(.green) \(format_title(.name)) #\(.id)\(if .kitty then " ~k\(.kitty)" else "" end)"
+	      }
+	  ]
+	  | sort_by(.recency, .line) | reverse
+	  | map(.line | sub($title_rm_pattern; ""))
+	  | (if length > 0 then .[0] |= highlight else . end)
+	  | .[]' <<<"$input_json"
 )
 
 if [[ -f $color_state_file ]]; then
