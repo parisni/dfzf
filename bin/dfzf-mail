@@ -3,7 +3,7 @@ set -euo pipefail
 
 export SHELL="$(command -v bash)"
 [[ $OSTYPE == darwin* ]] || dfzf-kill-bro >/dev/null
-export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right ${DFZF_FZF_OPTS-"--padding=1,2 --border=rounded --color=border:#ff8800"}"
 
 # Shared state file with `dfzf-mail-load`. Stores the currently selected
 # folder + page + query so that fzf `reload(dfzf-mail-load)` keeps context

@@ -5,7 +5,7 @@ export SHELL="$(command -v bash)"
 [[ $OSTYPE == darwin* ]] || dfzf-kill-bro >/dev/null
 windows_prompt_pattern="^[>$%] "
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
-export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right ${DFZF_FZF_OPTS-"--padding=1,2 --border=rounded --color=border:#ff8800"}"
 
 if command -v fd >/dev/null; then
 	findcommand="fd"

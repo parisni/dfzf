@@ -49,7 +49,7 @@ case "${1:-}" in
 esac
 
 export SHELL="$(command -v bash)"
-export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right ${DFZF_FZF_OPTS-"--padding=1,2 --border=rounded --color=border:#ff8800"}"
 
 picked=$(list | fzf --prompt "Notifs > " --delimiter $'\t' --with-nth 2 \
 	--preview 'printf "%s\n" {2}' \

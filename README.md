@@ -469,6 +469,21 @@ pass_otp_cmd='pass otp'
 </details>
 
 <details>
+  <summary>fzf look [optional]</summary>
+
+Every dfzf module draws fzf with a rounded orange border. Override the look
+through `DFZF_FZF_OPTS`, read from the environment (not from `dfzf.conf`) and
+appended to the shared fzf options:
+
+```bash
+export DFZF_FZF_OPTS='--padding=1,2 --border=sharp --color=border:#5f87af'
+# no border, no padding
+export DFZF_FZF_OPTS=''
+```
+
+</details>
+
+<details>
   <summary>Kitty configuration [optional]</summary>
 
 ```bash

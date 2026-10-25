@@ -2,7 +2,7 @@
 set -euo pipefail
 
 export SHELL="$(command -v bash)"
-export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right ${DFZF_FZF_OPTS-"--padding=1,2 --border=rounded --color=border:#ff8800"}"
 windows_prompt_pattern="^[>$%] "
 windows_app_filter="${DFZF_WINDOWS_APP_FILTER-}"
 # When set, skip the "start:up" bind that preselects the most recently focused

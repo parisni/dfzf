@@ -8,7 +8,7 @@ fi
 
 export SHELL="$(command -v bash)"
 dfzf-kill-bro >/dev/null
-export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right --margin=1,2"
+export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right ${DFZF_FZF_OPTS-"--padding=1,2 --border=rounded --color=border:#ff8800"}"
 # terminal application launcher for sway, using fzf
 # Forked from https://github.com/Biont/sway-launcher-desktop
 shopt -s nullglob globstar
