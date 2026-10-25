@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v1.2.1"></a>
+## [v1.2.1] - 2026-10-25
+### Features
+- **all:** draw fzf with a border, overridable through DFZF_FZF_OPTS
+
+
 <a name="v1.2.0"></a>
 ## [v1.2.0] - 2026-10-24
 ### Bug Fixes
@@ -723,7 +729,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.2.1...HEAD
+[v1.2.1]: https://github.com/parisni/dfzf/compare/v1.2.0...v1.2.1
 [v1.2.0]: https://github.com/parisni/dfzf/compare/v1.1.2...v1.2.0
 [v1.1.2]: https://github.com/parisni/dfzf/compare/v1.1.1...v1.1.2
 [v1.1.1]: https://github.com/parisni/dfzf/compare/v1.1.0...v1.1.1
