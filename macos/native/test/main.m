@@ -403,22 +403,50 @@ static void testPopupHandoff(NSString *directory) {
     stealFocus(h, 21);
     check(@"handoff: expires after the grace period", h.mock.focusedId == 21);
 
+    gClock = 5200.0;
+    stealFocus(h, 20);
     [h.mock addWindow:24 title:@"dfzf-popup" app:@"kitty" pid:901];
     [h settle];
-    h.mock.focusedId = 24;
+    gClock = 5201.0;
+    stealFocus(h, 24);
     [h.mock closeWindow:24];
     [h settle];
     stealFocus(h, 21);
-    check(@"handoff: popup that focused nothing forces nothing", h.mock.focusedId == 21);
+    check(@"handoff: popup closed without a pick gives the focus back", h.mock.focusedId == 20);
 
+    gClock = 5300.0;
+    [h.mock addWindow:26 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h.mock addWindow:27 title:@"general" app:@"Slack" pid:902];
+    [h settle];
+    stealFocus(h, 26);
+    stealFocus(h, 27);
+    [h.mock closeWindow:26];
+    [h settle];
+    stealFocus(h, 21);
+    check(@"handoff: popup whose pick focused another app forces nothing", h.mock.focusedId == 21);
+
+    gClock = 5400.0;
+    stealFocus(h, 20);
+    [h.mock addWindow:28 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h.mock addWindow:29 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h settle];
+    stealFocus(h, 29);
+    [h.mock closeWindow:28];
+    [h settle];
+    check(@"handoff: popup replaced by a newer one keeps the newer focused", h.mock.focusedId == 29);
+    [h.mock closeWindow:29];
+    [h settle];
+
+    gClock = 5500.0;
+    stealFocus(h, 21);
     [h.mock addWindow:25 title:@"dfzf-popup" app:@"kitty" pid:901];
     [h settle];
+    gClock = 5501.0;
     [h request:@"{\"op\":\"focus\",\"id\":20}"];
     [h request:@"{\"op\":\"focus\",\"id\":25}"];
     [h.mock closeWindow:25];
     [h settle];
-    stealFocus(h, 21);
-    check(@"handoff: preview that refocused the popup forces nothing", h.mock.focusedId == 21);
+    check(@"handoff: popup refocused after a focus request gives the focus back", h.mock.focusedId == 20);
     [h stop];
 }
 

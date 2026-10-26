@@ -241,6 +241,8 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
     dispatch_async(_stateQueue, ^{
         if (windowId == self->_handoffPopup) {
             [self armHandoffFromPopup:windowId];
+        } else if ([self isPopup:windowId]) {
+            [self restoreFocusFromPopup:windowId];
         }
         [self->_state removeWindow:windowId];
     });
@@ -374,6 +376,40 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
     if (_state.focusedId != _handoffTarget) {
         [self refocusHandoffTarget];
     }
+}
+
+// A popup closed without focusing anything (esc): hand the focus back to the
+// window used before it, unless it is already elsewhere (a clicked
+// notification's app) or on a newer popup.
+- (void)restoreFocusFromPopup:(DFZWindowID)popup {
+    pid_t popupPid = [_state window:popup].pid;
+    DFZWindowID focused = _state.focusedId;
+    if (focused && focused != popup && [_state window:focused].pid != popupPid) {
+        return;
+    }
+    DFZWindowID previous = 0;
+    long long previousRecency = 0;
+    for (DFZWindowInfo *info in [_state windows]) {
+        if (info.windowId == popup || !info.standard || info.minimized) {
+            continue;
+        }
+        if ([_config.popupTitles containsObject:info.title]) {
+            if (info.windowId > popup) {
+                return;
+            }
+            continue;
+        }
+        long long recency = [_state recencyOfWindow:info.windowId];
+        if (recency > previousRecency) {
+            previous = info.windowId;
+            previousRecency = recency;
+        }
+    }
+    if (!previous) {
+        return;
+    }
+    _handoffTarget = previous;
+    [self armHandoffFromPopup:popup];
 }
 
 - (void)guardHandoffAgainst:(DFZWindowID)windowId {

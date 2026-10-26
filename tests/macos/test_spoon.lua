@@ -33,15 +33,15 @@ local screen = {
   name = function() return "Built-in" end,
 }
 
-local function newWindow(id, title, app, standard)
+local function newWindow(id, title, app, standard, pid)
   local w = {
-    _id = id, _title = title, _app = app, _standard = standard ~= false,
+    _id = id, _title = title, _app = app, _standard = standard ~= false, _pid = pid or 4242,
     frames = {}, maximized = 0, minimized = false, _frame = { x = 0, y = 0, w = 10, h = 10 },
   }
   function w:id() return self._id end
   function w:title() return self._title end
   function w:application()
-    return { name = function() return self._app end, pid = function() return 4242 end }
+    return { name = function() return self._app end, pid = function() return self._pid end }
   end
   function w:isStandard() return self._standard end
   function w:isMinimized() return self.minimized end
@@ -257,10 +257,27 @@ steal(windows[2])
 check("handoff: expires after the grace period", focusedId == 2)
 local idle = newWindow(11, "dfzf-popup", "kitty")
 callbacks.created(idle)
+clock = clock + 2
+steal(windows[1])
+clock = clock + 1
+steal(idle)
 idle:close()
 callbacks.destroyed({ id = function() return nil end })
 steal(windows[2])
-check("handoff: popup that focused nothing forces nothing", focusedId == 2)
+check("handoff: popup closed without a pick gives the focus back", focusedId == 1)
+clock = clock + 2
+local picked = newWindow(13, "dfzf-popup", "kitty")
+callbacks.created(picked)
+steal(picked)
+local slack = newWindow(14, "general", "Slack", true, 4343)
+steal(slack)
+picked:close()
+callbacks.destroyed(picked)
+steal(windows[2])
+check("handoff: popup whose pick focused another app forces nothing", focusedId == 2)
+clock = clock + 2
+steal(windows[1])
+clock = clock + 1
 local preview = newWindow(12, "dfzf-popup", "kitty")
 callbacks.created(preview)
 ipc({ op = "focus", id = 1 })
@@ -268,7 +285,7 @@ ipc({ op = "focus", id = 12 })
 preview:close()
 callbacks.destroyed({ id = function() return nil end })
 steal(windows[2])
-check("handoff: preview that refocused the popup forces nothing", focusedId == 2)
+check("handoff: popup refocused after a focus request gives the focus back", focusedId == 1)
 
 check("unknown op errors", not pcall(ipc, { op = "nope" }))
 check("focus on unknown id errors", not pcall(ipc, { op = "focus", id = 42 }))

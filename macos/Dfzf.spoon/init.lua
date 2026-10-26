@@ -257,16 +257,66 @@ end
 function obj:_onDestroyed(win)
   local handoff = self._handoff
   if not handoff or handoff.untilTime then
+    self:_restoreFromPopup(win)
     return
   end
   local id = win and win:id()
   if id ~= handoff.popupId and (id or hs.window.get(handoff.popupId)) then
     return
   end
+  self._popup = nil
   handoff.untilTime = now() + HANDOFF_SECONDS
   local focused = hs.window.focusedWindow()
   if not focused or focused:id() ~= handoff.target:id() then
     handoff.target:focus()
+  end
+end
+
+function obj:_recency(id)
+  local recency = 0
+  for _, mark in ipairs((self._state[id] or { marks = {} }).marks) do
+    if startsWith(mark, SORT_PREFIX .. "-") then
+      recency = math.max(recency, tonumber(mark:sub(#SORT_PREFIX + 2)) or 0)
+    end
+  end
+  return recency
+end
+
+-- A popup closed without focusing anything (esc): hand the focus back to the
+-- window used before it, unless it is already elsewhere (a clicked
+-- notification's app). A newer popup replaces `_popup`, so closing an older
+-- one never takes the focus from it.
+function obj:_restoreFromPopup(win)
+  local popup = self._popup
+  if not popup then
+    return
+  end
+  local id = win and win:id()
+  if id ~= popup.id and (id or hs.window.get(popup.id)) then
+    return
+  end
+  self._popup = nil
+  local focused = hs.window.focusedWindow()
+  if focused and focused:id() ~= popup.id and pidOf(focused) ~= popup.pid then
+    return
+  end
+  local previous, previousRecency = nil, 0
+  for _, other in ipairs(self._filter:getWindows()) do
+    local otherId = other:id()
+    if otherId and otherId ~= popup.id and other:isStandard() and not other:isMinimized()
+      and not self.popupTitles[other:title() or ""] then
+      local recency = self:_recency(otherId)
+      if recency > previousRecency then
+        previous, previousRecency = other, recency
+      end
+    end
+  end
+  if not previous then
+    return
+  end
+  self._handoff = { popupId = popup.id, pid = popup.pid, target = previous, untilTime = now() + HANDOFF_SECONDS }
+  if not focused or focused:id() ~= previous:id() then
+    previous:focus()
   end
 end
 
@@ -297,6 +347,10 @@ function obj:_place(win)
       h = frame.h * ratio,
     }, 0)
     win:focus()
+    local id = win:id()
+    if id and (not self._popup or id >= self._popup.id) then
+      self._popup = { id = id, pid = pidOf(win) }
+    end
     self:_closePopupsOlderThan(win:id())
   elseif self.maximize then
     if not self.floatingTitles[win:title() or ""] then
