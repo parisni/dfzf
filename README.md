@@ -210,6 +210,13 @@ Differences with sway/i3:
   (`kitty --title dfzf-popup`), see `Dfzf.identityTitles` / `Dfzf.commands`.
 - marks (recency, colors) and urgency live in the spoon and are lost when
   Hammerspoon reloads.
+- `esc` closes a popup whatever runs in it (clock, top, wifi...) only with a
+  kitty mapping, the counterpart of the sway/i3 `map escape close_window`:
+
+  ```
+  #~/.config/kitty/kitty.conf
+  map --when-focus-on title:^dfzf-popup$ escape close_window
+  ```
 - `dfzf-focus-toggle` criteria match the lowercased app name as `app_id`, e.g.
   `'[app_id="firefox" title="mail.google.com"]'`.
   With the native backend, the script sends the whole toggle as one request.
@@ -411,7 +418,7 @@ exit_cmd_r='sudo reboot'
 exit_cmd_S='shutdown now'
 exit_cmd_h='sudo /bin/systemctl hibernate'
 
-tools_clock_cmd="tty-clock -c -C 4 -s -d 0 -a 100000000"
+tools_clock_cmd="ESCDELAY=25 tty-clock -c -C 4 -s -S -d 0 -a 100000000"
 tools_calendar_cmd="~/.venv/3.11.6/bin/khal interactive"
 tools_top_cmd="gotop"
 
