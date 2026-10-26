@@ -14,17 +14,26 @@ set -euo pipefail
 # `mml read` prefixes the rendered part with the headers it kept, so everything
 # up to (and including) the first blank line is dropped to leave valid HTML.
 #
-# The tempfile is deliberately NOT cleaned up: xdg-open returns before the
-# browser has read the file, so removing it on exit would race with the page
-# load. It lands in $TMPDIR and is reaped by the usual tmp cleanup.
+# The tempfile is deliberately NOT cleaned up: xdg-open / open return before
+# the browser has read the file, so removing it on exit would race with the
+# page load. It lands in $TMPDIR and is reaped by the usual tmp cleanup.
+#
+# BSD mktemp (macOS) has no suffix support (`-t` takes a prefix), so the
+# `.html` extension the browser needs is added by renaming the tempfile.
 
 mailbox="${1:?missing mailbox}"
 id="${2:?missing id}"
 
-html="$(mktemp -t dfzf-mail-XXXXXX.html)"
+base="$(mktemp "${TMPDIR:-/tmp}/dfzf-mail-XXXXXX")"
+html="$base.html"
+mv "$base" "$html"
 
 himalaya --log off message read -m "$mailbox" --raw "$id" |
 	mml read --include-part text/html --hide-attachments |
 	sed '1,/^$/d' >"$html"
 
-xdg-open "$html" >/dev/null 2>&1
+if [[ $OSTYPE == darwin* ]]; then
+	open "$html"
+else
+	xdg-open "$html"
+fi >/dev/null 2>&1
