@@ -373,8 +373,11 @@ static const NSTimeInterval kPopupOriginSeconds = 5.0;
     return info && [_config.popupTitles containsObject:info.title];
 }
 
-// A popup hotkey fired: remember the window the user is on.
+// A popup hotkey fired: remember the window the user is on, and drop the
+// previous popup's handoff so it cannot take the focus from the new one.
 - (void)notePopupOrigin {
+    _handoffPopup = 0;
+    _handoffUntil = 0;
     DFZWindowID focused = _state.focusedId;
     _pendingOrigin = [self isPopup:focused] ? 0 : focused;
     _pendingOriginAt = _state.clock();
@@ -460,7 +463,7 @@ static const NSTimeInterval kPopupOriginSeconds = 5.0;
 }
 
 - (void)guardHandoffAgainst:(DFZWindowID)windowId {
-    if (!_handoffUntil || windowId == _handoffTarget) {
+    if (!_handoffUntil || windowId == _handoffTarget || [self isPopup:windowId]) {
         return;
     }
     if (_state.clock() > _handoffUntil) {

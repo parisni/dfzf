@@ -503,6 +503,19 @@ static void testPopupHandoff(NSString *directory) {
     [h settle];
     stealFocus(h, 21);
     check(@"handoff: a closed hotkey origin falls back to the most recent window", h.mock.focusedId == 20);
+
+    [h.mock addWindow:34 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h settle];
+    stealFocus(h, 34);
+    check(@"handoff: a new popup keeps the focus from the closed one's handoff", h.mock.focusedId == 34);
+    [h.mock closeWindow:34];
+    [h settle];
+    stealFocus(h, 21);
+    [h request:@"{\"op\":\"popupOrigin\"}"];
+    [h.mock addWindow:35 title:@"kitty" app:@"kitty" pid:901];
+    [h settle];
+    stealFocus(h, 35);
+    check(@"handoff: a popup hotkey drops the closed popup's handoff", h.mock.focusedId == 35);
     [h stop];
 }
 

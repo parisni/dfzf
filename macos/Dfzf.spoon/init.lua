@@ -336,7 +336,7 @@ end
 
 function obj:_guardHandoff(win, id)
   local handoff = self._handoff
-  if not handoff or not handoff.untilTime or id == handoff.target:id() then
+  if not handoff or not handoff.untilTime or id == handoff.target:id() or self.popupTitles[win:title() or ""] then
     return
   end
   if now() > handoff.untilTime then
@@ -575,7 +575,10 @@ function obj:_command(name)
 end
 
 -- A command may open a popup: remember the window to go back to when it closes.
+-- The user is opening a new popup: the previous one's handoff must not take
+-- the focus from it.
 function obj:_notePopupOrigin()
+  self._handoff = nil
   if self._native then
     self._native.request('{"op":"popupOrigin"}', function() end)
     return
