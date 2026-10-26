@@ -7,6 +7,8 @@ export PATH="$macos_tests_dir/fake-bin:$PATH"
 fixtures="$macos_tests_dir/fixtures"
 repo="$scratch_dir/repo"
 mkdir -p "$repo/sub"
+# git reports the resolved path: macOS's /var is a symlink to /private/var.
+repo="$(cd "$repo" && pwd -P)"
 git -C "$repo" init -q
 
 # Spoon requests logged by the fake bridge, one compact sorted JSON per item.
