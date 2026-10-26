@@ -135,8 +135,9 @@ if [[ $persistent == true ]]; then
 	start_binds+=(--listen --bind "start:execute-silent(hide_switcher; publish_port)"
 		--bind "ctrl-c:$close_action" --bind "ctrl-q:$close_action")
 	enter_action="execute-silent(dfzf-windows-line focus {})+$close_action"
-	# Hiding hands the focus back to the previous app, as the popup's close did.
-	esc_action="$close_action"
+	# Hiding lets macOS activate any app: focus the previous window first, as
+	# the popup's esc does (the switcher itself is never listed).
+	esc_action='execute-silent(dfzf-windows-line focus "$(dfzf-windows-load | head -n1)")+'"$close_action"
 	result=""
 else
 	# macOS: Dfzf.spoon already keeps a single popup, dfzf-kill-bro would only
