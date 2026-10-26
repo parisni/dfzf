@@ -6,7 +6,7 @@ export SHELL="$(command -v bash)"
 
 tools_top_cmd="gotop"
 tools_calendar_cmd="khal interactive"
-tools_clock_cmd="tty-clock -c -C 4 -s"
+tools_clock_cmd="tty-clock -c -C 4 -s -d 0 -a 100000000"
 tools_wifi_cmd="nmtui connect"
 tools_bluetooth_cmd="bluetuith --no-warning"
 tools_fetch_cmd="fastfetch && tail -f /dev/null"

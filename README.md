@@ -411,7 +411,7 @@ exit_cmd_r='sudo reboot'
 exit_cmd_S='shutdown now'
 exit_cmd_h='sudo /bin/systemctl hibernate'
 
-tools_clock_cmd="tty-clock -c -C 4 -s"
+tools_clock_cmd="tty-clock -c -C 4 -s -d 0 -a 100000000"
 tools_calendar_cmd="~/.venv/3.11.6/bin/khal interactive"
 tools_top_cmd="gotop"
 
