@@ -210,12 +210,15 @@ Differences with sway/i3:
   (`kitty --title dfzf-popup`), see `Dfzf.identityTitles` / `Dfzf.commands`.
 - marks (recency, colors) and urgency live in the spoon and are lost when
   Hammerspoon reloads.
-- `esc` closes a popup whatever runs in it (clock, top, wifi...) only with a
-  kitty mapping, the counterpart of the sway/i3 `map escape close_window`:
+- `esc` closes the hub popup whatever tool runs in it (clock, top, wifi...)
+  only with a kitty mapping, the counterpart of the sway/i3
+  `map escape close_window`. It matches the command the popup started with:
+  kitty's `title:` would see the title set by the running program, not
+  `--title dfzf-popup`:
 
   ```
   #~/.config/kitty/kitty.conf
-  map --when-focus-on title:^dfzf-popup$ escape close_window
+  map --when-focus-on cmdline:dfzf-hub$ escape close_window
   ```
 - `dfzf-focus-toggle` criteria match the lowercased app name as `app_id`, e.g.
   `'[app_id="firefox" title="mail.google.com"]'`.
