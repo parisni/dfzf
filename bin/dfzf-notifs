@@ -11,12 +11,14 @@ export SHELL="$(command -v bash)"
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right ${DFZF_FZF_OPTS-"--padding=1,2 --border=rounded --color=border:#ff8800"}"
 HIST_FLAG="/tmp/dfzf-notif_history_mode"
 rm -f $HIST_FLAG
+[[ -e ${XDG_RUNTIME_DIR:-/tmp}/dfzf-help.notifs ]] && dfzf-help reset notifs
 
 # mako >= 1.11 emits a flat JSON array (commit 322dece "makoctl: add JSON
 # output for list and history"). Each entry has plain keys like .id, .summary,
 # .body instead of the previous busctl typed JSON (.id.data, .summary.data...).
 dfzf-notifs-load | jq -r '.[] | "\(.id):\(.summary)"' |
 	fzf --prompt "Notifs > " --multi \
+		--bind="?:transform-header(dfzf-help toggle notifs)" \
 		--preview 'dfzf-notifs-load | jq -r --arg id "$(echo {} | perl -0777 -pe "s/:.*//s")" ".[] | select(.id == (\$id | tonumber)) | .body" ' \
 		--preview-window=up:30%:wrap \
 		--bind "enter:execute-silent(echo {}| perl -0777 -pe 's/:.*//s' | xargs makoctl invoke -n && (echo {}|grep -q 'Gmail ' || dfzf-exec -q '[title=\"Slack\"]' focus))+accept" \

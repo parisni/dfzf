@@ -31,6 +31,8 @@ fi
 
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right ${DFZF_FZF_OPTS-"--padding=1,2 --border=rounded --color=border:#ff8800"}"
 
-choice=$(list_apps | fzf --prompt "Launcher > " --delimiter $'\t' --with-nth 1) || exit 0
+[[ -e ${XDG_RUNTIME_DIR:-/tmp}/dfzf-help.launcher ]] && dfzf-help reset launcher
+choice=$(list_apps | fzf --prompt "Launcher > " --delimiter $'\t' --with-nth 1 \
+	--bind="?:transform-header(dfzf-help toggle launcher)") || exit 0
 # open hands the app to launchd: it outlives the popup, no detaching needed.
 open "${choice#*$'\t'}"

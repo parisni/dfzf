@@ -347,10 +347,12 @@ for PROVIDER_NAME in "${!PROVIDERS[@]}"; do
 	(bash -c "${0} provide ${PROVIDER_NAME}" >>"$FZFPIPE") &
 done
 
+[[ -e ${XDG_RUNTIME_DIR:-/tmp}/dfzf-help.launcher ]] && dfzf-help reset launcher
 readarray -t COMMAND_STR <<<"$(
 	${FZF_COMMAND} --prompt="Launcher > " \
 		--delimiter '\034' --nth ..3 --with-nth 3 \
 		--print-query \
+		--bind="?:transform-header(dfzf-help toggle launcher)" \
 		--preview "$0 describe {2} {1}" \
 		--preview-window="${PREVIEW_WINDOW}" \
 		--no-multi \

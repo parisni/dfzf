@@ -606,6 +606,8 @@ Tilling with multi-select (ctrl-t):
 
   Scrollbacks let you fuzzy-search across all your terminal histories (Kitty only) and focus the right one — great for digging up lost work from vague command memories.
 
+  - `?`: toggle a keybinding cheatsheet in the header
+
   ```bash
     sudo apt install ripgrep
   ```
@@ -621,6 +623,7 @@ Tilling with multi-select (ctrl-t):
 
   The hub lets you launch any dfzf command with a single keystroke — one keybinding to rule them all.
 
+- `?`: toggle a keybinding cheatsheet in the header
 - `b`: Bluetooth
 - `c`: Clipboard
 - `d`: Date
@@ -733,6 +736,7 @@ Password-store
 
 
   - list notification ordered
+  - `?`: toggle a keybinding cheatsheet in the header
   - `Return`: notification action
   - `ctrl-k`: kill notification
   - `alt-K`: kill every notification matching the query (all the visible ones)
@@ -789,6 +793,7 @@ Password-store
 
   - list desktop applications
   - fire application
+  - `?`: toggle a keybinding cheatsheet in the header
   
   ```bash
     sudo apt install jq gawk
@@ -806,6 +811,7 @@ Password-store
   - reboot
   - shutdown
   - logout
+  - `?`: toggle a keybinding cheatsheet in the header
 
   ![Image](https://github.com/user-attachments/assets/2e60004a-f3a4-4336-a42e-576292f77e47)
 </details>

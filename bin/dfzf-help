@@ -34,6 +34,29 @@ cheatsheet() {
 	password)
 		printf '%s' $'? help · enter copy password · ctrl-o copy otp · ctrl-j toggle preview'
 		;;
+	hub)
+		printf '%s' $'? help · <letter> open that tool · enter open the selected one'
+		;;
+	exit)
+		printf '%s' $'? help · <letter> run that action · enter run the selected one'
+		;;
+	notifs)
+		if [[ $OSTYPE == darwin* ]]; then
+			printf '%s' $'? help · enter click · ctrl-k dismiss · alt-K dismiss all matching'
+		else
+			printf '%s' $'? help · enter run action · ctrl-k dismiss · alt-K dismiss all matching\nctrl-h toggle history'
+		fi
+		;;
+	launcher)
+		if [[ $OSTYPE == darwin* ]]; then
+			printf '%s' $'? help · enter open the app'
+		else
+			printf '%s' $'? help · enter launch · no match: enter runs the query as a command'
+		fi
+		;;
+	scrollbacks)
+		printf '%s' $'? help · enter focus the terminal at that line'
+		;;
 	*)
 		return 1
 		;;

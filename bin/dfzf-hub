@@ -55,9 +55,11 @@ for opt in "${hub_options[@]}"; do
 done
 
 # Run fzf with dynamic binds
+[[ -e ${XDG_RUNTIME_DIR:-/tmp}/dfzf-help.hub ]] && dfzf-help reset hub
 result=$(echo "$choices" |
 	fzf --tac --disabled --prompt "Hub > " \
 		--bind='enter:accept' \
+		--bind="?:transform-header(dfzf-help toggle hub)" \
 		"${binds[@]}" | perl -0777 -pe 's/^([a-zA-Z]):.*/\$hub_cmd_$1/s')
 
 eval "$result"

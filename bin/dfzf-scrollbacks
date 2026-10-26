@@ -61,6 +61,7 @@ result=$(
 ' _ "{}" "$dfzf_map" "$kitty_sock" |
 		fzf --prompt "Scrollbacks: " \
 			--no-unicode \
+			--bind="?:transform-header(dfzf-help toggle scrollbacks)" \
 			--preview="$PREVIEW" \
 			--preview-window="up,follow"
 )

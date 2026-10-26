@@ -38,9 +38,11 @@ for opt in "${exit_options[@]}"; do
 done
 
 # Run fzf with dynamic binds
+[[ -e ${XDG_RUNTIME_DIR:-/tmp}/dfzf-help.exit ]] && dfzf-help reset exit
 result=$(echo "$choices" |
 	fzf --disabled --prompt "Exit > " \
 		--bind='enter:accept' \
+		--bind="?:transform-header(dfzf-help toggle exit)" \
 		"${binds[@]}" | perl -0777 -pe 's/^([a-zA-Z]):.*/\$exit_cmd_$1/s')
 
 eval "$result" && tail -f /dev/null

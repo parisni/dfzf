@@ -81,9 +81,11 @@ esac
 export SHELL="$(command -v bash)"
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right ${DFZF_FZF_OPTS-"--padding=1,2 --border=rounded --color=border:#ff8800"}"
 
+[[ -e ${XDG_RUNTIME_DIR:-/tmp}/dfzf-help.notifs ]] && dfzf-help reset notifs
 picked=$(list | fzf --prompt "Notifs > " --multi --delimiter $'\t' --with-nth 2 \
 	--preview 'printf "%s\n" {2}' \
 	--preview-window=up:30%:wrap \
+	--bind="?:transform-header(dfzf-help toggle notifs)" \
 	--bind "enter:deselect-all+accept" \
 	--bind "ctrl-k:execute-silent(dfzf-notifs-macos --dismiss {})+reload(dfzf-notifs-macos --list)" \
 	--bind "alt-K:select-all+execute-silent(dfzf-notifs-macos --dismiss {+})+deselect-all+reload(dfzf-notifs-macos --list)" \
