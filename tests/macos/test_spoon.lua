@@ -255,16 +255,17 @@ check("handoff: closed popup's app cannot steal the focus back", focusedId == 1)
 clock = clock + 2
 steal(windows[2])
 check("handoff: expires after the grace period", focusedId == 2)
+local browser = newWindow(15, "Docs", "Firefox", true, 4141)
+clock = clock + 2
+steal(browser)
+clock = clock + 2
 local idle = newWindow(11, "dfzf-popup", "kitty")
 callbacks.created(idle)
-clock = clock + 2
-steal(windows[1])
-clock = clock + 1
 steal(idle)
 idle:close()
 callbacks.destroyed({ id = function() return nil end })
 steal(windows[2])
-check("handoff: popup closed without a pick gives the focus back", focusedId == 1)
+check("handoff: popup closed without a pick gives the focus back", focusedId == 15)
 clock = clock + 2
 local picked = newWindow(13, "dfzf-popup", "kitty")
 callbacks.created(picked)
@@ -276,16 +277,49 @@ callbacks.destroyed(picked)
 steal(windows[2])
 check("handoff: popup whose pick focused another app forces nothing", focusedId == 2)
 clock = clock + 2
-steal(windows[1])
-clock = clock + 1
+steal(browser)
+clock = clock + 2
 local preview = newWindow(12, "dfzf-popup", "kitty")
 callbacks.created(preview)
-ipc({ op = "focus", id = 1 })
+ipc({ op = "focus", id = 15 })
 ipc({ op = "focus", id = 12 })
 preview:close()
 callbacks.destroyed({ id = function() return nil end })
 steal(windows[2])
-check("handoff: popup refocused after a focus request gives the focus back", focusedId == 1)
+check("handoff: popup refocused after a focus request gives the focus back", focusedId == 15)
+clock = clock + 2
+steal(slack)
+clock = clock + 5
+steal(windows[2])
+local opening = newWindow(16, "dfzf-popup", "kitty")
+callbacks.created(opening)
+opening:close()
+callbacks.destroyed(opening)
+steal(windows[2])
+check("handoff: kitty focusing its own window while opening the popup is skipped", focusedId == 14)
+clock = clock + 2
+steal(browser)
+spoon:_command("hub")
+clock = clock + 1
+steal(windows[2])
+clock = clock + 2
+local fromHotkey = newWindow(17, "dfzf-popup", "kitty")
+callbacks.created(fromHotkey)
+fromHotkey:close()
+callbacks.destroyed(fromHotkey)
+steal(windows[2])
+check("handoff: popup opened by a hotkey goes back to the window it was opened from", focusedId == 15)
+clock = clock + 2
+steal(slack)
+spoon:_command("hub")
+clock = clock + 10
+steal(browser)
+local late = newWindow(18, "dfzf-popup", "kitty")
+callbacks.created(late)
+late:close()
+callbacks.destroyed(late)
+steal(windows[2])
+check("handoff: a stale hotkey origin is not adopted", focusedId == 15)
 
 check("unknown op errors", not pcall(ipc, { op = "nope" }))
 check("focus on unknown id errors", not pcall(ipc, { op = "focus", id = 42 }))
@@ -414,7 +448,9 @@ check("switcher: a lost window starts a new switcher", switcher._switcher == nil
 focusOk, httpStatus = true, 200
 
 local popupOnly = dofile(spoonPath)
-popupOnly._native = { request = function() error("no native request expected") end }
+popupOnly._native = { request = function(request)
+  if request ~= '{"op":"popupOrigin"}' then error("no switcher request expected") end
+end }
 lastTask = nil
 popupOnly:_command("windows")
 check("without Dfzf.switcher, windows opens the popup",

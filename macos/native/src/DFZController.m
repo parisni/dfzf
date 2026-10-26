@@ -185,6 +185,13 @@ static DFZMatcher criteriaMatcher(NSString *text, NSString **error) {
 // itself again: for this long, its windows cannot take the focus back from
 // the window the popup handed it to.
 static const NSTimeInterval kHandoffSeconds = 1.0;
+// Opening a popup activates its app (kitty), which may first focus another of
+// its windows (dfzf-term): such focus changes this close to the opening are
+// not where the user came from.
+static const NSTimeInterval kPopupOpeningSeconds = 1.0;
+// A hotkey about to open a popup notes the focused window: the first popup
+// seen within this delay adopts it as the window to go back to.
+static const NSTimeInterval kPopupOriginSeconds = 5.0;
 
 @implementation DFZController {
     id<DFZWindowSource> _source;
@@ -197,6 +204,13 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
     // Set once the popup is gone: the app to keep off the target until then.
     pid_t _handoffPid;
     NSTimeInterval _handoffUntil;
+    // State queue only. When each popup was first seen.
+    NSMutableDictionary<NSNumber *, NSNumber *> *_popupOpenedAt;
+    // State queue only. Window focused when a popup hotkey fired, and when;
+    // then the window each popup adopted from it.
+    DFZWindowID _pendingOrigin;
+    NSTimeInterval _pendingOriginAt;
+    NSMutableDictionary<NSNumber *, NSNumber *> *_popupOrigin;
 }
 
 - (instancetype)initWithSource:(id<DFZWindowSource>)source config:(DFZConfig *)config {
@@ -206,6 +220,8 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
         _state = [DFZState new];
         _state.identityTitles = config.identityTitles;
         _stateQueue = dispatch_queue_create("dfzf.state", DISPATCH_QUEUE_SERIAL);
+        _popupOpenedAt = [NSMutableDictionary dictionary];
+        _popupOrigin = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -229,6 +245,10 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
 - (void)windowSourceDidUpdateWindow:(DFZWindowInfo *)info event:(DFZWindowEvent)event {
     dispatch_async(_stateQueue, ^{
         [self->_state upsertWindow:info];
+        if ([self->_config.popupTitles containsObject:info.title] && !self->_popupOpenedAt[@(info.windowId)]) {
+            self->_popupOpenedAt[@(info.windowId)] = @(self->_state.clock());
+            [self adoptPendingOrigin:info.windowId];
+        }
     });
     BOOL place = event == DFZWindowEventCreated
         || (event == DFZWindowEventTitleChanged && [_config.popupTitles containsObject:info.title]);
@@ -244,6 +264,8 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
         } else if ([self isPopup:windowId]) {
             [self restoreFocusFromPopup:windowId];
         }
+        [self->_popupOpenedAt removeObjectForKey:@(windowId)];
+        [self->_popupOrigin removeObjectForKey:@(windowId)];
         [self->_state removeWindow:windowId];
     });
 }
@@ -351,6 +373,25 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
     return info && [_config.popupTitles containsObject:info.title];
 }
 
+// A popup hotkey fired: remember the window the user is on.
+- (void)notePopupOrigin {
+    DFZWindowID focused = _state.focusedId;
+    _pendingOrigin = [self isPopup:focused] ? 0 : focused;
+    _pendingOriginAt = _state.clock();
+}
+
+- (void)adoptPendingOrigin:(DFZWindowID)popup {
+    if (_pendingOrigin && _state.clock() - _pendingOriginAt <= kPopupOriginSeconds) {
+        _popupOrigin[@(popup)] = @(_pendingOrigin);
+    }
+    _pendingOrigin = 0;
+}
+
+- (BOOL)canRestoreTo:(DFZWindowInfo *)info popup:(DFZWindowID)popup {
+    return info && info.windowId != popup && info.standard && !info.minimized
+        && ![_config.popupTitles containsObject:info.title];
+}
+
 // A focus request from a popup: remember where it sent the focus, for when it closes.
 - (void)noteFocusRequest:(DFZWindowID)target {
     _handoffPopup = 0;
@@ -387,19 +428,25 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
     if (focused && focused != popup && [_state window:focused].pid != popupPid) {
         return;
     }
-    DFZWindowID previous = 0;
-    long long previousRecency = 0;
-    for (DFZWindowInfo *info in [_state windows]) {
-        if (info.windowId == popup || !info.standard || info.minimized) {
-            continue;
+    NSArray<DFZWindowInfo *> *windows = [_state windows];
+    for (DFZWindowInfo *info in windows) {
+        if (info.windowId > popup && [_config.popupTitles containsObject:info.title]) {
+            return;
         }
-        if ([_config.popupTitles containsObject:info.title]) {
-            if (info.windowId > popup) {
-                return;
-            }
+    }
+    DFZWindowInfo *origin = [_state window:_popupOrigin[@(popup)].unsignedIntValue];
+    DFZWindowID previous = [self canRestoreTo:origin popup:popup] ? origin.windowId : 0;
+    long long previousRecency = 0;
+    NSNumber *openedAt = _popupOpenedAt[@(popup)];
+    long long openingMs = openedAt ? (long long)floor((openedAt.doubleValue - kPopupOpeningSeconds) * 1000) : LLONG_MAX;
+    for (DFZWindowInfo *info in previous ? @[] : windows) {
+        if (![self canRestoreTo:info popup:popup]) {
             continue;
         }
         long long recency = [_state recencyOfWindow:info.windowId];
+        if (info.pid == popupPid && recency >= openingMs) {
+            continue;
+        }
         if (recency > previousRecency) {
             previous = info.windowId;
             previousRecency = recency;
@@ -505,6 +552,12 @@ static const NSTimeInterval kHandoffSeconds = 1.0;
     }
     if ([op isEqualToString:@"focusToggle"]) {
         return [self focusToggle:req deadline:deadline error:error];
+    }
+    if ([op isEqualToString:@"popupOrigin"]) {
+        dispatch_sync(_stateQueue, ^{
+            [self notePopupOrigin];
+        });
+        return @"";
     }
     if ([op isEqualToString:@"hideApp"]) {
         double pid = 0;

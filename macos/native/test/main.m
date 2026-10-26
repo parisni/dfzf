@@ -447,6 +447,62 @@ static void testPopupHandoff(NSString *directory) {
     [h.mock closeWindow:25];
     [h settle];
     check(@"handoff: popup refocused after a focus request gives the focus back", h.mock.focusedId == 20);
+
+    gClock = 5600.0;
+    stealFocus(h, 27);
+    gClock = 5605.0;
+    stealFocus(h, 21);
+    [h.mock addWindow:30 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h settle];
+    stealFocus(h, 30);
+    gClock = 5610.0;
+    [h.mock closeWindow:30];
+    [h settle];
+    stealFocus(h, 21);
+    check(@"handoff: kitty focusing its own window while opening the popup is skipped", h.mock.focusedId == 27);
+
+    gClock = 5700.0;
+    stealFocus(h, 20);
+    [h request:@"{\"op\":\"popupOrigin\"}"];
+    gClock = 5701.0;
+    stealFocus(h, 21);
+    gClock = 5704.0;
+    [h.mock addWindow:31 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h settle];
+    stealFocus(h, 31);
+    [h.mock closeWindow:31];
+    [h settle];
+    stealFocus(h, 21);
+    check(@"handoff: popup opened by a hotkey goes back to the window it was opened from", h.mock.focusedId == 20);
+
+    gClock = 5800.0;
+    stealFocus(h, 27);
+    [h request:@"{\"op\":\"popupOrigin\"}"];
+    gClock = 5810.0;
+    stealFocus(h, 20);
+    gClock = 5820.0;
+    [h.mock addWindow:32 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h settle];
+    stealFocus(h, 32);
+    [h.mock closeWindow:32];
+    [h settle];
+    stealFocus(h, 21);
+    check(@"handoff: a stale hotkey origin is not adopted", h.mock.focusedId == 20);
+
+    gClock = 5900.0;
+    stealFocus(h, 27);
+    [h request:@"{\"op\":\"popupOrigin\"}"];
+    gClock = 5901.0;
+    stealFocus(h, 20);
+    [h.mock addWindow:33 title:@"dfzf-popup" app:@"kitty" pid:901];
+    [h settle];
+    stealFocus(h, 33);
+    [h.mock closeWindow:27];
+    [h settle];
+    [h.mock closeWindow:33];
+    [h settle];
+    stealFocus(h, 21);
+    check(@"handoff: a closed hotkey origin falls back to the most recent window", h.mock.focusedId == 20);
     [h stop];
 }
 

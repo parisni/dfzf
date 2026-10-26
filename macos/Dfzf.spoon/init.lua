@@ -43,9 +43,11 @@ if kittyApp then
 end
 -- A string runs as a shell command; a table is a focus toggle (see
 -- Dfzf:focusToggle), which the native backend serves without any process.
+-- Popups get their own kitty instance: opening or closing one never brings
+-- the other kitty windows (dfzf-term) forward.
 obj.commands = {
-  windows = kitty .. " -1 --title dfzf-popup -e dfzf-windows",
-  hub = kitty .. " -1 --title dfzf-popup -e dfzf-hub",
+  windows = kitty .. " -1 --instance-group dfzf-popup --title dfzf-popup -e dfzf-windows",
+  hub = kitty .. " -1 --instance-group dfzf-popup --title dfzf-popup -e dfzf-hub",
   term = { toggle = "term", criteria = '[app_id="^dfzf-term$"]', fallback = kitty .. " -1 --title dfzf-term" },
   git = "dfzf-git",
 }
@@ -73,6 +75,13 @@ local PREVIEW_GRACE_SECONDS = 0.5
 -- itself again: for this long, its windows cannot take the focus back from
 -- the window the popup handed it to.
 local HANDOFF_SECONDS = 1.0
+-- Opening a popup activates its app (kitty), which may first focus another of
+-- its windows (dfzf-term): such focus changes this close to the opening are
+-- not where the user came from.
+local POPUP_OPENING_SECONDS = 1.0
+-- A hotkey about to open a popup notes the focused window: the first popup
+-- seen within this delay adopts it as the window to go back to.
+local POPUP_ORIGIN_SECONDS = 5.0
 
 local function now()
   return hs.timer.secondsSinceEpoch()
@@ -300,13 +309,18 @@ function obj:_restoreFromPopup(win)
   if focused and focused:id() ~= popup.id and pidOf(focused) ~= popup.pid then
     return
   end
-  local previous, previousRecency = nil, 0
-  for _, other in ipairs(self._filter:getWindows()) do
-    local otherId = other:id()
-    if otherId and otherId ~= popup.id and other:isStandard() and not other:isMinimized()
-      and not self.popupTitles[other:title() or ""] then
-      local recency = self:_recency(otherId)
-      if recency > previousRecency then
+  local function restorable(other)
+    local otherId = other and other:id()
+    return otherId and otherId ~= popup.id and other:isStandard() and not other:isMinimized()
+      and not self.popupTitles[other:title() or ""]
+  end
+  local origin = popup.origin and hs.window.get(popup.origin)
+  local previous, previousRecency = restorable(origin) and origin or nil, 0
+  local openingMs = math.floor((popup.openedAt - POPUP_OPENING_SECONDS) * 1000)
+  for _, other in ipairs(previous and {} or self._filter:getWindows()) do
+    if restorable(other) then
+      local recency = self:_recency(other:id())
+      if recency > previousRecency and not (pidOf(other) == popup.pid and recency >= openingMs) then
         previous, previousRecency = other, recency
       end
     end
@@ -348,8 +362,11 @@ function obj:_place(win)
     }, 0)
     win:focus()
     local id = win:id()
-    if id and (not self._popup or id >= self._popup.id) then
-      self._popup = { id = id, pid = pidOf(win) }
+    if id and (not self._popup or id > self._popup.id) then
+      local pending = self._pendingOrigin
+      self._pendingOrigin = nil
+      local origin = pending and now() - pending.at <= POPUP_ORIGIN_SECONDS and pending.id or nil
+      self._popup = { id = id, pid = pidOf(win), openedAt = now(), origin = origin }
     end
     self:_closePopupsOlderThan(win:id())
   elseif self.maximize then
@@ -552,8 +569,20 @@ function obj:_command(name)
   if type(command) == "table" then
     self:focusToggle(command.toggle, command.criteria, command.fallback)
   else
+    self:_notePopupOrigin()
     self:_run(command)
   end
+end
+
+-- A command may open a popup: remember the window to go back to when it closes.
+function obj:_notePopupOrigin()
+  if self._native then
+    self._native.request('{"op":"popupOrigin"}', function() end)
+    return
+  end
+  local focused = hs.window.focusedWindow()
+  local id = focused and not self.popupTitles[focused:title() or ""] and focused:id()
+  self._pendingOrigin = id and { id = id, at = now() } or nil
 end
 
 local function readFile(path)

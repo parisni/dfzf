@@ -208,6 +208,8 @@ placement and the speed-up have not been checked on a real Mac yet.
 Differences with sway/i3:
 - macOS has no per-window `app_id`: dfzf windows are identified by their title
   (`kitty --title dfzf-popup`), see `Dfzf.identityTitles` / `Dfzf.commands`.
+  Popups run in their own kitty instance (`--instance-group dfzf-popup`), so
+  opening or closing one never brings `dfzf-term` forward.
 - marks (recency, colors) and urgency live in the spoon and are lost when
   Hammerspoon reloads.
 - `esc` closes the hub popup whatever tool runs in it (clock, top, wifi...)
@@ -220,6 +222,11 @@ Differences with sway/i3:
   #~/.config/kitty/kitty.conf
   map --when-focus-on cmdline:dfzf-hub$ escape close_window
   ```
+- a popup closed without picking a window (`esc`) gives the focus back to the
+  window it was opened from by a spoon hotkey, else to the most recently used
+  one, skipping kitty's own focus changes while it opens the popup. The focus
+  is left alone when the popup's pick already moved it to another app (a
+  clicked notification).
 - `dfzf-focus-toggle` criteria match the lowercased app name as `app_id`, e.g.
   `'[app_id="firefox" title="mail.google.com"]'`.
   With the native backend, the script sends the whole toggle as one request.
