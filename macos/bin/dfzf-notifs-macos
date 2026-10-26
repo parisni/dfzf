@@ -9,13 +9,26 @@ if ! command -v notif >/dev/null; then
 	exit 1
 fi
 
-# One "<index>\t<text>" line per entry. notif prints bodies verbatim, so a line
-# without an "[index]" prefix continues a multi-line body of the previous entry.
+# macOS stacks an app's notifications into a collapsed group that only exposes
+# its latest one: expand every group so each notification gets its own line.
+# Expanding keeps top-level indexes, so one listing gives them all.
+expand_groups() {
+	local index
+	for index in $(notif list | perl -ne 'print "$1\n" if /^\[([0-9]+)\] .* \(group, collapsed\)$/'); do
+		notif expand "$index" >/dev/null
+	done
+}
+
+# One "<index>\t<text>" line per notification. notif prints bodies verbatim, so
+# a line without an "[index]" prefix continues a multi-line body of the previous
+# entry. Expanded group headers are dropped: their notifications follow them.
 list() {
+	expand_groups
 	notif list | perl -ne '
 		chomp;
-		if (/^\s*\[([0-9.]+)\] (.*)$/) { print "\n" if $count++; print "$1\t$2" }
-		elsif ($count && /\S/) { s/^\s+//; print " $_" }
+		if (/^\[[0-9]+\] .* \([0-9]+ notifications, expanded\)$/) { $skip = 1 }
+		elsif (/^\s*\[([0-9.]+)\] (.*)$/) { $skip = 0; print "\n" if $count++; print "$1\t$2" }
+		elsif (!$skip && $count && /\S/) { s/^\s+//; print " $_" }
 		END { print "\n" if $count }'
 }
 
@@ -37,24 +50,43 @@ case "${1:-}" in
 	list
 	exit 0
 	;;
---click | --dismiss)
+--click)
 	picked="${2:?usage: dfzf-notifs-macos $1 <listed line>}"
 	if ! index="$(resolve "${picked%%$'\t'*}" "${picked#*$'\t'}")"; then
 		echo "dfzf-notifs: notification gone: ${picked#*$'\t'}" >&2
 		exit 1
 	fi
-	notif "${1#--}" "$index" >/dev/null
+	notif click "$index" >/dev/null
 	exit 0
+	;;
+# Several picks are dismissed last first: dismissing one shifts the indexes of
+# those listed after it, so the remaining picks keep theirs.
+--dismiss)
+	shift
+	: "${1:?usage: dfzf-notifs-macos --dismiss <listed line>...}"
+	status=0
+	for ((pick = $#; pick >= 1; pick--)); do
+		picked="${!pick}"
+		if index="$(resolve "${picked%%$'\t'*}" "${picked#*$'\t'}")"; then
+			notif dismiss "$index" >/dev/null
+		else
+			echo "dfzf-notifs: notification gone: ${picked#*$'\t'}" >&2
+			status=1
+		fi
+	done
+	exit "$status"
 	;;
 esac
 
 export SHELL="$(command -v bash)"
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right ${DFZF_FZF_OPTS-"--padding=1,2 --border=rounded --color=border:#ff8800"}"
 
-picked=$(list | fzf --prompt "Notifs > " --delimiter $'\t' --with-nth 2 \
+picked=$(list | fzf --prompt "Notifs > " --multi --delimiter $'\t' --with-nth 2 \
 	--preview 'printf "%s\n" {2}' \
 	--preview-window=up:30%:wrap \
+	--bind "enter:deselect-all+accept" \
 	--bind "ctrl-k:execute-silent(dfzf-notifs-macos --dismiss {})+reload(dfzf-notifs-macos --list)" \
+	--bind "alt-K:select-all+execute-silent(dfzf-notifs-macos --dismiss {+})+deselect-all+reload(dfzf-notifs-macos --list)" \
 	--bind "ctrl-h:change-header(No notification history on macOS)") || exit 0
 # Clicking runs the notification's own action, which brings its app forward.
 dfzf-notifs-macos --click "$picked"

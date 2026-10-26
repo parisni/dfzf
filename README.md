@@ -728,10 +728,20 @@ Password-store
   - list notification ordered
   - `Return`: notification action
   - `ctrl-k`: kill notification
+  - `alt-K`: kill every notification matching the query (all the visible ones)
   - `ctrl-h`: toggle notif history
   
   ```bash
     sudo apt install jq mako-notifier
+  ```
+
+  To reach `alt-K` with `ctrl-shift-k` (`cmd-shift-k` when Cmd is turned into
+  Ctrl), remap it in the dfzf kitty windows only (`fzf` cannot tell
+  `ctrl-shift-k` from `ctrl-k`):
+
+  ```
+  #~/.config/kitty/kitty.conf
+  map --when-focus-on cmdline:dfzf- ctrl+shift+k send_key alt+shift+k
   ```
 
   On macOS, Notification Center is read through

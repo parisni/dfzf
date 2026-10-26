@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 # Fake notif CLI: `list` prints $DFZF_TEST_NOTIFS (format of notif's ListCommand),
-# other commands are recorded.
+# other commands are recorded. `expand` swaps in $DFZF_TEST_NOTIFS.expanded when
+# it exists, the listing after the group opened.
 if [[ $1 == list ]]; then
 	cat "$DFZF_TEST_NOTIFS"
 else
 	echo "notif $*" >>"$DFZF_TEST_LOG"
+	if [[ $1 == expand && -f $DFZF_TEST_NOTIFS.expanded ]]; then
+		mv "$DFZF_TEST_NOTIFS.expanded" "$DFZF_TEST_NOTIFS"
+	fi
 fi

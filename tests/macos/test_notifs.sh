@@ -10,15 +10,23 @@ tab=$'\t'
 notifs() { printf '%s\n' "$@" >"$DFZF_TEST_NOTIFS"; }
 notif_calls() { grep '^notif' "$DFZF_TEST_LOG" | tr '\n' ' '; }
 
-notifs "[1] Slack (group, collapsed)" \
-	"[2] Mail: Meeting — first line" \
+notifs "[1] Mail: Meeting — first line" \
 	"second line" \
-	"[3] Slack (2 notifications, expanded)" \
-	"  [3.1] Slack: #general — lunch?" \
-	"  [3.2] Slack: DM — hey"
-assert_eq "lists entries, joining multi-line bodies and keeping sub-indexes" \
-	"1${tab}Slack (group, collapsed)|2${tab}Mail: Meeting — first line second line|3${tab}Slack (2 notifications, expanded)|3.1${tab}Slack: #general — lunch?|3.2${tab}Slack: DM — hey|" \
+	"[2] Slack (2 notifications, expanded)" \
+	"  [2.1] Slack: #general — lunch?" \
+	"  [2.2] Slack: DM — hey"
+assert_eq "lists notifications, joining multi-line bodies and dropping group headers" \
+	"1${tab}Mail: Meeting — first line second line|2.1${tab}Slack: #general — lunch?|2.2${tab}Slack: DM — hey|" \
 	"$(dfzf-notifs-macos --list | tr '\n' '|')"
+
+notifs "[1] Mail: Meeting — slides" "[2] Slack (group, collapsed)"
+printf '%s\n' "[1] Mail: Meeting — slides" "[2] Slack (2 notifications, expanded)" \
+	"  [2.1] Slack: #general — lunch?" "  [2.2] Slack: DM — hey" >"$DFZF_TEST_NOTIFS.expanded"
+: >"$DFZF_TEST_LOG"
+assert_eq "collapsed group: expanded to list each notification" \
+	"1${tab}Mail: Meeting — slides|2.1${tab}Slack: #general — lunch?|2.2${tab}Slack: DM — hey|" \
+	"$(dfzf-notifs-macos --list | tr '\n' '|')"
+assert_eq "collapsed group: expands it once" "notif expand 2 " "$(notif_calls)"
 
 notifs "No notifications."
 assert_eq "empty Notification Center lists nothing" "" "$(dfzf-notifs-macos --list)"
@@ -31,6 +39,11 @@ assert_eq "enter clicks the pick" "notif click 2 " "$(notif_calls)"
 : >"$DFZF_TEST_LOG"
 dfzf-notifs-macos --dismiss "2${tab}Slack: DM — hey"
 assert_eq "ctrl-k dismisses the pick" "notif dismiss 2 " "$(notif_calls)"
+
+notifs "[1] Mail: Meeting — slides" "[2] Slack: DM — hey" "[3] Slack: #general — lunch?"
+: >"$DFZF_TEST_LOG"
+dfzf-notifs-macos --dismiss "2${tab}Slack: DM — hey" "3${tab}Slack: #general — lunch?"
+assert_eq "alt-K dismisses every visible match, last first" "notif dismiss 3 notif dismiss 2 " "$(notif_calls)"
 
 notifs "[1] New: arrived — meanwhile" "[2] Mail: Meeting — slides" "[3] Slack: DM — hey"
 : >"$DFZF_TEST_LOG"
