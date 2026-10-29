@@ -4,72 +4,88 @@ set -euo pipefail
 export SHELL="$(command -v bash)"
 [[ $OSTYPE == darwin* ]] || dfzf-kill-bro >/dev/null
 windows_prompt_pattern="^[>$%] "
+# kitty remote-control socket; kitty suffixes `listen_on` with its pid, hence the {pid} placeholder.
+kitty_socket='/tmp/kitty-{pid}'
 [ -f "$HOME/.config/dfzf/dfzf.conf" ] && source "$HOME/.config/dfzf/dfzf.conf"
 export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --header= --info=inline-right ${DFZF_FZF_OPTS-"--padding=1,2 --border=rounded --color=border:#ff8800"}"
 
-if command -v fd >/dev/null; then
-	findcommand="fd"
-elif command -v fdfind >/dev/null; then
-	findcommand="fdfind"
-else
-	echo "Neither fd nor fdfind found. Please install one of them."
-	exit 1
-fi
-kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1 | head -n1)
-
-dfzf_map=$(dfzf-exec -t get_tree --raw | jq -rc '
-  .. | objects | select(.name != null)
-  | {title: (.name | gsub(" "; ".")), id}
+# Terminals the user works in: dfzf's own popups are left out.
+cons=$(dfzf-exec -t get_tree --raw | jq -c '
+  [.. | objects | select(.type == "con" and .name != null)
+   | select([.app_id, .window_properties.class] | any(. != null and test("^dfzf-(popup|switcher)$")) | not)]
 ')
 
-findcommand=$(command -v fd || command -v fdfind) || {
-	echo "Neither fd nor fdfind found"
+# One socket per kitty instance hosting those windows; i3 trees carry no pid,
+# then every socket matching the template is tried.
+sockets=()
+for pid in $(jq -r '[.[].pid // empty] | unique | .[]' <<<"$cons"); do
+	socket="${kitty_socket//\{pid\}/$pid}"
+	if [[ -S $socket ]]; then sockets+=("$socket"); fi
+done
+if [[ ${#sockets[@]} -eq 0 ]]; then
+	for socket in ${kitty_socket//\{pid\}/*}; do
+		if [[ -S $socket ]]; then sockets+=("$socket"); fi
+	done
+fi
+if [[ ${#sockets[@]} -eq 0 ]]; then
+	echo "No kitty remote-control socket found (kitty_socket='$kitty_socket')."
 	exit 1
+fi
+
+# kitty window -> WM window. On macOS the WM only sees kitty OS windows, whose
+# id is kitty's platform_window_id; sway/i3 have one WM window per kitty window
+# sharing its title.
+match_by_platform_id=false
+[[ -z ${SWAYSOCK:-} && -z ${I3SOCK:-} && $OSTYPE == darwin* ]] && match_by_platform_id=true
+targets=$(for socket in "${sockets[@]}"; do
+	kitten @ --to "unix:$socket" ls 2>/dev/null |
+		jq -r --argjson cons "$cons" --arg socket "$socket" --argjson by_id "$match_by_platform_id" '
+		  .[] | .platform_window_id as $platform_id | .tabs[].windows[] | . as $win
+		  | first($cons[] | select(if $by_id then .id == $platform_id else .name == $win.title end))
+		  | "\(.id) \($socket) \($win.id)"' || true
+done)
+
+reverse_lines() {
+	if command -v tac >/dev/null; then tac; else tail -r; fi
 }
-kitty_sock=$($findcommand '^kitty-\d+$' /tmp --max-depth 1 | head -n1)
+# Fields: WM con id, kitty socket, kitty window id, numbered scrollback line.
+dump_window() {
+	local con_id="$1" socket="$2" kitty_id="$3" colors=(31 32 33 34 35 36)
+	kitten @ --to "unix:$socket" get-text --match "id:$kitty_id" --extent all 2>/dev/null |
+		reverse_lines | nl -s " " | rg -v '^\s+$|^\s+[0-9]+\s*~\s*$' | sed 's/^[ \t]*//;s/[ \t]*$//' |
+		awk -v prefix="$con_id"$'\t'"$socket"$'\t'"$kitty_id"$'\t' -v color="${colors[kitty_id % ${#colors[@]}]}" \
+			'{ printf "%s\033[%sm%s\033[0m\n", prefix, color, $0; fflush() }'
+}
+export -f reverse_lines dump_window
+
 PREVIEW="
-id=\$(echo {} | perl -0777 -pe 's/.*#([0-9]+).*/\$1/s')
-kitty_title=\$(dfzf-exec -t get_tree --raw | jq -r --arg id \"\$id\" '.. | objects | select(.id == (\$id | tonumber)) | .name' | sed 's/ /./g')
-prompt_content=\$(kitten @ get-text --to unix:$kitty_sock --match \"title:^\$kitty_title$\" --extent all  2>/dev/null | rg -U '$windows_prompt_pattern(.+)' -o --replace '$> \$1'|tail -n 100)
+prompt_content=\$(kitten @ --to unix:{2} get-text --match id:{3} --extent all 2>/dev/null | rg -U '$windows_prompt_pattern(.+)' -o --replace '$> \$1'|tail -n 100)
 if [[ -n \"\$prompt_content\" ]]; then
-  printf '%s\n' \"\$prompt_content\" 
+  printf '%s\n' \"\$prompt_content\"
 else
-  (kitten @ get-text --to unix:$kitty_sock --match \"title:^\$kitty_title$\" --extent screen  2>/dev/null || (echo {} |fold -s -w 90))|rg -v '^\\~\\s*$|^\\s+$'
+  (kitten @ --to unix:{2} get-text --match id:{3} --extent screen 2>/dev/null || (echo {4..} |fold -s -w 90))|rg -v '^\\~\\s*$|^\\s+$'
 fi
 "
 
 result=$(
-	kitty @ ls --to "unix:$kitty_sock" | jq -r '.[].tabs[].windows[].title | gsub(" "; ".")' |
-		xargs -P"$(
+	[[ -n $targets ]] && printf '%s\n' "$targets" |
+		xargs -n 3 -P"$(
 			cpus=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 			if [ "$cpus" -gt 6 ]; then echo 8; else echo "$cpus"; fi
-		)" -I{} bash -c '
-  title="$1"
-  dfzf_map_json="$2"
-  sock="$3"
-  id=$(echo "$dfzf_map_json" | jq -r --arg t "$title" "select(.title == \$t) | .id")
-  if [ -n "$id" ]; then
-    text=$(kitten @ get-text --to "unix:$sock" --match "title:^$title" --extent all | tac | nl | rg -v "^\s+$|^\s+[0-9]+\s*~\s*$" | sed "s/^[ \t]*//;s/[ \t]*$//;s/$/ #${id}/")
-    colors=(31 32 33 34 35 36)
-    sum=0
-    for ((i=0; i<${#id}; i++)); do
-      sum=$((sum + $(printf "%d" "''${id:i:1}")))
-    done
-    color=${colors[$((sum % ${#colors[@]}))]}
-    echo -e "\033[${color}m${text}\033[0m"
-  fi
-' _ "{}" "$dfzf_map" "$kitty_sock" |
+		)" bash -c 'dump_window "$@"' _ |
 		fzf --prompt "Scrollbacks: " \
 			--no-unicode \
+			--delimiter=$'\t' \
+			--with-nth=4.. \
 			--bind="?:transform-header(dfzf-help toggle scrollbacks)" \
 			--preview="$PREVIEW" \
 			--preview-window="up,follow"
 )
 
-con_id=$(echo "$result" | perl -0777 -pe 's/.*#([0-9]+).*/$1/s')
-scroll_line=$(echo "$result" | perl -0777 -pe 's/^([0-9]+).*/$1/s')
+IFS=$'\t' read -r con_id socket kitty_id text <<<"$result"
+scroll_line=$(perl -pe 's/\e\[[0-9;]*m//g; s/^([0-9]+).*/$1/s' <<<"$text")
 # arbitrary increase scroll by 2 to make the bottom terimal match the selected row
-scroll_line=$((scroll_line - 2))
+scroll_line=$((scroll_line > 2 ? scroll_line - 2 : 0))
+kitten @ --to "unix:$socket" focus-window --match "id:$kitty_id"
 dfzf-exec -q "[con_id=$con_id]" focus
-title=$(dfzf-exec -t get_tree --raw | jq -r --arg id "$con_id" ' .. | objects | select(.id == ($id | tonumber)) | .name  | gsub(" "; ".")')
-kitty @ scroll-window --to "unix:$kitty_sock" --match "title:^$title$" "${scroll_line}l-"
+kitten @ --to "unix:$socket" scroll-window --match "id:$kitty_id" "${scroll_line}l-"

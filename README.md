@@ -54,7 +54,7 @@ Just make sure the daemon is running when you try **dfzf** for the first time!
 |------------------|----------------------------------------------|:--:|:----:|:-----:|
 | `dfzf-windows`   | Navigate windows by title or time            | ✅ | ✅   | ✅ (no `ctrl-t` tiling) |
 | `dfzf-focus-toggle` | Jump to a given window and back           | ✅ | ✅   | ✅ |
-| `dfzf-scrollbacks`   | Fuzzy-search within all your terminals at once            | ✅ | ✅   | ⚠️ kitty remote control |
+| `dfzf-scrollbacks`   | Fuzzy-search within all your terminals at once            | ✅ | ✅   | ✅ kitty remote control, kitty tabs included |
 | `dfzf-launcher`  | Launch desktop apps or cmds in terminal      | ✅ | ✅   | ✅ GUI apps only (`.app` bundles, `launcher_app_dirs`) |
 | `dfzf-notify`    | Browse past notifications                    | ❌ | ✅   | ⚠️ [`notif`](https://github.com/coryfklein/macos-notification-cli), no history |
 | `dfzf-tasks`     | Manage caldav tasks                        | ✅ |  ✅   | ⚠️ |
@@ -617,6 +617,8 @@ Tilling with multi-select (ctrl-t):
   Scrollbacks let you fuzzy-search across all your terminal histories (Kitty only) and focus the right one — great for digging up lost work from vague command memories.
 
   - `?`: toggle a keybinding cheatsheet in the header
+  - requires `allow_remote_control yes` and `listen_on unix:/tmp/kitty` in `kitty.conf`; every kitty instance hosting a window is queried (dfzf popups excluded). Override the socket path with `kitty_socket='/tmp/kitty-{pid}'` in `~/.config/dfzf/dfzf.conf`
+  - on macOS, kitty windows are matched to their OS window by id, so all tabs and splits of a single kitty window are searched and accepting a line switches to the right tab
 
   ```bash
     sudo apt install ripgrep

@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-# Fake kitty remote control: `ls` serves a fixture, other commands are logged.
+# Fake kitty remote control: `ls` serves a fixture, `get-text` prints a
+# scrollback tagged with the matched window, other commands are logged.
 if [[ " $* " == *" ls "* ]]; then
 	cat "$DFZF_TEST_KITTY_LS"
+elif [[ " $* " == *" get-text "* ]]; then
+	match=$(sed -E 's/.*--match ([^ ]+).*/\1/' <<<"$*")
+	printf '%s\n' "$ make test" "ok $match" "$ git status" "clean $match"
 else
 	echo "kitten $*" >>"$DFZF_TEST_LOG"
 fi
