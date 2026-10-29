@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v1.3.5"></a>
+## [v1.3.5] - 2026-10-29
+### Bug Fixes
+- **all:** focus-toggle jumps to the most recent matching window
+
+
 <a name="v1.3.4"></a>
 ## [v1.3.4] - 2026-10-29
 ### Bug Fixes
@@ -768,7 +774,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.3.4...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.3.5...HEAD
+[v1.3.5]: https://github.com/parisni/dfzf/compare/v1.3.4...v1.3.5
 [v1.3.4]: https://github.com/parisni/dfzf/compare/v1.3.3...v1.3.4
 [v1.3.3]: https://github.com/parisni/dfzf/compare/v1.3.2...v1.3.3
 [v1.3.2]: https://github.com/parisni/dfzf/compare/v1.3.1...v1.3.2
