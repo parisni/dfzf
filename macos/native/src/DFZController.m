@@ -670,6 +670,7 @@ static const NSTimeInterval kPopupOriginSeconds = 5.0;
         DFZWindowID current = 0;
         BOOL onTarget = NO;
         NSMutableSet<NSNumber *> *targets = [NSMutableSet set];
+        long long targetRecency = -1;
         for (DFZWindowInfo *info in windows) {
             BOOL focused = info.windowId == state.focusedId;
             if (focused) {
@@ -678,8 +679,12 @@ static const NSTimeInterval kPopupOriginSeconds = 5.0;
             if (matches(info, state)) {
                 [targets addObject:@(info.windowId)];
                 onTarget = onTarget || focused;
-                // sway applies `focus` to each match in turn: the last one wins.
-                focusTarget = info.windowId;
+                // Several matches: the most recent one, the last in tree order on a tie.
+                long long recency = [state recencyOfWindow:info.windowId];
+                if (recency >= targetRecency) {
+                    focusTarget = info.windowId;
+                    targetRecency = recency;
+                }
             }
         }
         if (!onTarget) {

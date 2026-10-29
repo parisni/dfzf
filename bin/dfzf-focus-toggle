@@ -24,7 +24,8 @@ set -euo pipefail
 # Behaviour:
 #   - target missing            -> run fallback-cmd (if any)
 #                                  remembering the current window as origin
-#   - not on target             -> mark current window as origin, focus target
+#   - not on target             -> mark current window as origin, focus the
+#                                  most recent target
 #   - already on target         -> focus the origin window (back), clear mark
 #   - origin lost/absent        -> focus the most recent other window instead
 
@@ -145,6 +146,12 @@ if [[ $target_focused == "true" ]]; then
 	exit 0
 fi
 
-# Not on the target yet: mark the current window as origin, then jump to target.
+# Not on the target yet: mark the current window as origin, then jump to the
+# most recent target (sway's `focus` on every match would keep the last in tree
+# order, not the last used).
+target_id="$(jq -r --arg p "$probe_mark" '
+	[.. | objects | select((.marks // []) | index($p))
+		| {id, sort: ([(.marks // [])[] | select(startswith("_dfzf-sort-")) | ltrimstr("_dfzf-sort-") | tonumber] | max // 0)}]
+	| sort_by(.sort) | last | .id // empty' <<<"$tree")"
 set_origin "$current_id"
-"$msg" -q "${criteria} focus" >/dev/null
+"$msg" -q "[con_id=${target_id}] focus" >/dev/null

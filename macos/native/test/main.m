@@ -621,6 +621,30 @@ static void testFocusToggle(NSString *directory) {
     [h stop];
 }
 
+// Several windows match: the toggle jumps to the most recent, not the last in tree order.
+static void testFocusToggleMostRecent(NSString *directory) {
+    DFZHarness *h = [[DFZHarness alloc] initWithPath:[directory stringByAppendingPathComponent:@"toggle-recent.sock"]];
+    [h.mock addWindow:1 title:@"Inbox - mail.google.com" app:@"Firefox" pid:500];
+    [h.mock addWindow:2 title:@"hx main.go" app:@"kitty" pid:501];
+    [h.mock addWindow:3 title:@"GitHub - github.com" app:@"Firefox" pid:500];
+    h.mock.frontToBack = @[ @2, @1, @3 ];
+    [h start];
+
+    gClock = 5000.0;
+    [h.mock emitFocus:3];
+    [h settle];
+    gClock = 6000.0;
+    [h.mock emitFocus:1];
+    [h settle];
+    gClock = 7000.0;
+    [h.mock emitFocus:2];
+    [h settle];
+    BOOL ok = NO;
+    [h request:toggleRequest(@"firefox", @"[app_id=\"^firefox$\"]", NO) ok:&ok];
+    check(@"toggle: several targets, the most recent one", ok && h.mock.focusedId == 1);
+    [h stop];
+}
+
 // The persistent dfzf-windows: centered, hidden by request, never a popup.
 static void testSwitcher(NSString *directory) {
     DFZHarness *h = [[DFZHarness alloc] initWithPath:[directory stringByAppendingPathComponent:@"switcher.sock"]];
@@ -674,6 +698,7 @@ int main(int argc, const char *argv[]) {
         testPopupHandoff(directory);
         testHungApp(directory);
         testFocusToggle(directory);
+        testFocusToggleMostRecent(directory);
         testSwitcher(directory);
         [[NSFileManager defaultManager] removeItemAtPath:directory error:NULL];
     }
