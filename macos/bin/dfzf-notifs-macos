@@ -34,13 +34,14 @@ list() {
 
 # notif indexes are screen positions that shift as notifications come and go:
 # re-resolve the picked text against a fresh listing instead of trusting them.
+# Read the whole listing, no early exit: under pipefail, SIGPIPE on list would fail it.
 resolve() {
 	list | perl -sne '
 		chomp;
 		my ($index, $text) = split /\t/, $_, 2;
-		next unless $text eq $picked_text;
+		next if $exact || $text ne $picked_text;
 		$hit //= $index;
-		if ($index eq $picked_index) { $hit = $index; last }
+		if ($index eq $picked_index) { $hit = $index; $exact = 1 }
 		END { if (defined $hit) { print "$hit\n" } else { $? = 1 } }
 	' -- -picked_index="$1" -picked_text="$2"
 }
