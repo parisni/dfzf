@@ -472,12 +472,8 @@ hub_cmd_w='dfzf-tools wifi'
 hub_cmd_i='TERM=xterm sudo /usr/sbin/iotop -o'
 hub_cmd_q="pomatez || dfzf-windows-load|rg pomatez|sed -Ez 's/.*#([0-9]+).*/\1/'|xargs -I@ dfzf-exec '[con_id=@]' focus"
 
-# password backend commands: defaults target pass-compatible `show` commands
-pass_preview_cmd='pass show'
-pass_show_password_cmd='pass show'
-pass_otp_cmd='pass otp'
-
-# example: use gopass instead
+# password backend commands: gopass when installed (mounts included), pass otherwise
+# pass_list_cmd='gopass ls --flat'
 # pass_preview_cmd='gopass show --nosync'
 # pass_show_password_cmd='gopass show --nosync -o'
 # pass_otp_cmd='gopass otp -o'
@@ -725,18 +721,20 @@ Password-store
   - `Return`: copy content
   - `ctrl-o`: copy the current OTP code (requires the [pass-otp](https://github.com/tadfisher/pass-otp) extension)
   - `ctrl-j`: preview content
-  - works with any password CLI exposing compatible `show` commands
+  - works with any password CLI exposing a flat entry listing and compatible `show` commands
 
   ```bash
     sudo apt install pass wl-clipboard
   ```
-  Default commands use `pass show`.
+  Default commands use `gopass` when installed, so entries of every gopass mount are listed.
+  Otherwise they use `pass show`, listing `$PASSWORD_STORE_DIR` (default `~/.password-store`) with `fd`.
   You can override them for another backend in `~/.config/dfzf/dfzf.conf`.
-  Example with `gopass`:
+  Example forcing `pass`:
   ```bash
-    pass_preview_cmd='gopass show --nosync'
-    pass_show_password_cmd='gopass show --nosync -o'
-    pass_otp_cmd='gopass otp -o'
+    pass_list_cmd='fd -e gpg -t f --base-directory ~/.password-store | sed "s|\.gpg$||"'
+    pass_preview_cmd='pass show'
+    pass_show_password_cmd='pass show'
+    pass_otp_cmd='pass otp'
   ```
   ![Image](https://github.com/user-attachments/assets/2ebeec63-3ee8-4a47-9b8c-988c8cb5ffeb)
 </details>
