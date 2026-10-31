@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v1.4.0"></a>
+## [v1.4.0] - 2026-10-31
+### Features
+- **password:** default to gopass and list every mount
+
+
 <a name="v1.3.6"></a>
 ## [v1.3.6] - 2026-10-30
 ### Bug Fixes
@@ -780,7 +786,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.3.6...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.4.0...HEAD
+[v1.4.0]: https://github.com/parisni/dfzf/compare/v1.3.6...v1.4.0
 [v1.3.6]: https://github.com/parisni/dfzf/compare/v1.3.5...v1.3.6
 [v1.3.5]: https://github.com/parisni/dfzf/compare/v1.3.4...v1.3.5
 [v1.3.4]: https://github.com/parisni/dfzf/compare/v1.3.3...v1.3.4
