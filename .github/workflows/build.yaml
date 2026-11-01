@@ -29,7 +29,7 @@ jobs:
   # Runners grant no Accessibility permission: the AX source is only compiled
   # here, the tests run against the simulated one.
   native:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       # Provides LuaSkin.framework, whose headers the module compiles against.
@@ -135,7 +135,7 @@ jobs:
   build-darwin:
     needs: [pre-commit, test, native]
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - name: Checkout source
