@@ -312,6 +312,14 @@ static const NSTimeInterval kPopupOriginSeconds = 5.0;
     return [_source screens].firstObject;
 }
 
+- (NSRect)centeredFrameOn:(DFZScreenInfo *)screen {
+    NSRect area = screen.frame;
+    double ratio = _config.popupRatio;
+    return NSMakeRect(area.origin.x + area.size.width * (1 - ratio) / 2,
+                      area.origin.y + area.size.height * (1 - ratio) / 2,
+                      area.size.width * ratio, area.size.height * ratio);
+}
+
 // No tiling on macOS: dfzf popups are centered, other windows maximized
 // unless their own scripts size them (floatingTitles).
 - (void)place:(DFZWindowInfo *)info {
@@ -326,11 +334,7 @@ static const NSTimeInterval kPopupOriginSeconds = 5.0;
         if (!screen) {
             return;
         }
-        NSRect area = screen.frame;
-        double ratio = self->_config.popupRatio;
-        NSRect centered = NSMakeRect(area.origin.x + area.size.width * (1 - ratio) / 2,
-                                     area.origin.y + area.size.height * (1 - ratio) / 2,
-                                     area.size.width * ratio, area.size.height * ratio);
+        NSRect centered = [self centeredFrameOn:screen];
         if ([self->_config.popupTitles containsObject:title]) {
             [self->_source setFrame:centered ofWindow:windowId];
             [self->_source focusWindow:windowId];
@@ -338,7 +342,7 @@ static const NSTimeInterval kPopupOriginSeconds = 5.0;
         } else if ([self->_config.centeredTitles containsObject:title]) {
             [self->_source setFrame:centered ofWindow:windowId];
         } else if (self->_config.maximize && ![self->_config.floatingTitles containsObject:title]) {
-            [self->_source setFrame:area ofWindow:windowId];
+            [self->_source setFrame:screen.frame ofWindow:windowId];
         }
     });
 }
@@ -633,13 +637,21 @@ static const NSTimeInterval kPopupOriginSeconds = 5.0;
 // Unminimizes the window first: `scratchpad show` and `focus` alike bring it back.
 - (BOOL)focus:(DFZWindowID)windowId deadline:(dispatch_time_t)deadline error:(NSString **)error {
     __block BOOL minimized = NO;
+    __block BOOL centered = NO;
     [self withState:^(DFZState *state) {
         minimized = [state window:windowId].minimized;
+        centered = [self->_config.centeredTitles containsObject:[state window:windowId].title];
         [self noteFocusRequest:windowId];
     }];
     return [self onWindow:windowId deadline:deadline error:error run:^{
         if (minimized) {
             [self->_source setWindow:windowId minimized:NO];
+        }
+        // Centered windows outlive display changes: placing them only at creation
+        // leaves them where macOS moved them. Before focus, so it shows in place.
+        DFZScreenInfo *screen = centered ? [self screenOfWindow:windowId] : nil;
+        if (screen) {
+            [self->_source setFrame:[self centeredFrameOn:screen] ofWindow:windowId];
         }
         [self->_source focusWindow:windowId];
     }];

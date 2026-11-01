@@ -676,7 +676,11 @@ static void testSwitcher(NSString *directory) {
     [h.mock emitFocus:1];
     [h settle];
     gClock = 7000.0;
+    [h.mock window:3].frame = NSMakeRect(14, 203, 758, 600);
     [h request:@"{\"op\":\"focus\",\"id\":3}"];
+    frame = [h.mock window:3].frame;
+    check(@"switcher: shown centered again after a display change moved it",
+          frame.size.width == 650 && frame.origin.x == 175);
     [h request:@"{\"op\":\"focus\",\"id\":2}"];
     [h request:toggleRequest(@"slack", @"[app_id=\"^slack$\"]", NO) ok:&ok];
     check(@"switcher: the toggle never goes back to it", ok && h.mock.focusedId == 1);
