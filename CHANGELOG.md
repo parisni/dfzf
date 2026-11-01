@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v1.4.1"></a>
+## [v1.4.1] - 2026-11-01
+### Bug Fixes
+- **macos:** recenter the windows switcher every time it is shown
+
+### CI/CD
+- move the macOS jobs to macos-15
+
+
 <a name="v1.4.0"></a>
 ## [v1.4.0] - 2026-10-31
 ### Features
@@ -786,7 +795,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.4.1...HEAD
+[v1.4.1]: https://github.com/parisni/dfzf/compare/v1.4.0...v1.4.1
 [v1.4.0]: https://github.com/parisni/dfzf/compare/v1.3.6...v1.4.0
 [v1.3.6]: https://github.com/parisni/dfzf/compare/v1.3.5...v1.3.6
 [v1.3.5]: https://github.com/parisni/dfzf/compare/v1.3.4...v1.3.5
