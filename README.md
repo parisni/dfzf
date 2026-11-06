@@ -588,6 +588,7 @@ keybindings:
 - `O`: filter color orange
 - `R`: filter color red
 - `ctrl-k`: kill window
+- `alt-K`: kill every window matching the query (all the visible ones)
 - `ctrl-u`: toggle urgent  (yellow color)
 - `ctrl-h`: toggle hidden (show/hide `dfzf-hidden` windows)
 - `ctrl-i`: toggle important (red color)
