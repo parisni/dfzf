@@ -10,11 +10,13 @@ python3 -c 'import socket, sys; socket.socket(socket.AF_UNIX).bind(sys.argv[1])'
 mkdir -p "$HOME/.config/dfzf"
 echo "kitty_socket='$scratch_dir/kitty-{pid}'" >"$HOME/.config/dfzf/dfzf.conf"
 
-# fzf stand-in recording its input before picking, to assert the listing.
+# fzf stand-in recording its whole input before picking, to assert the listing: a tee would
+# lose the windows dumped after the pick, the stub fzf exiting on its first match.
 mkdir -p "$scratch_dir/bin"
 cat >"$scratch_dir/bin/fzf" <<EOF
 #!/usr/bin/env bash
-tee "$scratch_dir/listing" | "$macos_tests_dir/fake-bin/fzf"
+cat >"$scratch_dir/listing"
+"$macos_tests_dir/fake-bin/fzf" <"$scratch_dir/listing"
 EOF
 chmod +x "$scratch_dir/bin/fzf"
 export PATH="$scratch_dir/bin:$PATH"
