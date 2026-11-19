@@ -411,7 +411,10 @@ static void axCallback(AXObserverRef observer, AXUIElementRef element, CFStringR
     }
     NSNumber *key = @(windowId);
     if (app.windows[key]) {
-        [self reportWindow:windowId app:app event:DFZWindowEventChanged];
+        // Finder focuses a new window before reporting it created: it is already known
+        // (from the focus change) but must still be placed.
+        DFZWindowEvent known = event == DFZWindowEventCreated ? DFZWindowEventCreated : DFZWindowEventChanged;
+        [self reportWindow:windowId app:app event:known];
         return;
     }
     AXUIElementSetMessagingTimeout(ref, kMessagingTimeout);
