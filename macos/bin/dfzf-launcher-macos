@@ -35,4 +35,12 @@ export FZF_DEFAULT_OPTS="--ansi --no-sort --exact --cycle --color=gutter:-1 --he
 choice=$(list_apps | fzf --prompt "Launcher > " --delimiter $'\t' --with-nth 1 \
 	--bind="?:transform-header(dfzf-help toggle launcher)") || exit 0
 # open hands the app to launchd: it outlives the popup, no detaching needed.
-open "${choice#*$'\t'}"
+app="${choice#*$'\t'}"
+open "$app"
+# The spoon gives the focus back to the previous window if the popup closes first: an app
+# running windowless (Finder after Cmd+Q) would then open its new window behind it.
+command -v hs >/dev/null || exit 0
+for _ in {1..20}; do
+	[[ $(hs -c 'local w = hs.window.focusedWindow(); return w and w:application():path() or ""' 2>/dev/null) == "$app" ]] && break
+	sleep 0.05
+done
