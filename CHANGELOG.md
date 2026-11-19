@@ -2,6 +2,16 @@
 ## [Unreleased]
 
 
+<a name="v1.4.2"></a>
+## [v1.4.2] - 2026-11-19
+### Bug Fixes
+- **macos:** place windows reported created after their focus
+- **macos:** wait for the launched app to take the focus
+
+### Features
+- **windows:** kill every window matching the query with alt-K
+
+
 <a name="v1.4.1"></a>
 ## [v1.4.1] - 2026-11-01
 ### Bug Fixes
@@ -795,7 +805,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.4.1...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.4.2...HEAD
+[v1.4.2]: https://github.com/parisni/dfzf/compare/v1.4.1...v1.4.2
 [v1.4.1]: https://github.com/parisni/dfzf/compare/v1.4.0...v1.4.1
 [v1.4.0]: https://github.com/parisni/dfzf/compare/v1.3.6...v1.4.0
 [v1.3.6]: https://github.com/parisni/dfzf/compare/v1.3.5...v1.3.6
