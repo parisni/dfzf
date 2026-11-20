@@ -14,6 +14,10 @@ static const NSTimeInterval kScanTimeout = 3.0;
 // A freshly launched app rejects observers until its AX server is up.
 static const int kSetupAttempts = 10;
 static const NSTimeInterval kSetupRetryDelay = 0.5;
+// An app busy past kMessagingTimeout (cold launch at login) answers later: its
+// window is re-read rather than reported untitled and non-standard for good.
+static const int kReadAttempts = 10;
+static const NSTimeInterval kReadRetryDelay = 0.5;
 
 @interface DFZAXApp : NSObject
 @property (nonatomic) pid_t pid;
@@ -23,6 +27,8 @@ static const NSTimeInterval kSetupRetryDelay = 0.5;
 @property (nonatomic) AXObserverRef observer;
 // Window id -> AX element; only touched on `queue`.
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, id> *windows;
+// Window id -> event of a report waiting for the app to answer; only touched on `queue`.
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSNumber *> *deferredReports;
 @end
 
 @implementation DFZAXApp
@@ -42,6 +48,24 @@ static id copyAttribute(AXUIElementRef element, CFStringRef attribute) {
         return nil;
     }
     return CFBridgingRelease(value);
+}
+
+// kAXErrorCannotComplete is the app not answering in time, unlike a missing value.
+static BOOL readTimedOut(AXUIElementRef element, CFStringRef attribute, id __strong *value) {
+    CFTypeRef raw = NULL;
+    AXError status = AXUIElementCopyAttributeValue(element, attribute, &raw);
+    *value = status == kAXErrorSuccess ? CFBridgingRelease(raw) : nil;
+    return status == kAXErrorCannotComplete;
+}
+
+// A deferred report merging several events must keep the one that places the window.
+static DFZWindowEvent strongerEvent(DFZWindowEvent first, DFZWindowEvent second) {
+    for (NSNumber *event in @[ @(DFZWindowEventCreated), @(DFZWindowEventScanned), @(DFZWindowEventTitleChanged) ]) {
+        if (first == event.integerValue || second == event.integerValue) {
+            return (DFZWindowEvent)event.integerValue;
+        }
+    }
+    return DFZWindowEventChanged;
 }
 
 static NSRect flipped(NSRect rect, CGFloat primaryHeight) {
@@ -277,6 +301,7 @@ static void axCallback(AXObserverRef observer, AXUIElementRef element, CFStringR
     app.pid = running.processIdentifier;
     app.name = running.localizedName ?: @"";
     app.windows = [NSMutableDictionary dictionary];
+    app.deferredReports = [NSMutableDictionary dictionary];
     NSString *label = [NSString stringWithFormat:@"dfzf.ax.app.%d", app.pid];
     app.queue = dispatch_queue_create(label.UTF8String, DISPATCH_QUEUE_SERIAL);
     @synchronized(self) {
@@ -432,26 +457,65 @@ static void axCallback(AXObserverRef observer, AXUIElementRef element, CFStringR
 }
 
 - (void)reportWindow:(DFZWindowID)windowId app:(DFZAXApp *)app event:(DFZWindowEvent)event {
+    NSNumber *key = @(windowId);
+    NSNumber *deferred = app.deferredReports[key];
+    if (deferred) {
+        // The pending retry reads the window again: it reports this event too.
+        app.deferredReports[key] = @(strongerEvent((DFZWindowEvent)deferred.integerValue, event));
+        return;
+    }
+    if (![self publishWindow:windowId app:app event:event final:NO]) {
+        app.deferredReports[key] = @(event);
+        [self retryReport:windowId app:app attempt:1];
+    }
+}
+
+- (void)retryReport:(DFZWindowID)windowId app:(DFZAXApp *)app attempt:(int)attempt {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kReadRetryDelay * NSEC_PER_SEC)), app.queue, ^{
+        NSNumber *key = @(windowId);
+        NSNumber *event = app.deferredReports[key];
+        if (!event || ![self isTracking:app]) {
+            return;
+        }
+        BOOL final = attempt + 1 >= kReadAttempts;
+        if ([self publishWindow:windowId app:app event:(DFZWindowEvent)event.integerValue final:final]) {
+            [app.deferredReports removeObjectForKey:key];
+        } else {
+            [self retryReport:windowId app:app attempt:attempt + 1];
+        }
+    });
+}
+
+// NO when the app did not answer and `final` is not set: nothing was reported.
+- (BOOL)publishWindow:(DFZWindowID)windowId app:(DFZAXApp *)app event:(DFZWindowEvent)event final:(BOOL)final {
     AXUIElementRef element = (__bridge AXUIElementRef)app.windows[@(windowId)];
     if (!element) {
-        return;
+        return YES;
+    }
+    id title = nil;
+    id subrole = nil;
+    id minimized = nil;
+    BOOL timedOut = readTimedOut(element, kAXTitleAttribute, &title)
+        || readTimedOut(element, kAXSubroleAttribute, &subrole)
+        || readTimedOut(element, kAXMinimizedAttribute, &minimized);
+    if (timedOut && !final) {
+        return NO;
     }
     DFZWindowInfo *info = [DFZWindowInfo new];
     info.windowId = windowId;
     info.pid = app.pid;
     info.appName = app.name;
-    NSString *title = copyAttribute(element, kAXTitleAttribute);
     info.title = [title isKindOfClass:[NSString class]] ? title : @"";
-    NSString *subrole = copyAttribute(element, kAXSubroleAttribute);
     info.standard = [subrole isKindOfClass:[NSString class]]
         && [subrole isEqualToString:(__bridge NSString *)kAXStandardWindowSubrole];
-    NSNumber *minimized = copyAttribute(element, kAXMinimizedAttribute);
-    info.minimized = [minimized isKindOfClass:[NSNumber class]] && minimized.boolValue;
+    info.minimized = [minimized isKindOfClass:[NSNumber class]] && [minimized boolValue];
     [_delegate windowSourceDidUpdateWindow:info event:event];
+    return YES;
 }
 
 - (void)forgetWindow:(DFZWindowID)windowId app:(DFZAXApp *)app {
     [app.windows removeObjectForKey:@(windowId)];
+    [app.deferredReports removeObjectForKey:@(windowId)];
     @synchronized(self) {
         if (_windowApps[@(windowId)] == app) {
             [_windowApps removeObjectForKey:@(windowId)];
