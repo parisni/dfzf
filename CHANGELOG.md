@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v1.4.4"></a>
+## [v1.4.4] - 2026-11-20
+### Bug Fixes
+- **macos:** re-read windows whose app times out on AX reads
+
+
 <a name="v1.4.3"></a>
 ## [v1.4.3] - 2026-11-19
 
@@ -808,7 +814,8 @@
 - rm useless _back mark
 
 
-[Unreleased]: https://github.com/parisni/dfzf/compare/v1.4.3...HEAD
+[Unreleased]: https://github.com/parisni/dfzf/compare/v1.4.4...HEAD
+[v1.4.4]: https://github.com/parisni/dfzf/compare/v1.4.3...v1.4.4
 [v1.4.3]: https://github.com/parisni/dfzf/compare/v1.4.2...v1.4.3
 [v1.4.2]: https://github.com/parisni/dfzf/compare/v1.4.1...v1.4.2
 [v1.4.1]: https://github.com/parisni/dfzf/compare/v1.4.0...v1.4.1
